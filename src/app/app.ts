@@ -13,4 +13,8 @@ export class App {
     const inputElement = event.target as HTMLInputElement | null;
     this.searchText.set(inputElement?.value ?? '');
   }
+
+  protected function(): void {
+    
+  }
 }
