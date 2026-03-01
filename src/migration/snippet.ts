@@ -1,39 +1,51 @@
-// Represents one purchasable line item in an order.
-export type OrderItem = {
-  // Display name of the item.
-  name: string;
-  // Unit price for a single item (e.g., 19.99).
-  price: number;
-  // Number of units purchased.
-  quantity: number;
-};
-
-// Represents a customer order containing multiple items.
-export type Order = {
-  // Unique order identifier.
-  id: string;
-  // All line items included in this order.
-  items: OrderItem[];
-};
-
-// Discount lookup table by code.
-// Value is the discount rate (0.1 = 10% off).
-const DISCOUNTS: Record<string, number> = {
-  SAVE10: 0.1
-};
-
-// Calculates final order total after applying an optional discount code.
-export function processOrder(order: Order, discountCode?: string): number {
-  // Sum all line items: (price * quantity) for each item.
-  const subtotal = order.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  // If a code is provided, use its rate; unknown codes default to 0.
-  // If no code is provided, discount is also 0.
-  const discountRate = discountCode ? (DISCOUNTS[discountCode] ?? 0) : 0;
-
-  // Apply discount rate to subtotal and return final total.
-  return subtotal * (1 - discountRate);
+interface Order {
+    id: string;
+    items: Array<{
+        name: string;
+        price: number;
+        quantity: number;
+    }>;
 }
+
+// 1) Resolve discount amount from the optional code.
+// 2) Compute subtotal by summing (price * quantity) for each item.
+// 3) Subtract the discount from subtotal and return the result.
+function processOrder(order: Order, discountCode?: string): number {
+    // `applyDiscount` returns a fixed amount (not a percentage).
+    const discountValue: number = applyDiscount(discountCode);
+
+    // Reduce all items into a single subtotal value
+    const subtotal: number = order.items.reduce((acc: number, item) => {
+        // Add each line total to the running accumulator
+        return acc + (item.price * item.quantity);
+    }, 0);
+
+    // Final payable total after discount is applied
+    return subtotal - discountValue;
+}
+
+// Unknown or missing codes safely resolve to 0.
+function applyDiscount(code?: string): number {
+    const codes: Record<string, number> = {
+        SAVE10: 10,
+        SAVE20: 20
+    };
+
+    // If a code exists, return mapped value; otherwise return 0.
+    // `?? 0` also protects against unknown codes.
+    return code ? (codes[code] ?? 0) : 0;
+}
+
+
+const myOrder: Order = {
+    id: "ORD-001",
+    items: [
+        { name: "Mechanical Keyboard", price: 150, quantity: 1 },
+        { name: "Type-C Cable", price: 20, quantity: 2 }
+    ]
+};
+
+// With SAVE10, final total is 190 - 10 = 180.
+console.log(processOrder(myOrder, "SAVE10")); // 180
+// Without a discount code, total remains 190.
+console.log(processOrder(myOrder));             // 190
