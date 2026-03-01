@@ -1,40 +1,39 @@
-// A simple order processor
-interface Order {
-    id: string;
-    items: Array<{
-        name: string;
-        price: number;
-        quantity: number;
-    }>;
-}
-
-function processOrder(order: Order, discountCode?: string): number {
-    const discountValue: number = applyDiscount(discountCode);
-
-    const subtotal: number = order.items.reduce((acc: number, item) => {
-        return acc + (item.price * item.quantity);
-    }, 0);
-
-    return subtotal - discountValue;
-}
-
-function applyDiscount(code?: string): number {
-    const codes: Record<string, number> = {
-        SAVE10: 10,
-        SAVE20: 20
-    };
-
-    return code ? (codes[code] ?? 0) : 0;
-}
-
-// Example usage:
-const myOrder: Order = {
-    id: "ORD-001",
-    items: [
-        { name: "Mechanical Keyboard", price: 150, quantity: 1 },
-        { name: "Type-C Cable", price: 20, quantity: 2 }
-    ]
+// Represents one purchasable line item in an order.
+export type OrderItem = {
+  // Display name of the item.
+  name: string;
+  // Unit price for a single item (e.g., 19.99).
+  price: number;
+  // Number of units purchased.
+  quantity: number;
 };
 
-console.log(processOrder(myOrder, "SAVE10")); // Works: 180
-console.log(processOrder(myOrder));             // Works: 190 (no discount applied)
+// Represents a customer order containing multiple items.
+export type Order = {
+  // Unique order identifier.
+  id: string;
+  // All line items included in this order.
+  items: OrderItem[];
+};
+
+// Discount lookup table by code.
+// Value is the discount rate (0.1 = 10% off).
+const DISCOUNTS: Record<string, number> = {
+  SAVE10: 0.1
+};
+
+// Calculates final order total after applying an optional discount code.
+export function processOrder(order: Order, discountCode?: string): number {
+  // Sum all line items: (price * quantity) for each item.
+  const subtotal = order.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  // If a code is provided, use its rate; unknown codes default to 0.
+  // If no code is provided, discount is also 0.
+  const discountRate = discountCode ? (DISCOUNTS[discountCode] ?? 0) : 0;
+
+  // Apply discount rate to subtotal and return final total.
+  return subtotal * (1 - discountRate);
+}
