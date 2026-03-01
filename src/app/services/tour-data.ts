@@ -93,3 +93,54 @@ export function summarizeTours(tours: readonly TourItem[]): TourStats {
 export const filteredToursExample: TourItem[] = filterToursByQuery(TOURS, 'salzburg');
 // Example usage of the summary helper.
 export const tourStatsExample: TourStats = summarizeTours(TOURS);
+
+
+// TASK 5 BEGINS HERE //
+
+
+// Domain variant for mode-specific behavior.
+// `mode` is the discriminator used for safe type narrowing.
+export type TravelModeDetails =
+  | {
+      mode: 'hiking';
+      averageSpeedKmH: 5;
+      terrain: 'trail' | 'mixed';
+    }
+  | {
+      mode: 'cycling';
+      averageSpeedKmH: 16;
+      bikeType: 'road' | 'city' | 'mountain';
+    }
+  | {
+      mode: 'driving';
+      averageSpeedKmH: 60;
+      fuel: 'ev' | 'gasoline' | 'diesel';
+    };
+
+// Exhaustiveness guard: compile-time protection for forgotten cases.
+function assertNever(value: never): never {
+  throw new Error(`Unhandled travel mode variant: ${JSON.stringify(value)}`);
+}
+
+// Example processor using narrowing + exhaustive switch.
+export function estimateDurationMinutes(
+  distanceKm: number,
+  details: TravelModeDetails,
+): number {
+  switch (details.mode) {
+    case 'hiking':
+      return Math.round((distanceKm / details.averageSpeedKmH) * 60);
+    case 'cycling':
+      return Math.round((distanceKm / details.averageSpeedKmH) * 60);
+    case 'driving':
+      return Math.round((distanceKm / details.averageSpeedKmH) * 60);
+    default:
+      return assertNever(details);
+  }
+}
+
+/*
+Maintainability benefit:
+- Adding a new mode forces compile errors in every switch that forgot to handle it.
+- This prevents silent runtime gaps and keeps domain logic explicit.
+*/
