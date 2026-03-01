@@ -1,14 +1,41 @@
 <main class="search-page">
-	<p class="display-text">{{ searchText() || 'Type something...' }}</p>
-
+	<!-- Search control bound to the searchText signal in App -->
 	<label for="search-input">Search</label>
 	<input
 		id="search-input"
 		type="search"
 		[value]="searchText()"
 		(input)="onSearchInput($event)"
-		placeholder="Start typing"
+		placeholder="Search tours by name or city"
 	>
-	<button onclick="function()">Submit</button>
-	<input type="text">
+
+	<!-- Live aggregate values computed from the currently filtered tours -->
+	<section aria-label="Tour statistics">
+		<h2>Summary</h2>
+		<p>Tours found: {{ filteredTourStats().count }}</p>
+		<p>Total distance: {{ filteredTourStats().totalDistanceKm }} km</p>
+		<p>Average duration: {{ filteredTourStats().averageDurationMinutes }} min</p>
+	</section>
+
+	<!-- Tour list with explicit empty-state handling -->
+	<section aria-label="Filtered tours list">
+		<h2>Tours</h2>
+		<!-- Native Angular control flow: show message when no tours match -->
+		@if (filteredTours().length === 0) {
+			<p>No tours match your search.</p>
+		} @else {
+			<ul>
+				<!-- Native Angular loop with stable identity tracking by id -->
+				@for (tour of filteredTours(); track tour.id) {
+					<li>
+						<strong>{{ tour.name }}</strong>
+						<div>From: {{ tour.from }} → To: {{ tour.to }}</div>
+						<div>
+							Distance: {{ tour.distanceKm }} km, Duration: {{ tour.durationMinutes }} min, Mode: {{ tour.mode }}
+						</div>
+					</li>
+				}
+			</ul>
+		}
+	</section>
 </main>
