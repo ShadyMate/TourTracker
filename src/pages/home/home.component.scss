@@ -1,0 +1,93 @@
+.home-container {
+    display: flex;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+  }
+  
+  .sidebar {
+    width: 350px;
+    background-color: #f8f9fa;
+    border-right: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .search-container {
+    display: flex;
+    padding: 15px;
+    gap: 10px;
+    border-bottom: 2px solid #333;
+  }
+  
+  .search-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .tours-list {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  
+  .tour-card {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 2px solid #333;
+    background: white;
+  }
+  
+  .tour-details h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+  }
+  
+  .tour-details p {
+    margin: 2px 0;
+    font-size: 0.85em;
+    color: #555;
+  }
+  
+  .tour-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+  
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2em;
+  }
+  
+  .icon-btn.large {
+    font-size: 2em;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .top-nav {
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px 30px;
+    gap: 15px;
+  }
+  
+  .map-placeholder {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #666;
+    text-align: center;
+    padding: 20px;
+  }

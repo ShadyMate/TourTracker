@@ -1,0 +1,40 @@
+<div class="home-container">
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <div class="search-container">
+      <input type="text" placeholder="Search tours..." class="search-input">
+      <button class="icon-btn">➕</button>
+      <button class="icon-btn">☰</button>
+    </div>
+
+    <div class="tours-list">
+      @for (tour of tours; track tour.name) {
+        <div class="tour-card">
+          <div class="tour-details">
+            <h4>{{ tour.name }}</h4>
+            <p>From: {{ tour.from }}</p>
+            <p>To: {{ tour.to }}</p>
+            <p>Distance: {{ tour.distance }} | Time: {{ tour.time }}</p>
+          </div>
+          <div class="tour-actions">
+            <button class="icon-btn">✏️</button>
+            <button class="icon-btn">⭐</button>
+          </div>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <header class="top-nav">
+      <button class="icon-btn large">⚙️</button>
+      <button class="icon-btn large">👤</button>
+    </header>
+    
+    <div class="map-placeholder">
+      <h2>PLACEHOLDER</h2>
+      <p>The main part of the screen will display the regional map with tours marked with pins.</p>
+    </div>
+  </main>
+</div>
