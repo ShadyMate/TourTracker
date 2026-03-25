@@ -1,24 +1,79 @@
 <div class="home-container">
   <!-- Left Sidebar -->
   <aside class="sidebar">
+    <div class="sidebar-header">
+      <h1 class="app-title">TourTracker</h1>
+    </div>
+
     <div class="search-container">
-      <input type="text" placeholder="Search tours..." class="search-input">
-      <button class="icon-btn">➕</button>
-      <button class="icon-btn">☰</button>
+      <div class="search-inner">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput(searchQuery)"
+          placeholder="Search tours..."
+          class="search-input"
+          autocomplete="off">
+        <button class="btn-add" (click)="addTour()" title="Add new tour">
+          <span class="icon">+</span>
+        </button>
+      </div>
+      <div class="results-count" *ngIf="searchQuery">
+        {{ filteredTours.length }} result<span *ngIf="filteredTours.length !== 1">s</span>
+      </div>
     </div>
 
     <div class="tours-list">
-      @for (tour of tours; track tour.name) {
-        <div class="tour-card">
+      @if (filteredTours.length === 0 && searchQuery) {
+        <div class="empty-state">
+          <p>No tours found</p>
+          <small>Try a different search or add a new tour</small>
+        </div>
+      } @else if (filteredTours.length === 0) {
+        <div class="empty-state">
+          <p>No tours yet</p>
+          <small>Create your first tour</small>
+        </div>
+      }
+
+      @for (tour of filteredTours; track tour.id) {
+        <div class="tour-card" [routerLink]="['/tour', tour.id]">
           <div class="tour-details">
-            <h4>{{ tour.name }}</h4>
-            <p>From: {{ tour.from }}</p>
-            <p>To: {{ tour.to }}</p>
-            <p>Distance: {{ tour.distance }} | Time: {{ tour.time }}</p>
+            <h4 class="tour-name">{{ tour.name }}</h4>
+            <div class="tour-info">
+              <div class="info-item">
+                <span class="label">From:</span>
+                <span class="value">{{ tour.from }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">To:</span>
+                <span class="value">{{ tour.to }}</span>
+              </div>
+              <div class="info-row">
+                <span class="distance">📍 {{ tour.distance }}</span>
+                <span class="time">⏱️ {{ tour.time }}</span>
+              </div>
+            </div>
           </div>
           <div class="tour-actions">
-            <button class="icon-btn">✏️</button>
-            <button class="icon-btn">⭐</button>
+            <button
+              class="action-btn edit-btn"
+              (click)="editTour(tour.id); $event.stopPropagation()"
+              title="Edit tour">
+              ✏️
+            </button>
+            <button
+              class="action-btn delete-btn"
+              (click)="deleteTour(tour.id); $event.stopPropagation()"
+              title="Delete tour">
+              🗑️
+            </button>
+            <button
+              class="action-btn favorite-btn"
+              (click)="toggleFavorite(tour.id); $event.stopPropagation()"
+              title="Toggle favorite">
+              ⭐
+            </button>
           </div>
         </div>
       }
@@ -28,13 +83,34 @@
   <!-- Main Content -->
   <main class="main-content">
     <header class="top-nav">
-      <button class="icon-btn large">⚙️</button>
-      <button class="icon-btn large">👤</button>
+      <nav class="nav-links">
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" class="nav-link">Home</a>
+        <a routerLink="/login" routerLinkActive="active" class="nav-link">Login</a>
+        <a routerLink="/register" routerLinkActive="active" class="nav-link">Register</a>
+      </nav>
+      <div class="nav-actions">
+        <button
+          class="action-btn settings-btn"
+          (click)="goToSettings()"
+          title="Settings"
+          routerLink="/settings">
+          ⚙️
+        </button>
+        <button
+          class="action-btn profile-btn"
+          (click)="goToProfile()"
+          title="Profile">
+          👤
+        </button>
+      </div>
     </header>
-    
+
     <div class="map-placeholder">
-      <h2>PLACEHOLDER</h2>
-      <p>The main part of the screen will display the regional map with tours marked with pins.</p>
+      <div class="placeholder-content">
+        <h2>🗺️ Tour Map</h2>
+        <p>The main area will display the regional map with tours marked with pins.</p>
+        <p class="hint">Select a tour from the sidebar to view details</p>
+      </div>
     </div>
   </main>
 </div>
