@@ -1,0 +1,110 @@
+<!-- counter.component.html -->
+<div class="container">
+  <h1>Angular Signals - Observer Pattern Demo</h1>
+
+  <!-- Display Section -->
+  <div class="display-section">
+    <h2>Signal Values (Auto-Updated)</h2>
+
+    <!-- Demonstrates reading signal values in the template -->
+    <!-- The template automatically updates when signals change -->
+    <!-- No subscription or manual change detection needed -->
+    <div class="signal-display">
+      <div class="signal-box">
+        <label>Counter (Subject State):</label>
+        <!-- Reading the signal value: {{ counter }} -->
+        <!-- This is an "observer" reading the subject's state -->
+        <span class="value">{{ counter }}</span>
+      </div>
+
+      <div class="signal-box">
+        <label>Is Even? (Computed Observer):</label>
+        <!-- This computed signal automatically recalculates when counter changes -->
+        <!-- Demonstrates auto-notification in the Observer pattern -->
+        <span class="value" [ngClass]="{ even: isEven, odd: !isEven }">
+          {{ isEven ? 'YES' : 'NO' }}
+        </span>
+      </div>
+
+      <div class="signal-box">
+        <label>Counter² (Computed Observer):</label>
+        <!-- Another computed signal observing the same subject -->
+        <!-- Demonstrates multiple observers watching one subject -->
+        <span class="value">{{ squared }}</span>
+      </div>
+
+      <div class="signal-box">
+        <label>Is Counter² Even? (Chained Observer):</label>
+        <!-- This observer depends on squaredValue (computed), which depends on counter -->
+        <!-- Shows how updates automatically propagate through the dependency chain -->
+        <span class="value" [ngClass]="{ even: isEvenSquare, odd: !isEvenSquare }">
+          {{ isEvenSquare ? 'YES' : 'NO' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Control Section -->
+  <div class="control-section">
+    <h2>Update Subject (Notify Observers)</h2>
+
+    <!-- Control buttons that update the subject signal -->
+    <!-- When clicked, these trigger UPDATE PROPAGATION -->
+    <!-- All observers (computed, effects, template) automatically update -->
+    <div class="button-group">
+      <button class="btn btn-increment" (click)="increment()">
+        Increment (+1)
+      </button>
+      <button class="btn btn-decrement" (click)="decrement()">
+        Decrement (-1)
+      </button>
+      <button class="btn btn-reset" (click)="reset()">
+        Reset (0)
+      </button>
+    </div>
+
+    <div class="custom-input">
+      <label>Set Custom Value:</label>
+      <input
+        type="number"
+        #customValue
+        placeholder="Enter a number"
+        (keyup.enter)="setCustomValue(+customValue.value)"
+      />
+      <button class="btn btn-set" (click)="setCustomValue(+customValue.value)">
+        Set Value
+      </button>
+    </div>
+  </div>
+
+  <!-- Explanation Section -->
+  <div class="explanation-section">
+    <h2>Observer Pattern in Angular Signals</h2>
+    <div class="explanation-box">
+      <h3>Components:</h3>
+      <ul>
+        <li>
+          <strong>Subject (counterSignal):</strong> The signal in CounterService holds mutable state.
+          When it changes, all observers are automatically notified.
+        </li>
+        <li>
+          <strong>Observers (computed signals, effects, template):</strong> They watch the subject
+          and automatically react to changes.
+        </li>
+        <li>
+          <strong>Update Propagation:</strong> When increment() is clicked, the signal updates and
+          automatically notifies all dependents. Check console for the effects.
+        </li>
+      </ul>
+      <h3>How It Works:</h3>
+      <ol>
+        <li>Component reads signals in the template: <code>{{ counter }}</code></li>
+        <li>Angular tracks these "reads" as dependencies</li>
+        <li>When signal value changes, Angular knows which parts depend on it</li>
+        <li>Only affected observers (computed, effects, template) update</li>
+        <li>No zone.js-based change detection needed - fine-grained reactivity!</li>
+      </ol>
+      <p><strong>Check the browser console to see effects running automatically!</strong></p>
+    </div>
+  </div>
+</div>
