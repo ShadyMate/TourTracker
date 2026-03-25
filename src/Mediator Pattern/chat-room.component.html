@@ -1,0 +1,196 @@
+<!-- chat-room.component.html -->
+<div class="chat-container">
+  <h1>Mediator Pattern Demo - Chat Room</h1>
+
+  <!-- EXPLANATION SECTION -->
+  <div class="explanation-section">
+    <div class="explanation-box">
+      <h2>The Mediator Pattern in Angular Templates</h2>
+      <p>
+        The <strong>Mediator Pattern</strong> defines an object (the mediator/component) that controls how a set of
+        objects interact. Instead of objects communicating directly with each other, they communicate through the
+        mediator.
+      </p>
+      <h3>In This Example:</h3>
+      <ul>
+        <li><strong>Colleagues:</strong> UI elements (input field, buttons, message list, user list, displays)</li>
+        <li><strong>Mediator:</strong> The ChatRoomComponent (click to see component code for details)</li>
+        <li>
+          <strong>Communication:</strong> Input -> Component -> Output (not direct element-to-element communication)
+        </li>
+      </ul>
+      <p>
+        This maintains loose coupling and makes the code easy to extend. New UI elements can be added without
+        modifying existing ones!
+      </p>
+    </div>
+  </div>
+
+  <!-- MAIN CHAT INTERFACE -->
+  <div class="chat-interface">
+    <!-- LEFT SIDEBAR: USERS LIST (COLLEAGUE #4) -->
+    <div class="users-panel">
+      <h3>
+        Users
+        <span class="user-count">({{ onlineUserCount }}/{{ users.length }})</span>
+      </h3>
+
+      <!-- COLLEAGUE #4: User List -->
+      <!-- These users interact through the component mediator -->
+      <!-- When clicked, they trigger selectUser() which updates component state -->
+      <!-- Other UI elements (message sender, message display) respond to this selection -->
+      <!-- NO DIRECT COMMUNICATION between user list and other elements! -->
+      <ul class="user-list">
+        @for (user of users; track user.id) {
+          <li
+            class="user-item"
+            [class.selected]="selectedUserId === user.id"
+            [class.offline]="!user.isOnline"
+            (click)="selectUser(user.id)"
+            (contextmenu)="toggleUserStatus(user.id, $event)"
+          >
+            <span class="status-dot" [style.background-color]="user.color"></span>
+            <span class="user-name">{{ user.name }}</span>
+            <span class="online-badge" *ngIf="user.isOnline">●</span>
+            <span class="offline-badge" *ngIf="!user.isOnline">○</span>
+          </li>
+        }
+      </ul>
+
+      <!-- HINT -->
+      <p class="hint">Right-click a user to toggle online status</p>
+    </div>
+
+    <!-- RIGHT SIDE: CHAT AREA -->
+    <div class="chat-area">
+      <!-- HEADER: Shows selected user and message count -->
+      <div class="chat-header">
+        <h3>Chat with {{ selectedUserName }}</h3>
+        <span class="message-badge"
+          >Total Messages:
+          <!-- COLLEAGUE: Message Count (updated by mediator when messages change) -->
+          <span class="count">{{ messageCount }}</span></span
+        >
+      </div>
+
+      <!-- MESSAGES DISPLAY (COLLEAGUE #3) -->
+      <!-- Messages list updated when:-->
+      <!-- 1. sendMessage() is called (triggered by send button)-->
+      <!-- 2. deleteMessage() is called (triggered by delete button)-->
+      <!-- All through the component MEDIATOR, not direct communication! -->
+      <div class="messages-display">
+        @if (messages.length === 0) {
+          <div class="no-messages">No messages yet. Start a conversation!</div>
+        }
+
+        @for (message of messages; track message.id) {
+          <div class="message" [style.border-left-color]="message.color">
+            <div class="message-header">
+              <strong class="username" [style.color]="message.color">{{ message.username }}</strong>
+              <span class="timestamp">{{ formatTime(message.timestamp) }}</span>
+              <!-- Delete button: Updates message list through mediator -->
+              <button class="delete-btn" (click)="deleteMessage(message.id)" title="Delete message">✕</button>
+            </div>
+            <div class="message-content">{{ message.content }}</div>
+          </div>
+        }
+      </div>
+
+      <!-- TYPING INDICATOR (COLLEAGUE #2) -->
+      <!-- Shows when user is typing in the input field -->
+      <!-- Updated automatically when messageInput changes -->
+      <!-- NO DIRECT COMMUNICATION between input field and typing indicator! -->
+      @if (isTyping) {
+        <div class="typing-indicator">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          <span class="typing-text">Typing...</span>
+        </div>
+      }
+
+      <!-- INPUT AND SEND AREA -->
+      <div class="input-area">
+        <!-- COLLEAGUE #1: Message Input Field -->
+        <!-- When user types, triggers onMessageInput() which:-->
+        <!-- 1. Updates isTyping (Colleague #2)-->
+        <!-- 2. Updates messageInput state-->
+        <!-- Input Field -> Mediator -> Typing Indicator Update -->
+        <input
+          type="text"
+          class="message-input"
+          [(ngModel)]="messageInput"
+          (input)="onMessageInput()"
+          (keyup.enter)="sendMessage()"
+          placeholder="Type a message..."
+        />
+
+        <!-- COLLEAGUE: Send Button -->
+        <!-- When clicked, triggers sendMessage() which:-->
+        <!-- 1. Creates new message (updates messages list - Colleague #3)-->
+        <!-- 2. Clears input field (Colleague #1)-->
+        <!-- 3. Resets typing indicator (Colleague #2)-->
+        <!-- 4. Updates message count-->
+        <!-- Send Button -> Mediator -> Multiple colleagues updated! -->
+        <button
+          class="send-btn"
+          (click)="sendMessage()"
+          [disabled]="!messageInput.trim()"
+          title="Send message or press Enter"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PATTERN EXPLANATION SECTION -->
+  <div class="pattern-explanation">
+    <h2>How the Mediator Pattern Works Here</h2>
+
+    <div class="flow-diagram">
+      <h3>Data Flow Through the Mediator:</h3>
+
+      <div class="flow-item">
+        <h4>1. Typing Detection</h4>
+        <p><strong>Input Field</strong> (Colleague #1)</p>
+        <div class="arrow">↓</div>
+        <p><strong>Component.onMessageInput()</strong> (Mediator)</p>
+        <div class="arrow">↓</div>
+        <p><strong>Typing Indicator</strong> (Colleague #2) Updates</p>
+        <p class="explanation">Input field doesn't know about typing indicator. Component coordinates.</p>
+      </div>
+
+      <div class="flow-item">
+        <h4>2. Message Sending</h4>
+        <p><strong>Send Button</strong> (Colleague)</p>
+        <div class="arrow">↓</div>
+        <p><strong>Component.sendMessage()</strong> (Mediator)</p>
+        <div class="arrow">↓</div>
+        <p>
+          <strong>Multiple Updates:</strong> Messages List + Input Field + Typing Indicator + Count Badge
+        </p>
+        <p class="explanation">Button doesn't communicate with messages, input, or indicators. Mediator handles all!</p>
+      </div>
+
+      <div class="flow-item">
+        <h4>3. User Selection</h4>
+        <p><strong>User List Item Click</strong> (Colleague #4)</p>
+        <div class="arrow">↓</div>
+        <p><strong>Component.selectUser()</strong> (Mediator)</p>
+        <div class="arrow">↓</div>
+        <p><strong>Chat Header + Message Display Update</strong></p>
+        <p class="explanation">User list doesn't know what displays will change. Mediator controls it.</p>
+      </div>
+    </div>
+
+    <div class="benefits-box">
+      <h3>Benefits of the Mediator Pattern:</h3>
+      <ul>
+        <li><strong>Loose Coupling:</strong> UI elements don't depend on each other</li>
+        <li><strong>Centralized Logic:</strong> All interactions managed in the component</li>
+        <li><strong>Easy to Extend:</strong> You can add new UI elements without modifying existing ones</li>
+        <li><strong>Single Responsibility:</strong> Each element focuses on its own responsibility</li>
+        <li><strong>Testable:</strong> Easy to test component logic in isolation</li>
+      </ul>
+    </div>
+  </div>
+</div>

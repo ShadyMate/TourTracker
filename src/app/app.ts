@@ -2,12 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BookListComponent } from '../MVVM/book-list.component';
 import { CounterComponent } from '../Observer Pattern/counter.component';
+import { ChatRoomComponent } from '../Mediator Pattern/chat-room.component';
 
 // App: Root standalone component
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, BookListComponent, CounterComponent],
+  imports: [CommonModule, BookListComponent, CounterComponent, ChatRoomComponent],
   template: `
     <div class="app-container">
       <nav class="app-nav">
@@ -22,6 +23,10 @@ import { CounterComponent } from '../Observer Pattern/counter.component';
         <section class="demo-section">
           <h2>2. Observer Pattern (Angular Signals)</h2>
           <app-counter></app-counter>
+        </section>
+        <section class="demo-section">
+          <h2>3. Mediator Pattern (Angular Templates)</h2>
+          <app-chat-room></app-chat-room>
         </section>
       </div>
     </div>
