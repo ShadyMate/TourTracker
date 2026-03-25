@@ -1,0 +1,407 @@
+.account-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: background 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  :host-context(.dark-mode) & {
+    background: #2d2d44;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .back-btn {
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.2s ease;
+
+    :host-context(.dark-mode) & {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #e0e0e0;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      transform: translateX(-2px);
+
+      :host-context(.dark-mode) & {
+        background: rgba(255, 255, 255, 0.05);
+      }
+    }
+  }
+
+  h1 {
+    flex: 1;
+    margin: 0;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    color: #222;
+
+    :host-context(.dark-mode) & {
+      color: #e0e0e0;
+    }
+  }
+
+  .spacer {
+    width: auto;
+  }
+}
+
+.account-content {
+  flex: 1;
+  padding: 40px 32px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+// ============ PROFILE CARD ============
+.profile-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+
+  :host-context(.dark-mode) & {
+    background: #2d2d44;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    padding: 32px 24px;
+    text-align: center;
+  }
+}
+
+.profile-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  text-align: left;
+
+  @media (max-width: 600px) {
+    text-align: center;
+  }
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #222;
+
+    :host-context(.dark-mode) & {
+      color: #e0e0e0;
+    }
+  }
+
+  .username {
+    margin: 0 0 4px;
+    font-size: 14px;
+    color: #667eea;
+    font-weight: 600;
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+    }
+  }
+
+  .email {
+    margin: 0;
+    font-size: 13px;
+    color: #999;
+
+    :host-context(.dark-mode) & {
+      color: #aaa;
+    }
+  }
+}
+
+// ============ INFO CARD ============
+.info-card,
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: #2d2d44;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+  h3 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+
+    :host-context(.dark-mode) & {
+      color: #e0e0e0;
+    }
+  }
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+
+  :host-context(.dark-mode) & {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #667eea;
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+    }
+  }
+
+  .value {
+    font-size: 13px;
+    color: #666;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    :host-context(.dark-mode) & {
+      color: #e0e0e0;
+    }
+
+    &.mono {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+    }
+  }
+}
+
+// ============ CARD LINK ============
+.card-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 0;
+  transition: all 0.2s ease;
+  text-align: left;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  .icon {
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  .card-text {
+    flex: 1;
+
+    strong {
+      display: block;
+      color: #222;
+      font-size: 15px;
+      margin-bottom: 2px;
+
+      :host-context(.dark-mode) & {
+        color: #e0e0e0;
+      }
+    }
+
+    p {
+      margin: 0;
+      font-size: 12px;
+      color: #999;
+
+      :host-context(.dark-mode) & {
+        color: #aaa;
+      }
+    }
+  }
+
+  .arrow {
+    font-size: 20px;
+    color: #667eea;
+    flex-shrink: 0;
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+    }
+  }
+}
+
+// ============ DANGER CARD ============
+.danger-card {
+  background: rgba(255, 76, 76, 0.05);
+  border: 1px solid rgba(255, 76, 76, 0.2);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+
+  :host-context(.dark-mode) & {
+    background: rgba(255, 76, 76, 0.08);
+    border-color: rgba(255, 76, 76, 0.3);
+  }
+
+  h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #ff4c4c;
+
+    :host-context(.dark-mode) & {
+      color: #ff6b6b;
+    }
+  }
+}
+
+.warning-text {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #ff4c4c;
+
+  :host-context(.dark-mode) & {
+    color: #ff6b6b;
+  }
+}
+
+// ============ BUTTONS ============
+.btn {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &.btn-danger {
+    background: #ff4c4c;
+    color: white;
+
+    &:hover {
+      background: #ff2020;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 76, 76, 0.4);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: #999;
+
+  :host-context(.dark-mode) & {
+    color: #aaa;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+  }
+}
+
+// ============ RESPONSIVE ============
+@media (max-width: 768px) {
+  .account-header {
+    padding: 16px 20px;
+
+    h1 {
+      font-size: 22px;
+    }
+  }
+
+  .account-content {
+    padding: 24px 16px;
+  }
+
+  .profile-card {
+    flex-direction: column;
+    padding: 32px 20px;
+    margin-bottom: 16px;
+
+    .profile-info {
+      text-align: center;
+      width: 100%;
+    }
+  }
+
+  .info-card,
+  .card {
+    padding: 20px;
+    margin-bottom: 16px;
+
+    h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+  }
+
+  .danger-card {
+    padding: 20px;
+    margin-top: 16px;
+  }
+}

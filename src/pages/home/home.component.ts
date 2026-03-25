@@ -1,8 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
+/**
+ * Home Component
+ * Main page of the TourTracker application with tour list and search functionality
+ */
 interface Tour {
   id: string;
   name: string;
@@ -19,7 +24,7 @@ interface Tour {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   tours: Tour[] = [
     { id: '1', name: 'My first Route', from: 'FH Technikum', to: 'Mt. Everest', distance: '8300km', time: '60d' },
     { id: '2', name: 'Alpine Hike', from: 'Innsbruck', to: 'Zugspitze', distance: '45km', time: '12h' },
@@ -29,6 +34,20 @@ export class HomeComponent {
 
   searchQuery: string = '';
   filteredTours: Tour[] = this.tours;
+  isLoggedIn = false;
+
+  constructor(private authService: AuthService, private router: Router) {
+    // Check if user is logged in
+    this.isLoggedIn = this.authService.isUserAuthenticated()();
+  }
+
+  ngOnInit() {
+    // Initialize dark mode from auth service
+    this.authService.initializeDarkMode();
+
+    // Save tours to sessionStorage for tour details page
+    sessionStorage.setItem('tours', JSON.stringify(this.tours));
+  }
 
   onSearchInput(value: string): void {
     this.searchQuery = value.toLowerCase();
@@ -48,24 +67,13 @@ export class HomeComponent {
   }
 
   addTour(): void {
-    if (this.searchQuery.trim()) {
-      const newTour: Tour = {
-        id: Date.now().toString(),
-        name: this.searchQuery,
-        from: '',
-        to: '',
-        distance: '',
-        time: ''
-      };
-      this.tours.unshift(newTour);
-      this.searchQuery = '';
-      this.filteredTours = this.tours;
-    }
+    // Navigate to tour creation page
+    this.router.navigate(['/tour', 'new']);
   }
 
   editTour(tourId: string): void {
-    console.log('Edit tour:', tourId);
-    // Navigate to tour details or edit mode
+    // Navigate to tour details for editing
+    this.router.navigate(['/tour', tourId]);
   }
 
   deleteTour(tourId: string): void {
@@ -79,10 +87,15 @@ export class HomeComponent {
   }
 
   goToSettings(): void {
-    // Will navigate to settings page
+    this.router.navigate(['/settings']);
   }
 
   goToProfile(): void {
-    // Will navigate to profile page
+    // If logged in, go to account page; otherwise go to login/register
+    if (this.isLoggedIn) {
+      this.router.navigate(['/account']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 }

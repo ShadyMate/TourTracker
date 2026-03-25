@@ -1,0 +1,90 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <!-- Header -->
+    <div class="auth-header">
+      <h1>TourTracker</h1>
+      <p class="subtitle">{{ isLoginMode ? 'Welcome Back' : 'Join Our Community' }}</p>
+    </div>
+
+    <!-- Error Message -->
+    @if (error) {
+      <div class="error-message">
+        <span class="error-icon">⚠️</span>
+        {{ error }}
+      </div>
+    }
+
+    <!-- Form -->
+    <form (ngSubmit)="submit()" class="auth-form">
+      <!-- Register Only Fields -->
+      @if (!isLoginMode) {
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            type="text"
+            id="firstName"
+            [(ngModel)]="firstName"
+            name="firstName"
+            placeholder="John"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            type="text"
+            id="lastName"
+            [(ngModel)]="lastName"
+            name="lastName"
+            placeholder="Doe"
+            required>
+        </div>
+      }
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="your@email.com"
+          required>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required>
+        @if (!isLoginMode) {
+          <small class="password-hint">At least 6 characters</small>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="submit-btn" [disabled]="loading">
+        @if (loading) {
+          <span class="loading-spinner"></span>
+          {{ isLoginMode ? 'Logging in...' : 'Creating Account...' }}
+        } @else {
+          {{ isLoginMode ? 'Login' : 'Create Account' }}
+        }
+      </button>
+    </form>
+
+    <!-- Toggle Link -->
+    <div class="auth-footer">
+      <p>{{ isLoginMode ? "Don't have an account?" : 'Already have an account?' }}</p>
+      <button type="button" class="toggle-link" (click)="toggleMode()">
+        {{ isLoginMode ? 'Sign Up' : 'Login' }}
+      </button>
+    </div>
+  </div>
+</div>

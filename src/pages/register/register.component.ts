@@ -1,19 +1,17 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
+// Register page redirects to login component
+// The login/register functionality is unified in the login component
+// This component navigates to /login which displays the login component
 @Component({
   selector: 'app-register',
   standalone: true,
-  template: `
-    <div class="page-container">
-      <h1>Register</h1>
-      <p>Register page - Coming soon!</p>
-    </div>
-  `,
-  styles: [`
-    .page-container {
-      padding: 40px 20px;
-      text-align: center;
-    }
-  `]
+  template: ''
 })
-export class RegisterComponent {}
+export class RegisterComponent {
+  constructor(private router: Router) {
+    this.router.navigate(['/login']);
+  }
+}
+

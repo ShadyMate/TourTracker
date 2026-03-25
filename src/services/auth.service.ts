@@ -7,6 +7,7 @@ import { User } from '../models/user.model';
 export class AuthService {
   private currentUser = signal<User | null>(null);
   private isAuthenticated = signal(false);
+  private isDarkMode = signal<boolean>(this.loadDarkModePreference());
 
   getCurrentUser() {
     return this.currentUser.asReadonly();
@@ -14,6 +15,10 @@ export class AuthService {
 
   isUserAuthenticated() {
     return this.isAuthenticated.asReadonly();
+  }
+
+  getDarkMode() {
+    return this.isDarkMode.asReadonly();
   }
 
   login(email: string, password: string) {
@@ -46,5 +51,43 @@ export class AuthService {
     this.currentUser.set(user);
     this.isAuthenticated.set(true);
     return user;
+  }
+
+  toggleDarkMode() {
+    const newValue = !this.isDarkMode();
+    this.isDarkMode.set(newValue);
+    this.saveDarkModePreference(newValue);
+    this.applyDarkMode(newValue);
+  }
+
+  setDarkMode(isDark: boolean) {
+    this.isDarkMode.set(isDark);
+    this.saveDarkModePreference(isDark);
+    this.applyDarkMode(isDark);
+  }
+
+  private applyDarkMode(isDark: boolean) {
+    if (isDark) {
+      document.documentElement.classList.add('dark-mode');
+    } else {
+      document.documentElement.classList.remove('dark-mode');
+    }
+  }
+
+  private saveDarkModePreference(isDark: boolean) {
+    localStorage.setItem('darkMode', isDark.toString());
+  }
+
+  private loadDarkModePreference(): boolean {
+    const saved = localStorage.getItem('darkMode');
+    if (saved !== null) {
+      return saved === 'true';
+    }
+    // Default to system preference
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+
+  initializeDarkMode() {
+    this.applyDarkMode(this.isDarkMode());
   }
 }

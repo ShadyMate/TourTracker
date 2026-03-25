@@ -1,0 +1,88 @@
+<div class="settings-container">
+  <!-- Header -->
+  <header class="settings-header">
+    <button class="back-btn" (click)="goBack()">← Back to Home</button>
+    <h1>Settings</h1>
+    <div class="spacer"></div>
+  </header>
+
+  <!-- Settings Content -->
+  <main class="settings-content">
+    <div class="settings-card">
+      <h2>Appearance</h2>
+
+      <!-- Dark Mode Toggle -->
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Dark Mode</h3>
+          <p>Switch to dark theme for reduced eye strain</p>
+        </div>
+        <div class="setting-control">
+          <button
+            class="toggle-switch"
+            [class.active]="isDarkMode"
+            (click)="toggleDarkMode()"
+            [attr.aria-label]="isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'">
+            <span class="toggle-circle"></span>
+          </button>
+          <span class="toggle-label">{{ isDarkMode ? 'ON' : 'OFF' }}</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Theme Preview -->
+      <div class="theme-preview">
+        <h3>Theme Preview</h3>
+        <div class="preview-grid">
+          <div class="preview-card light-preview" [class.active]="!isDarkMode">
+            <div class="preview-header">Light</div>
+            <div class="preview-content">
+              <div class="preview-line"></div>
+              <div class="preview-line short"></div>
+            </div>
+          </div>
+          <div class="preview-card dark-preview" [class.active]="isDarkMode">
+            <div class="preview-header">Dark</div>
+            <div class="preview-content">
+              <div class="preview-line"></div>
+              <div class="preview-line short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Settings Section -->
+    <div class="settings-card">
+      <h2>General</h2>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>About TourTracker</h3>
+          <p>Version 1.0.0</p>
+        </div>
+        <div class="setting-control">
+          <span class="version-badge">v1.0</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Help & Support</h3>
+          <p>Get help with TourTracker</p>
+        </div>
+        <button class="link-btn">Learn More →</button>
+      </div>
+    </div>
+
+    <!-- Accessibility Info -->
+    <div class="info-section">
+      <p class="info-text">
+        💡 The dark mode setting is saved locally on your device and will persist across sessions.
+      </p>
+    </div>
+  </main>
+</div>

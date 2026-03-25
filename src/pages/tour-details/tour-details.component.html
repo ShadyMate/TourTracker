@@ -1,0 +1,273 @@
+<div class="tour-details-container" *ngIf="tour">
+  <!-- Header Navigation -->
+  <header class="details-header">
+    <button class="back-btn" (click)="goBack()" title="Back to home">← Back</button>
+    <h1>{{ tour.name || 'New Tour' }}</h1>
+    <div class="header-actions">
+      <button class="icon-btn favorite-btn" (click)="toggleFavorite()" [class.active]="tour.isFavorite" title="Toggle favorite">
+        ⭐
+      </button>
+      <button class="btn btn-primary" (click)="toggleEdit()">
+        {{ isEditing ? 'Save' : 'Edit' }}
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Grid -->
+  <div class="details-layout">
+    <!-- Left Panel: Tour Info -->
+    <aside class="details-panel">
+      @if (isEditing) {
+        <!-- Edit Mode Form -->
+        <form class="edit-form">
+          <div class="form-group">
+            <label>Tour Name</label>
+            <input type="text" [(ngModel)]="tourForm.name" name="name" placeholder="Enter tour name">
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="tourForm.description" name="description" placeholder="Tour description" rows="3"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Starting Point</label>
+              <input type="text" [(ngModel)]="tourForm.startPoint" name="startPoint">
+            </div>
+            <div class="form-group">
+              <label>Destination</label>
+              <input type="text" [(ngModel)]="tourForm.endPoint" name="endPoint">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Distance (km)</label>
+              <input type="number" [(ngModel)]="tourForm.distance" name="distance">
+            </div>
+            <div class="form-group">
+              <label>Estimated Time</label>
+              <input type="text" [(ngModel)]="tourForm.estimatedTime" name="estimatedTime" placeholder="e.g., 2h 30m">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Transport Type</label>
+              <select [(ngModel)]="tourForm.transportType" name="transportType">
+                <option *ngFor="let type of transportTypes" [value]="type">
+                  {{ type | titlecase }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Elevation Up (m)</label>
+              <input type="number" [(ngModel)]="tourForm.elevationUp" name="elevationUp">
+            </div>
+            <div class="form-group">
+              <label>Elevation Down (m)</label>
+              <input type="number" [(ngModel)]="tourForm.elevationDown" name="elevationDown">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Difficulty (1-10)</label>
+            <input type="range" min="1" max="10" [(ngModel)]="tourForm.difficulty" name="difficulty">
+            <span class="difficulty-value">{{ tourForm.difficulty }}/10</span>
+          </div>
+
+          <div class="form-group checkbox">
+            <input type="checkbox" id="childFriendly" [(ngModel)]="tourForm.childFriendly" name="childFriendly">
+            <label for="childFriendly">Child Friendly</label>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+            <button type="button" class="btn btn-primary" (click)="saveTour()">Save Tour</button>
+          </div>
+        </form>
+      } @else {
+        <!-- View Mode -->
+        <div class="tour-info">
+          <div class="info-header">
+            <div>
+              <h3>{{ tour.name }}</h3>
+              <p class="info-text">{{ tour.description }}</p>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>📍 Route</h4>
+            <p class="info-item">
+              <span class="label">From:</span>
+              <span class="value">{{ tour.startPoint }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">To:</span>
+              <span class="value">{{ tour.endPoint }}</span>
+            </p>
+          </div>
+
+          <div class="info-section">
+            <h4>📊 Stats</h4>
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-label">Distance</span>
+                <span class="stat-value">{{ tour.distance }}km</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Time</span>
+                <span class="stat-value">{{ tour.estimatedTime }}</span>
+              </div>
+            </div>
+
+            <div class="elevation-info">
+              <div class="elevation-item">
+                <span>⬆️ {{ tour.elevationUp }}m</span>
+              </div>
+              <div class="elevation-item">
+                <span>⬇️ {{ tour.elevationDown }}m</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-section">
+            <h4>⚙️ Details</h4>
+            <p class="info-item">
+              <span class="label">Type:</span>
+              <span class="value">{{ tour.transportType | titlecase }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Difficulty:</span>
+              <span class="value">{{ tour.difficulty }}/10</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Rating:</span>
+              <span class="value">
+                @for (star of getRatingStars(tour.rating); track $index) {
+                  <span class="star" [class.filled]="star">⭐</span>
+                }
+              </span>
+            </p>
+            @if (tour.childFriendly) {
+              <p class="info-item">
+                <span class="badge">👧 Child Friendly</span>
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </aside>
+
+    <!-- Right Panel: Map and Logs -->
+    <main class="details-main">
+      <!-- Map Placeholder -->
+      <div class="map-section">
+        <div class="map-placeholder">
+          <div class="placeholder-content">
+            <h3>🗺️ Tour Map</h3>
+            <p>Interactive map with route visualization will be displayed here</p>
+            @if (tour.elevationUp > 0 || tour.elevationDown > 0) {
+              <div class="elevation-chart">
+                <p class="chart-title">📈 Elevation Profile</p>
+                <div class="chart-placeholder">Height data visualization</div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tour Logs Section -->
+      <section class="logs-section">
+        <div class="logs-header">
+          <h2>📋 Tour Log</h2>
+          @if (!showLogForm) {
+            <button class="btn btn-small btn-primary" (click)="showLogForm = true">
+              + Add Log Entry
+            </button>
+          }
+        </div>
+
+        <!-- Add New Log Form -->
+        @if (showLogForm) {
+          <form class="log-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date</label>
+                <input type="date" [(ngModel)]="newLog.date" name="logDate">
+              </div>
+              <div class="form-group">
+                <label>Start Time</label>
+                <input type="time" [(ngModel)]="newLog.startTime" name="startTime">
+              </div>
+              <div class="form-group">
+                <label>End Time</label>
+                <input type="time" [(ngModel)]="newLog.endTime" name="endTime">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Actual Distance (km)</label>
+                <input type="number" [(ngModel)]="newLog.actualDistance" name="actualDistance">
+              </div>
+              <div class="form-group">
+                <label>Difficulty (1-10)</label>
+                <input type="number" min="1" max="10" [(ngModel)]="newLog.difficulty" name="logDifficulty">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea [(ngModel)]="newLog.notes" name="logNotes" placeholder="Additional notes about this tour" rows="3"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" (click)="showLogForm = false">Cancel</button>
+              <button type="button" class="btn btn-primary" (click)="addLog()">Save Log Entry</button>
+            </div>
+          </form>
+        }
+
+        <!-- Logs List -->
+        <div class="logs-list">
+          @if (tour.logs && tour.logs.length > 0) {
+            @for (log of tour.logs; track log.id) {
+              <div class="log-entry">
+                <div class="log-header">
+                  <div class="log-meta">
+                    <span class="log-date">📅 {{ formatDate(log.date) }}</span>
+                    <span class="log-time">⏱️ {{ log.startTime }} - {{ log.endTime }} ({{ log.totalTime }})</span>
+                  </div>
+                  <button class="delete-btn" (click)="deleteLog(log.id)" title="Delete log entry">🗑️</button>
+                </div>
+                <div class="log-details">
+                  <span class="log-item">📍 {{ log.actualDistance }}km</span>
+                  <span class="log-item">⚙️ Difficulty: {{ log.difficulty }}/10</span>
+                  <span class="log-item" *ngIf="log.rating > 0">⭐ {{ log.rating }}/5</span>
+                </div>
+                @if (log.notes) {
+                  <p class="log-notes">{{ log.notes }}</p>
+                }
+              </div>
+            }
+          } @else {
+            <div class="empty-state">
+              <p>No log entries yet. Start logging your tour!</p>
+            </div>
+          }
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+@if (!tour) {
+  <div class="loading-state">
+    <p>Loading tour...</p>
+  </div>
+}
