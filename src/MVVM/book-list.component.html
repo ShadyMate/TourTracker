@@ -1,0 +1,49 @@
+<!-- book-list.component.html -->
+<div class="container">
+  <h1>Book Collection</h1>
+
+  <!-- View: Display data from ViewModel -->
+  <div class="stats">
+    <p><strong>Total Books:</strong> {{ books.length }}</p>
+    <p><strong>Average Pages:</strong> {{ averagePages | number: '1.0-0' }}</p>
+  </div>
+
+  <!-- View: Two-way binding form (View ↔ ViewModel) -->
+  <div class="add-book-form">
+    <h2>Add a New Book</h2>
+    <input
+      type="text"
+      placeholder="Title"
+      [(ngModel)]="newBookTitle"
+      (keyup.enter)="addNewBook()"
+    />
+    <input
+      type="text"
+      placeholder="Author"
+      [(ngModel)]="newBookAuthor"
+      (keyup.enter)="addNewBook()"
+    />
+    <input
+      type="number"
+      placeholder="Pages"
+      [(ngModel)]="newBookPages"
+      (keyup.enter)="addNewBook()"
+    />
+    <button (click)="addNewBook()">Add Book</button>
+  </div>
+
+  <!-- View: Display model data with structural directive -->
+  <div class="books-list">
+    <h2>Books</h2>
+    <div *ngIf="books.length === 0" class="no-books">
+      No books yet. Add one!
+    </div>
+    <ul *ngIf="books.length > 0">
+      <!-- *ngFor: structural directive that loops through ViewModel data -->
+      <li *ngFor="let book of books; trackBy: trackByBookId">
+        <strong>{{ book.title }}</strong> by {{ book.author }}
+        ({{ book.pages }} pages)
+      </li>
+    </ul>
+  </div>
+</div>

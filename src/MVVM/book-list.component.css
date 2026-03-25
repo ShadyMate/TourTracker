@@ -1,0 +1,48 @@
+/* book-list.component.css */
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+}
+
+.add-book-form {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin: 20px 0;
+  border-radius: 4px;
+}
+
+.add-book-form input {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.add-book-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.books-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.books-list li {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+}
+
+.no-books {
+  color: #999;
+  font-style: italic;
+}
