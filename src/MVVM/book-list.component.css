@@ -1,10 +1,14 @@
 /* book-list.component.css */
+/* MVVM Pattern styling: Purely presentational, no business logic */
+
+/* Main container: Centers content and sets max width */
 .container {
   max-width: 600px;
   margin: 20px auto;
   font-family: Arial, sans-serif;
 }
 
+/* Form styling: Where user inputs new books */
 .add-book-form {
   border: 1px solid #ddd;
   padding: 15px;
@@ -12,6 +16,7 @@
   border-radius: 4px;
 }
 
+/* Form inputs: All input fields displayed as full-width blocks */
 .add-book-form input {
   display: block;
   width: 100%;
@@ -21,6 +26,7 @@
   border-radius: 3px;
 }
 
+/* Form submit button: Styled with blue background for visibility */
 .add-book-form button {
   background-color: #007bff;
   color: white;
@@ -30,11 +36,13 @@
   cursor: pointer;
 }
 
+/* Books list: Removes default list styling for cleaner display */
 .books-list ul {
   list-style: none;
   padding: 0;
 }
 
+/* Individual book items: Light gray background for visual separation */
 .books-list li {
   padding: 10px;
   margin: 5px 0;
@@ -42,6 +50,7 @@
   border-radius: 3px;
 }
 
+/* Empty state: Shows message when no books exist */
 .no-books {
   color: #999;
   font-style: italic;

@@ -1,5 +1,7 @@
 /* counter.component.css */
+/* Observer Pattern styling: Visual display of signal values and controls */
 
+/* Main container: Purple gradient background with full viewport height */
 .container {
   max-width: 900px;
   margin: 0 auto;
@@ -10,6 +12,7 @@
   border-radius: 8px;
 }
 
+/* Page title: Large white text for main heading */
 h1 {
   color: white;
   text-align: center;
@@ -18,6 +21,7 @@ h1 {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Section titles: White with underline */
 h2 {
   color: white;
   margin-top: 30px;
@@ -27,13 +31,14 @@ h2 {
   padding-bottom: 10px;
 }
 
+/* Subsection titles: Purple text */
 h3 {
   color: #667eea;
   margin-top: 15px;
   margin-bottom: 10px;
 }
 
-/* Display Section */
+/* Display Section: White background for signal display area */
 .display-section {
   background: white;
   padding: 30px;
@@ -42,6 +47,7 @@ h3 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Signal grid: Responsive layout showing signal boxes side by side */
 .signal-display {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -49,6 +55,7 @@ h3 {
   margin-top: 20px;
 }
 
+/* Individual signal box: Displays one signal value with label */
 .signal-box {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 20px;
@@ -58,10 +65,12 @@ h3 {
   transition: transform 0.2s ease;
 }
 
+/* Signal box hover: Lifts up when user hovers */
 .signal-box:hover {
   transform: translateY(-5px);
 }
 
+/* Signal box label: Title of what the signal represents */
 .signal-box label {
   display: block;
   font-weight: bold;
@@ -70,6 +79,7 @@ h3 {
   font-size: 0.9em;
 }
 
+/* Signal value: Large number display showing current signal state */
 .signal-box .value {
   display: block;
   font-size: 2em;
@@ -82,17 +92,19 @@ h3 {
   transition: all 0.3s ease;
 }
 
+/* Even value styling: Green background for even numbers */
 .signal-box .value.even {
   color: #10b981;
   background: #d1fae5;
 }
 
+/* Odd value styling: Orange background for odd numbers */
 .signal-box .value.odd {
   color: #f59e0b;
   background: #fef3c7;
 }
 
-/* Control Section */
+/* Control Section: White background for buttons and inputs */
 .control-section {
   background: white;
   padding: 30px;
@@ -101,6 +113,7 @@ h3 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Button group: Flexbox layout for horizontal button arrangement */
 .button-group {
   display: flex;
   gap: 10px;
@@ -108,6 +121,7 @@ h3 {
   flex-wrap: wrap;
 }
 
+/* Base button styling: Applied to all buttons */
 .btn {
   padding: 12px 24px;
   font-size: 1em;
@@ -119,15 +133,18 @@ h3 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Button hover: Lifts and shadows increase */
 .btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Button active: Returns to normal position when clicked */
 .btn:active {
   transform: translateY(0);
 }
 
+/* Increment button: Green color for adding 1 */
 .btn-increment {
   background-color: #10b981;
   color: white;
@@ -137,6 +154,7 @@ h3 {
   background-color: #059669;
 }
 
+/* Decrement button: Orange color for subtracting 1 */
 .btn-decrement {
   background-color: #f59e0b;
   color: white;
@@ -146,6 +164,7 @@ h3 {
   background-color: #d97706;
 }
 
+/* Reset button: Red color for resetting to 0 */
 .btn-reset {
   background-color: #ef4444;
   color: white;
@@ -155,6 +174,7 @@ h3 {
   background-color: #dc2626;
 }
 
+/* Set button: Purple color for setting custom value */
 .btn-set {
   background-color: #667eea;
   color: white;
@@ -164,6 +184,7 @@ h3 {
   background-color: #5568d3;
 }
 
+/* Custom input area: Container for number input and set button */
 .custom-input {
   margin-top: 20px;
   display: flex;
@@ -171,11 +192,13 @@ h3 {
   align-items: center;
 }
 
+/* Custom input label: Label for the number input field */
 .custom-input label {
   font-weight: bold;
   color: #333;
 }
 
+/* Custom input field: Text input for entering custom values */
 .custom-input input {
   padding: 10px;
   border: 2px solid #667eea;
@@ -185,13 +208,14 @@ h3 {
   max-width: 200px;
 }
 
+/* Custom input focus: Highlight when user is typing */
 .custom-input input:focus {
   outline: none;
   border-color: #5568d3;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Explanation Section */
+/* Explanation Section: White background for pattern explanation */
 .explanation-section {
   background: white;
   padding: 30px;
@@ -199,6 +223,7 @@ h3 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
+/* Explanation box: Light gray with border for pattern details */
 .explanation-box {
   background: #f9fafb;
   padding: 20px;
@@ -206,6 +231,7 @@ h3 {
   border-left: 4px solid #667eea;
 }
 
+/* Explanation lists: Standard list formatting with line height */
 .explanation-box ul,
 .explanation-box ol {
   color: #333;
@@ -213,10 +239,12 @@ h3 {
   margin-left: 20px;
 }
 
+/* Explanation list items: Spacing between list items */
 .explanation-box li {
   margin-bottom: 10px;
 }
 
+/* Explanation code: Monospace font for code snippets */
 .explanation-box code {
   background-color: #e5e7eb;
   padding: 2px 6px;
@@ -225,6 +253,7 @@ h3 {
   color: #667eea;
 }
 
+/* Explanation paragraphs: Standard text formatting */
 .explanation-box p {
   color: #333;
   line-height: 1.6;
@@ -232,33 +261,41 @@ h3 {
   font-weight: 500;
 }
 
-/* Responsive Design */
+/* Responsive Design: Mobile-friendly adjustments for screens < 768px */
 @media (max-width: 768px) {
+  /* Reduce padding on mobile */
   .container {
     padding: 15px;
   }
 
+  /* Smaller heading on mobile */
   h1 {
     font-size: 2em;
   }
 
+  /* Single column grid on mobile */
   .signal-display {
     grid-template-columns: 1fr;
   }
 
+  /* Stack buttons vertically on mobile */
   .button-group {
     flex-direction: column;
   }
 
+  /* Full width buttons on mobile */
   .btn {
     width: 100%;
   }
 
+  /* Stack custom input vertically on mobile */
   .custom-input {
     flex-direction: column;
   }
 
+  /* Full width input on mobile */
   .custom-input input {
     max-width: 100%;
   }
 }
+

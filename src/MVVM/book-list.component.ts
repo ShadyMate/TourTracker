@@ -1,4 +1,4 @@
-// book-list.component.ts
+// book-list.component.ts - ViewModel Layer in MVVM
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';

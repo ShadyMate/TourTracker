@@ -1,4 +1,4 @@
-// book.service.ts
+// book.service.ts - Model Layer in MVVM
 import { Injectable } from '@angular/core';
 import { Observable, BehaviorSubject } from 'rxjs';
 

@@ -1,20 +1,15 @@
-// chat-room.component.ts
+// chat-room.component.ts - The Mediator Component
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatRoomService, Message, User } from './chat-room.service';
 
 /**
- * MEDIATOR PATTERN IMPLEMENTATION
- * ===============================
  *
- * In the classic Mediator Pattern:
  * - COLLEAGUES: Objects that communicate with each other (text input, send button, message list, user list)
  * - MEDIATOR: Central object that coordinates all communication (ChatRoomComponent)
  * - Communication Flow: Colleague A -> Mediator -> Colleague B (NO direct communication)
  *
- * How This Component Acts as the Mediator:
- * ========================================
  *
  * Multiple UI Elements (Colleagues):
  * 1. Message Input Field - captures user input
@@ -25,7 +20,7 @@ import { ChatRoomService, Message, User } from './chat-room.service';
  * 6. Message Count Badge - shows total messages
  * 7. Status Selector - allows picking a user
  *
- * These elements DON'T communicate directly with each other!
+ * These elements DON'T communicate directly with each other
  * They ALL go through the Component (Mediator):
  *
  * Input Field (onInput) -> Component -> Updates state
@@ -76,7 +71,7 @@ export class ChatRoomComponent implements OnInit {
     {
       id: '3',
       username: 'Alice',
-      content: 'Nice! The component acts as a central mediator',
+      content: 'K, the component acts as a central mediator',
       timestamp: new Date(Date.now() - 180000),
       color: '#FF6B6B'
     }
@@ -95,8 +90,8 @@ export class ChatRoomComponent implements OnInit {
   }
 
   /**
-   * MEDIATOR METHOD #1: Handle User Input
-   * ======================================
+   * Handle User Input
+   * 
    * When the input field (Colleague #1) receives input,
    * the component (MEDIATOR) handles it and updates the typing indicator
    *
@@ -110,17 +105,17 @@ export class ChatRoomComponent implements OnInit {
     // Clear previous timeout and set new one
     clearTimeout(this.typingTimeout);
 
-    // Reset typing indicator after user stops typing for 1 second
+    // Reset typing indicator after user stops typing for 2 seconds
     this.typingTimeout = setTimeout(() => {
       if (this.isTyping) {
         this.isTyping = false;
       }
-    }, 1000);
+    }, 2000);
   }
 
   /**
-   * MEDIATOR METHOD #2: Send Message
-   * ================================
+   * Send Message
+   * 
    * When send button (Colleague) is clicked:
    * 1. Create new message
    * 2. Add to messages list (Colleague #3)
@@ -168,8 +163,8 @@ export class ChatRoomComponent implements OnInit {
   }
 
   /**
-   * MEDIATOR METHOD #3: Handle User Selection
-   * ==========================================
+   * Handle User Selection
+   * 
    * When user list (Colleague #4) item is clicked:
    * 1. Update selected user
    * 2. Might affect message color, sender display
@@ -183,8 +178,8 @@ export class ChatRoomComponent implements OnInit {
   }
 
   /**
-   * MEDIATOR METHOD #4: Toggle User Status
-   * =======================================
+   * Toggle User Status
+   * 
    * When user in list is right-clicked (or clicked):
    * 1. Update user status in service
    * 2. Trigger UI update (Angular change detection)
@@ -198,8 +193,8 @@ export class ChatRoomComponent implements OnInit {
   }
 
   /**
-   * MEDIATOR METHOD #5: Delete Message
-   * ==================================
+   * Delete Message
+   * 
    * When delete button on message is clicked:
    * Updates the messages list and count
    */
@@ -210,7 +205,7 @@ export class ChatRoomComponent implements OnInit {
 
   /**
    * MEDIATOR COMPUTED PROPERTIES
-   * ============================
+   * 
    * These properties show how the mediator coordinates display
    */
   get messageCount(): number {
@@ -227,7 +222,7 @@ export class ChatRoomComponent implements OnInit {
 
   /**
    * MEDIATOR UTILITY METHOD
-   * =======================
+   * 
    * Format timestamp for display
    */
   formatTime(date: Date): string {
