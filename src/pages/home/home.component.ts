@@ -3,19 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { Tour } from '../../models/tour.model'
 
 /**
  * Home Component
  * Main page of the TourTracker application with tour list and search functionality
  */
-interface Tour {
-  id: string;
-  name: string;
-  from: string;
-  to: string;
-  distance: string;
-  time: string;
-}
 
 @Component({
   selector: 'app-home',
@@ -26,10 +19,10 @@ interface Tour {
 })
 export class HomeComponent implements OnInit {
   tours: Tour[] = [
-    { id: '1', name: 'My first Route', from: 'FH Technikum', to: 'Mt. Everest', distance: '8300km', time: '60d' },
-    { id: '2', name: 'Alpine Hike', from: 'Innsbruck', to: 'Zugspitze', distance: '45km', time: '12h' },
-    { id: '3', name: 'City Tour', from: 'Vienna', to: 'Bratislava', distance: '65km', time: '2d' },
-    { id: '4', name: 'Danube Bike Trail', from: 'Passau', to: 'Vienna', distance: '320km', time: '5d' }
+    { id: '1', name: 'My first Route', description: '', from: 'FH Technikum', to: 'Mt. Everest', transportType: '', distance: '8300km', time: '60d', logs: [] },
+    { id: '2', name: 'Alpine Hike', description: '', from: 'Innsbruck', to: 'Zugspitze', transportType: '', distance: '45km', time: '12h', logs: [] },
+    { id: '3', name: 'City Tour', description: '', from: 'Vienna', to: 'Bratislava', transportType: '', distance: '65km', time: '2d', logs: [] },
+    { id: '4', name: 'Danube Bike Trail', description: '', from: 'Passau', to: 'Vienna', transportType: '', distance: '320km', time: '5d',logs: [] }
   ];
 
   searchQuery: string = '';
@@ -45,8 +38,8 @@ export class HomeComponent implements OnInit {
     // Initialize dark mode from auth service
     this.authService.initializeDarkMode();
 
-    // Save tours to sessionStorage for tour details page
-    sessionStorage.setItem('tours', JSON.stringify(this.tours));
+    this.tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
+    this.filteredTours = this.tours; // also update filtered list
   }
 
   onSearchInput(value: string): void {
