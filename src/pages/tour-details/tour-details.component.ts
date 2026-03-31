@@ -23,11 +23,11 @@ export class TourDetailsComponent implements OnInit {
   tourForm: {
     name: string;
     description: string;
-    startPoint: string;
-    endPoint: string;
-    transportType: 'hiking' | 'cycling' | 'running' | 'walking';
-    distance: number;
-    estimatedTime: string;
+    from: string;
+    to: string;
+    transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
+    distance: string;
+    time: string;
     // difficulty: number;
     // elevationUp: number;
     // elevationDown: number;
@@ -37,11 +37,11 @@ export class TourDetailsComponent implements OnInit {
   } = {
     name: '',
     description: '',
-    startPoint: '',
-    endPoint: '',
+    from: '',
+    to: '',
     transportType: 'hiking',
-    distance: 0,
-    estimatedTime: '',
+    distance: '0',
+    time: '',
     // difficulty: 5,
     // elevationUp: 0,
     // elevationDown: 0,
@@ -82,10 +82,10 @@ export class TourDetailsComponent implements OnInit {
       id: 'temp-' + Date.now(),
       name: '',
       description: '',
-      startPoint: '',
-      endPoint: '',
-      distance: 0,
-      estimatedTime: '',
+      from: '',
+      to: '',
+      distance: '0',
+      time: '',
       transportType: 'hiking',
       //difficulty: 5,
       //rating: 0,
@@ -112,10 +112,10 @@ export class TourDetailsComponent implements OnInit {
         id: '1',
         name: 'My first Route',
         description: 'A wonderful mountain tour',
-        startPoint: 'FH Technikum',
-        endPoint: 'Mt. Everest',
-        distance: 8300,
-        estimatedTime: '60d',
+        from: 'FH Technikum',
+        to: 'Mt. Everest',
+        distance: '8300',
+        time: '60d',
         transportType: 'hiking',
         //difficulty: 8,
         //rating: 3,
@@ -152,10 +152,10 @@ export class TourDetailsComponent implements OnInit {
     this.tourForm = {
       name: this.tour.name,
       description: this.tour.description,
-      startPoint: this.tour.startPoint,
-      endPoint: this.tour.endPoint,
+      from: this.tour.from,
+      to: this.tour.to,
       distance: this.tour.distance,
-      estimatedTime: this.tour.estimatedTime,
+      time: this.tour.time,
       transportType: this.tour.transportType,
       // difficulty: this.tour.difficulty,
       // elevationUp: this.tour.elevationUp,
@@ -172,10 +172,10 @@ export class TourDetailsComponent implements OnInit {
     // Update tour with form data
     this.tour.name = this.tourForm.name;
     this.tour.description = this.tourForm.description;
-    this.tour.startPoint = this.tourForm.startPoint;
-    this.tour.endPoint = this.tourForm.endPoint;
+    this.tour.from = this.tourForm.from;
+    this.tour.to = this.tourForm.to;
     this.tour.distance = this.tourForm.distance;
-    this.tour.estimatedTime = this.tourForm.estimatedTime;
+    this.tour.time = this.tourForm.time;
     this.tour.transportType = this.tourForm.transportType;
     // this.tour.difficulty = this.tourForm.difficulty;
     // this.tour.elevationUp = this.tourForm.elevationUp;

@@ -33,11 +33,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>Starting Point</label>
-              <input type="text" [(ngModel)]="tourForm.startPoint" name="startPoint" required>
+              <input type="text" [(ngModel)]="tourForm.from" name="startPoint" required>
             </div>
             <div class="form-group">
               <label>Destination</label>
-              <input type="text" [(ngModel)]="tourForm.endPoint" name="endPoint" required>
+              <input type="text" [(ngModel)]="tourForm.to" name="endPoint" required>
             </div>
           </div>
 
@@ -48,7 +48,7 @@
             </div>
             <div class="form-group">
               <label>Estimated Time</label>
-              <input type="text" [(ngModel)]="tourForm.estimatedTime" name="estimatedTime" placeholder="e.g., 2h 30m">
+              <input type="text" [(ngModel)]="tourForm.from" name="estimatedTime" placeholder="e.g., 2h 30m">
             </div>
           </div>
 
@@ -121,7 +121,7 @@
               </div>
               <div class="stat">
                 <span class="stat-label">Time</span>
-                <span class="stat-value">{{ tour.estimatedTime }}</span>
+                <span class="stat-value">{{ tour.time }}</span>
               </div>
             </div>
 
