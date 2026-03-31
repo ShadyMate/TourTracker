@@ -39,7 +39,9 @@ export class HomeComponent implements OnInit {
     this.authService.initializeDarkMode();
 
     this.tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
-    this.filteredTours = this.tours; // also update filtered list
+
+    this.filteredTours = this.tours; // Remove this line if you want the template to be shown
+    
   }
 
   onSearchInput(value: string): void {
