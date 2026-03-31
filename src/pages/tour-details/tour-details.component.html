@@ -4,9 +4,9 @@
     <button class="back-btn" (click)="goBack()" title="Back to home">← Back</button>
     <h1>{{ tour.name || 'New Tour' }}</h1>
     <div class="header-actions">
-      <button class="icon-btn favorite-btn" (click)="toggleFavorite()" [class.active]="tour.isFavorite" title="Toggle favorite">
+      <!-- <button class="icon-btn favorite-btn" (click)="toggleFavorite()" [class.active]="tour.isFavorite" title="Toggle favorite">
         ⭐
-      </button>
+      </button> -->
       <button class="btn btn-primary" (click)="toggleEdit()">
         {{ isEditing ? 'Save' : 'Edit' }}
       </button>
@@ -22,7 +22,7 @@
         <form class="edit-form">
           <div class="form-group">
             <label>Tour Name</label>
-            <input type="text" [(ngModel)]="tourForm.name" name="name" placeholder="Enter tour name">
+            <input type="text" [(ngModel)]="tourForm.name" name="name" placeholder="Enter tour name" required>
           </div>
 
           <div class="form-group">
@@ -33,11 +33,11 @@
           <div class="form-row">
             <div class="form-group">
               <label>Starting Point</label>
-              <input type="text" [(ngModel)]="tourForm.startPoint" name="startPoint">
+              <input type="text" [(ngModel)]="tourForm.startPoint" name="startPoint" required>
             </div>
             <div class="form-group">
               <label>Destination</label>
-              <input type="text" [(ngModel)]="tourForm.endPoint" name="endPoint">
+              <input type="text" [(ngModel)]="tourForm.endPoint" name="endPoint" required>
             </div>
           </div>
 
@@ -63,7 +63,7 @@
             </div>
           </div>
 
-          <div class="form-row">
+          <!-- <div class="form-row">
             <div class="form-group">
               <label>Elevation Up (m)</label>
               <input type="number" [(ngModel)]="tourForm.elevationUp" name="elevationUp">
@@ -72,18 +72,18 @@
               <label>Elevation Down (m)</label>
               <input type="number" [(ngModel)]="tourForm.elevationDown" name="elevationDown">
             </div>
-          </div>
+          </div> -->
 
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label>Difficulty (1-10)</label>
             <input type="range" min="1" max="10" [(ngModel)]="tourForm.difficulty" name="difficulty">
             <span class="difficulty-value">{{ tourForm.difficulty }}/10</span>
-          </div>
+          </div> -->
 
-          <div class="form-group checkbox">
+          <!-- <div class="form-group checkbox">
             <input type="checkbox" id="childFriendly" [(ngModel)]="tourForm.childFriendly" name="childFriendly">
             <label for="childFriendly">Child Friendly</label>
-          </div>
+          </div> -->
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
@@ -125,14 +125,14 @@
               </div>
             </div>
 
-            <div class="elevation-info">
+            <!-- <div class="elevation-info">
               <div class="elevation-item">
                 <span>⬆️ {{ tour.elevationUp }}m</span>
               </div>
               <div class="elevation-item">
                 <span>⬇️ {{ tour.elevationDown }}m</span>
               </div>
-            </div>
+            </div> -->
           </div>
 
           <div class="info-section">
@@ -141,23 +141,23 @@
               <span class="label">Type:</span>
               <span class="value">{{ tour.transportType | titlecase }}</span>
             </p>
-            <p class="info-item">
+            <!-- <p class="info-item">
               <span class="label">Difficulty:</span>
               <span class="value">{{ tour.difficulty }}/10</span>
-            </p>
-            <p class="info-item">
+            </p> -->
+            <!-- <p class="info-item">
               <span class="label">Rating:</span>
               <span class="value">
                 @for (star of getRatingStars(tour.rating); track $index) {
                   <span class="star" [class.filled]="star">⭐</span>
                 }
               </span>
-            </p>
-            @if (tour.childFriendly) {
+            </p> -->
+            <!-- @if (tour.childFriendly) {
               <p class="info-item">
                 <span class="badge">👧 Child Friendly</span>
               </p>
-            }
+            } -->
           </div>
         </div>
       }
@@ -171,12 +171,12 @@
           <div class="placeholder-content">
             <h3>🗺️ Tour Map</h3>
             <p>Interactive map with route visualization will be displayed here</p>
-            @if (tour.elevationUp > 0 || tour.elevationDown > 0) {
+            <!-- @if (tour.elevationUp > 0 || tour.elevationDown > 0) {
               <div class="elevation-chart">
                 <p class="chart-title">📈 Elevation Profile</p>
                 <div class="chart-placeholder">Height data visualization</div>
               </div>
-            }
+            } -->
           </div>
         </div>
       </div>

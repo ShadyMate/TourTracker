@@ -15,15 +15,15 @@ export class TourService {
       distance: 6.6,
       estimatedTime: '1h 56m',
       transportType: 'hiking',
-      difficulty: 3,
-      rating: 3,
-      elevationUp: 0,
-      elevationDown: 0,
-      childFriendly: true,
-      isFavorite: true,
+      // difficulty: 3,
+      // rating: 3,
+      // elevationUp: 0,
+      // elevationDown: 0,
+      // childFriendly: true,
+      // isFavorite: true,
       logs: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      // createdAt: new Date(),
+      // updatedAt: new Date()
     },
     {
       id: '2',
@@ -34,15 +34,15 @@ export class TourService {
       distance: 8300,
       estimatedTime: '60 days',
       transportType: 'hiking',
-      difficulty: 5,
-      rating: 4,
-      elevationUp: 5000,
-      elevationDown: 5000,
-      childFriendly: false,
-      isFavorite: false,
+      // difficulty: 5,
+      // rating: 4,
+      // elevationUp: 5000,
+      // elevationDown: 5000,
+      // childFriendly: false,
+      // isFavorite: false,
       logs: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      // createdAt: new Date(),
+      // updatedAt: new Date()
     },
     {
       id: '3',
@@ -53,15 +53,15 @@ export class TourService {
       distance: 25,
       estimatedTime: '2h 30m',
       transportType: 'cycling',
-      difficulty: 2,
-      rating: 4,
-      elevationUp: 100,
-      elevationDown: 100,
-      childFriendly: true,
-      isFavorite: false,
+      // difficulty: 2,
+      // rating: 4,
+      // elevationUp: 100,
+      // elevationDown: 100,
+      // childFriendly: true,
+      // isFavorite: false,
       logs: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      // createdAt: new Date(),
+      // updatedAt: new Date()
     }
   ]);
 

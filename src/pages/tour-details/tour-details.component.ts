@@ -25,29 +25,29 @@ export class TourDetailsComponent implements OnInit {
     description: string;
     startPoint: string;
     endPoint: string;
+    transportType: 'hiking' | 'cycling' | 'running' | 'walking';
     distance: number;
     estimatedTime: string;
-    transportType: 'hiking' | 'cycling' | 'running' | 'walking';
-    difficulty: number;
-    elevationUp: number;
-    elevationDown: number;
-    childFriendly: boolean;
-    rating: number;
-    isFavorite: boolean;
+    // difficulty: number;
+    // elevationUp: number;
+    // elevationDown: number;
+    // childFriendly: boolean;
+    // rating: number;
+    // isFavorite: boolean;
   } = {
     name: '',
     description: '',
     startPoint: '',
     endPoint: '',
+    transportType: 'hiking',
     distance: 0,
     estimatedTime: '',
-    transportType: 'hiking',
-    difficulty: 5,
-    elevationUp: 0,
-    elevationDown: 0,
-    childFriendly: false,
-    rating: 0,
-    isFavorite: false
+    // difficulty: 5,
+    // elevationUp: 0,
+    // elevationDown: 0,
+    // childFriendly: false,
+    // rating: 0,
+    // isFavorite: false
   };
 
   newLog: Partial<TourLog> = {
@@ -87,15 +87,15 @@ export class TourDetailsComponent implements OnInit {
       distance: 0,
       estimatedTime: '',
       transportType: 'hiking',
-      difficulty: 5,
-      rating: 0,
-      elevationUp: 0,
-      elevationDown: 0,
-      childFriendly: false,
-      isFavorite: false,
+      //difficulty: 5,
+      //rating: 0,
+      //elevationUp: 0,
+      //elevationDown: 0,
+      //childFriendly: false,
+      //isFavorite: false,
       logs: [],
-      createdAt: new Date(),
-      updatedAt: new Date()
+      //createdAt: new Date(),
+      //updatedAt: new Date()
     };
     this.populateFormFromTour();
   }
@@ -117,12 +117,12 @@ export class TourDetailsComponent implements OnInit {
         distance: 8300,
         estimatedTime: '60d',
         transportType: 'hiking',
-        difficulty: 8,
-        rating: 3,
-        elevationUp: 5000,
-        elevationDown: 5000,
-        childFriendly: false,
-        isFavorite: true,
+        //difficulty: 8,
+        //rating: 3,
+        //elevationUp: 5000,
+        //elevationDown: 5000,
+        //childFriendly: false,
+        //isFavorite: true,
         logs: [
           {
             id: 'log1',
@@ -137,8 +137,8 @@ export class TourDetailsComponent implements OnInit {
             notes: 'More difficult than usual, due to rainy weather'
           }
         ],
-        createdAt: new Date(),
-        updatedAt: new Date()
+        //createdAt: new Date(),
+        //updatedAt: new Date()
       };
     }
 
@@ -157,12 +157,12 @@ export class TourDetailsComponent implements OnInit {
       distance: this.tour.distance,
       estimatedTime: this.tour.estimatedTime,
       transportType: this.tour.transportType,
-      difficulty: this.tour.difficulty,
-      elevationUp: this.tour.elevationUp,
-      elevationDown: this.tour.elevationDown,
-      childFriendly: this.tour.childFriendly,
-      rating: this.tour.rating,
-      isFavorite: this.tour.isFavorite
+      // difficulty: this.tour.difficulty,
+      // elevationUp: this.tour.elevationUp,
+      // elevationDown: this.tour.elevationDown,
+      // childFriendly: this.tour.childFriendly,
+      // rating: this.tour.rating,
+      // isFavorite: this.tour.isFavorite
     };
   }
 
@@ -177,13 +177,13 @@ export class TourDetailsComponent implements OnInit {
     this.tour.distance = this.tourForm.distance;
     this.tour.estimatedTime = this.tourForm.estimatedTime;
     this.tour.transportType = this.tourForm.transportType;
-    this.tour.difficulty = this.tourForm.difficulty;
-    this.tour.elevationUp = this.tourForm.elevationUp;
-    this.tour.elevationDown = this.tourForm.elevationDown;
-    this.tour.childFriendly = this.tourForm.childFriendly;
-    this.tour.rating = this.tourForm.rating;
-    this.tour.isFavorite = this.tourForm.isFavorite;
-    this.tour.updatedAt = new Date();
+    // this.tour.difficulty = this.tourForm.difficulty;
+    // this.tour.elevationUp = this.tourForm.elevationUp;
+    // this.tour.elevationDown = this.tourForm.elevationDown;
+    // this.tour.childFriendly = this.tourForm.childFriendly;
+    // this.tour.rating = this.tourForm.rating;
+    // this.tour.isFavorite = this.tourForm.isFavorite;
+    // this.tour.updatedAt = new Date();
 
     // Save to sessionStorage for now
     let tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
@@ -215,12 +215,12 @@ export class TourDetailsComponent implements OnInit {
     }
   }
 
-  toggleFavorite() {
-    if (this.tour) {
-      this.tour.isFavorite = !this.tour.isFavorite;
-      this.saveTour();
-    }
-  }
+  // toggleFavorite() {
+  //   if (this.tour) {
+  //     this.tour.isFavorite = !this.tour.isFavorite;
+  //     this.saveTour();
+  //   }
+  // }
 
   addLog() {
     if (!this.tour || !this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
