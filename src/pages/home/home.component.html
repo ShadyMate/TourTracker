@@ -50,7 +50,7 @@
                 <span class="value">{{ tour.to }}</span>
               </div>
               <div class="info-row">
-                <span class="distance">📍 {{ tour.distance }}</span>
+                <span class="distance">📍 {{ tour.distance }} km</span>
                 <span class="time">⏱️ {{ tour.time }}</span>
               </div>
             </div>
@@ -68,12 +68,12 @@
               title="Delete tour">
               🗑️
             </button>
-            <button
+            <!-- <button
               class="action-btn favorite-btn"
               (click)="toggleFavorite(tour.id); $event.stopPropagation()"
               title="Toggle favorite">
               ⭐
-            </button>
+            </button> -->
           </div>
         </div>
       }
