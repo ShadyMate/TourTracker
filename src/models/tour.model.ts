@@ -1,13 +1,13 @@
 export interface Tour {
   // name, tour description, from, to, transport type, tour distance, estimated time, route information
-  id: string;
+  id: number;
   name: string;
   description: string;
-  startPoint: string;
-  endPoint: string;
-  transportType: 'hiking' | 'cycling' | 'running' | 'walking';
-  distance: number;
-  estimatedTime: string;
+  from: string;
+  to: string;
+  transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
+  distance: string;
+  time: string;
   // difficulty: number; // 1-10
   // rating: number; // 1-5
   // imageUrl?: string;
