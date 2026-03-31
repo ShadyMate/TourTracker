@@ -73,6 +73,11 @@ export class TourDetailsComponent implements OnInit {
         this.initializeNewTour();
       } else {
         this.loadTour();
+        
+        this.activatedRoute.queryParams.subscribe(q => {
+          console.log('QUERY PARAMS:', q);
+          this.isEditing = q['edit'] === 'true';
+        });
       }
     });
   }

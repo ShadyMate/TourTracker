@@ -66,9 +66,19 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/tour', 'new']);
   }
 
+  goToTour(id: string) {
+    this.router.navigate(['/tour', id]);
+  }
+
   editTour(tourId: string): void {
+    console.log('EDIT CLICKED', tourId);
+
     // Navigate to tour details for editing
-    this.router.navigate(['/tour', tourId]);
+    this.router.navigate(['/tour', tourId], {
+      queryParams: { edit: true }
+    }).then(() => {
+      console.log('NAVIGATION DONE');
+    })
   }
 
   deleteTour(tourId: string): void {

@@ -87,7 +87,9 @@
 
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
-            <button type="button" class="btn btn-primary" (click)="saveTour()">Save Tour</button>
+            <button type="button" class="btn btn-primary" (click)="saveTour()">
+              {{ isNewTour ? 'Create Tour' : 'Save Changes' }}
+            </button>
           </div>
         </form>
       } @else {

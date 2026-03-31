@@ -37,7 +37,7 @@
       }
 
       @for (tour of filteredTours; track tour.id) {
-        <div class="tour-card" [routerLink]="['/tour', tour.id]">
+        <div class="tour-card" (click)="goToTour(tour.id)">
           <div class="tour-details">
             <h4 class="tour-name">{{ tour.name }}</h4>
             <div class="tour-info">
@@ -58,7 +58,7 @@
           <div class="tour-actions">
             <button
               class="action-btn edit-btn"
-              (click)="editTour(tour.id); $event.stopPropagation()"
+              (click)="editTour(tour.id); $event.preventDefault() ; $event.stopPropagation()"
               title="Edit tour">
               ✏️
             </button>
