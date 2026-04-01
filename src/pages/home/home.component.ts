@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit {
   }
 
   filterTours(): void {
-    if (!this.searchQuery.trim()) {
+    if (!this.searchQuery.trim()) { // This means if searchQuery is empty
       this.filteredTours = this.tours;
     } else {
       this.filteredTours = this.tours.filter(tour =>
@@ -82,8 +82,14 @@ export class HomeComponent implements OnInit {
   }
 
   deleteTour(tourId: string): void {
+    // This removes it from the array (but that's only what's saved in the variable)
     this.tours = this.tours.filter(tour => tour.id !== tourId);
+
+    // This makes it so the new array version is shown
     this.filterTours();
+
+    // Also need to save it into session, otherwise it won't stay until next reload
+    sessionStorage.setItem('tours', JSON.stringify(this.tours));
   }
 
   toggleFavorite(tourId: string): void {

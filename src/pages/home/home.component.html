@@ -58,13 +58,13 @@
           <div class="tour-actions">
             <button
               class="action-btn edit-btn"
-              (click)="editTour(tour.id); $event.preventDefault() ; $event.stopPropagation()"
+              (click)="editTour(tour.id); $event.preventDefault(); $event.stopPropagation()"
               title="Edit tour">
               ✏️
             </button>
             <button
               class="action-btn delete-btn"
-              (click)="deleteTour(tour.id); $event.stopPropagation()"
+              (click)="deleteTour(tour.id); $event.preventDefault(); $event.stopPropagation()"
               title="Delete tour">
               🗑️
             </button>
