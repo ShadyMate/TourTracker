@@ -172,6 +172,11 @@ export class TourDetailsComponent implements OnInit {
   }
 
   saveTour() {
+    if (!this.tourForm.name.trim()) {
+      alert('Name is required');
+      return;
+    }
+
     if (!this.tour) return;
 
     // Update tour with form data
