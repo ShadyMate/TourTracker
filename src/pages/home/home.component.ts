@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -29,19 +29,20 @@ export class HomeComponent implements OnInit {
   filteredTours: Tour[] = this.tours;
   isLoggedIn = false;
 
-  constructor(private authService: AuthService, private router: Router) {
-    // Check if user is logged in
-    this.isLoggedIn = this.authService.isUserAuthenticated()();
-  }
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit() {
+    // Check if user is logged in
+    this.isLoggedIn = this.authService.isUserAuthenticated()();
+
     // Initialize dark mode from auth service
     this.authService.initializeDarkMode();
 
     this.tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
 
     this.filteredTours = this.tours; // Remove this line if you want the template to be shown
-    
+
   }
 
   onSearchInput(value: string): void {
@@ -71,17 +72,20 @@ export class HomeComponent implements OnInit {
   }
 
   editTour(tourId: string): void {
-    console.log('EDIT CLICKED', tourId);
-
     // Navigate to tour details for editing
     this.router.navigate(['/tour', tourId], {
       queryParams: { edit: true }
-    }).then(() => {
-      console.log('NAVIGATION DONE');
-    })
+    }).catch(err => {
+      console.error('Navigation to tour edit failed:', err);
+    });
   }
 
   deleteTour(tourId: string): void {
+    // Confirm before deleting
+    if (!confirm('Are you sure you want to delete this tour? This action cannot be undone.')) {
+      return;
+    }
+
     // This removes it from the array (but that's only what's saved in the variable)
     this.tours = this.tours.filter(tour => tour.id !== tourId);
 

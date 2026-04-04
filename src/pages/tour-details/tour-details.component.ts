@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Tour, TourLog } from '../../models/tour.model';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tour-details',
@@ -11,13 +13,19 @@ import { Tour, TourLog } from '../../models/tour.model';
   templateUrl: './tour-details.component.html',
   styleUrls: ['./tour-details.component.scss']
 })
-export class TourDetailsComponent implements OnInit {
+export class TourDetailsComponent implements OnInit, OnDestroy {
   // Tour data
   tour: Tour | null = null;
   tourId: string | null = null;
   isNewTour = false;
   isEditing = false;
   showLogForm = false;
+  isLoading = false;
+  saveMessage = '';
+  errorMessage = '';
+  private destroy$ = new Subject<void>();
+  private saveMessageTimeout: ReturnType<typeof setTimeout> | undefined;
+  private logMessageTimeout: ReturnType<typeof setTimeout> | undefined;
 
   // Form data - properly typed to match Tour interface
   tourForm: {
@@ -50,8 +58,15 @@ export class TourDetailsComponent implements OnInit {
     // isFavorite: false
   };
 
-  newLog: Partial<TourLog> = {
-    date: new Date(),
+  newLog: {
+    date: string;
+    startTime: string;
+    endTime: string;
+    actualDistance: number;
+    difficulty: number;
+    notes: string;
+  } = {
+    date: '',
     startTime: '',
     endTime: '',
     actualDistance: 0,
@@ -61,25 +76,47 @@ export class TourDetailsComponent implements OnInit {
 
   transportTypes = ['hiking', 'cycling', 'running', 'walking'];
 
-  constructor(private activatedRoute: ActivatedRoute, private router: Router) {}
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  private getCurrentIsoDate(): string {
+    return new Date().toISOString().split('T')[0];
+  }
 
   ngOnInit() {
-    this.activatedRoute.params.subscribe(params => {
-      this.tourId = params['id'];
+    this.newLog.date = this.getCurrentIsoDate();
 
-      if (this.tourId === 'new') {
-        this.isNewTour = true;
-        this.isEditing = true;
-        this.initializeNewTour();
-      } else {
-        this.loadTour();
-        
-        this.activatedRoute.queryParams.subscribe(q => {
-          console.log('QUERY PARAMS:', q);
-          this.isEditing = q['edit'] === 'true';
-        });
-      }
-    });
+    this.activatedRoute.params
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.tourId = params['id'];
+
+        if (this.tourId === 'new') {
+          this.isNewTour = true;
+          this.isEditing = true;
+          this.initializeNewTour();
+        } else {
+          this.loadTour();
+
+          this.activatedRoute.queryParams
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(q => {
+              this.isEditing = q['edit'] === 'true';
+            });
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    // Clear any pending timeouts
+    if (this.saveMessageTimeout) {
+      clearTimeout(this.saveMessageTimeout);
+    }
+    if (this.logMessageTimeout) {
+      clearTimeout(this.logMessageTimeout);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initializeNewTour() {
@@ -92,20 +129,13 @@ export class TourDetailsComponent implements OnInit {
       distance: '0',
       time: '',
       transportType: 'hiking',
-      //difficulty: 5,
-      //rating: 0,
-      //elevationUp: 0,
-      //elevationDown: 0,
-      //childFriendly: false,
-      //isFavorite: false,
-      logs: [],
-      //createdAt: new Date(),
-      //updatedAt: new Date()
+      logs: []
     };
     this.populateFormFromTour();
   }
 
   loadTour() {
+    this.isLoading = true;
     // In a real app, this would load from a service
     // For now, load from the home component's tour data
     const tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
@@ -122,12 +152,6 @@ export class TourDetailsComponent implements OnInit {
         distance: '8300',
         time: '60d',
         transportType: 'hiking',
-        //difficulty: 8,
-        //rating: 3,
-        //elevationUp: 5000,
-        //elevationDown: 5000,
-        //childFriendly: false,
-        //isFavorite: true,
         logs: [
           {
             id: 'log1',
@@ -141,15 +165,14 @@ export class TourDetailsComponent implements OnInit {
             rating: 3,
             notes: 'More difficult than usual, due to rainy weather'
           }
-        ],
-        //createdAt: new Date(),
-        //updatedAt: new Date()
+        ]
       };
     }
 
     if (this.tour) {
       this.populateFormFromTour();
     }
+    this.isLoading = false;
   }
 
   populateFormFromTour() {
@@ -172,40 +195,58 @@ export class TourDetailsComponent implements OnInit {
   }
 
   saveTour() {
+    // Clear previous messages
+    this.errorMessage = '';
+    this.saveMessage = '';
+
+    // Clear any pending save message timeout
+    if (this.saveMessageTimeout) {
+      clearTimeout(this.saveMessageTimeout);
+    }
+
+    // Validate all required fields
     if (!this.tourForm.name.trim()) {
-      alert('Name is required');
+      this.errorMessage = 'Tour name is required';
+      return;
+    }
+
+    if (!this.tourForm.from.trim()) {
+      this.errorMessage = 'Starting point is required';
+      return;
+    }
+
+    if (!this.tourForm.to.trim()) {
+      this.errorMessage = 'Destination is required';
       return;
     }
 
     if (!this.tour) return;
 
     // Update tour with form data
-    this.tour.name = this.tourForm.name;
+    this.tour.name = this.tourForm.name.trim();
     this.tour.description = this.tourForm.description;
-    this.tour.from = this.tourForm.from;
-    this.tour.to = this.tourForm.to;
+    this.tour.from = this.tourForm.from.trim();
+    this.tour.to = this.tourForm.to.trim();
     this.tour.distance = this.tourForm.distance;
     this.tour.time = this.tourForm.time;
     this.tour.transportType = this.tourForm.transportType;
-    // this.tour.difficulty = this.tourForm.difficulty;
-    // this.tour.elevationUp = this.tourForm.elevationUp;
-    // this.tour.elevationDown = this.tourForm.elevationDown;
-    // this.tour.childFriendly = this.tourForm.childFriendly;
-    // this.tour.rating = this.tourForm.rating;
-    // this.tour.isFavorite = this.tourForm.isFavorite;
-    // this.tour.updatedAt = new Date();
 
     // Save to sessionStorage for now
     let tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
     if (this.isNewTour) {
-      this.tour.id = Date.now().toString();
       tours.push(this.tour);
+      this.isNewTour = false;
     } else {
       tours = tours.map((t: Tour) => t.id === this.tour?.id ? this.tour : t);
     }
     sessionStorage.setItem('tours', JSON.stringify(tours));
 
     this.isEditing = false;
+    this.saveMessage = 'Tour saved successfully!';
+    // Clear success message after 3 seconds
+    this.saveMessageTimeout = setTimeout(() => {
+      this.saveMessage = '';
+    }, 3000);
   }
 
   toggleEdit() {
@@ -217,6 +258,8 @@ export class TourDetailsComponent implements OnInit {
   }
 
   cancel() {
+    this.errorMessage = '';
+    this.saveMessage = '';
     if (this.isNewTour) {
       this.router.navigate(['/']);
     } else {
@@ -233,26 +276,42 @@ export class TourDetailsComponent implements OnInit {
   // }
 
   addLog() {
-    if (!this.tour || !this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
+    // Validate required fields
+    if (!this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
+      this.errorMessage = 'Date, start time, and end time are required';
+      return;
+    }
+
+    if (!this.tour) {
+      this.errorMessage = 'Tour not found';
       return;
     }
 
     const log: TourLog = {
       id: Date.now().toString(),
       tourId: this.tour.id,
-      date: this.newLog.date as Date,
+      date: new Date(this.newLog.date),
       startTime: this.newLog.startTime || '',
       endTime: this.newLog.endTime || '',
       actualDistance: this.newLog.actualDistance || 0,
       difficulty: this.newLog.difficulty || 5,
       totalTime: this.calculateDuration(this.newLog.startTime || '', this.newLog.endTime || ''),
-      rating: this.newLog.rating || 0,
+      rating: 0,
       notes: this.newLog.notes || ''
     };
 
     this.tour.logs.push(log);
     this.saveTour();
     this.resetLogForm();
+    this.saveMessage = 'Log entry added successfully!';
+
+    // Clear any pending log message timeout
+    if (this.logMessageTimeout) {
+      clearTimeout(this.logMessageTimeout);
+    }
+    this.logMessageTimeout = setTimeout(() => {
+      this.saveMessage = '';
+    }, 3000);
   }
 
   deleteLog(logId: string) {
@@ -279,7 +338,7 @@ export class TourDetailsComponent implements OnInit {
 
   private resetLogForm() {
     this.newLog = {
-      date: new Date(),
+      date: this.getCurrentIsoDate(),
       startTime: '',
       endTime: '',
       actualDistance: 0,
@@ -287,6 +346,7 @@ export class TourDetailsComponent implements OnInit {
       notes: ''
     };
     this.showLogForm = false;
+    this.errorMessage = '';
   }
 
   goBack() {

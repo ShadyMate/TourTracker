@@ -677,6 +677,49 @@
   }
 }
 
+// ============ MESSAGES ============
+.message {
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 16px 20px 0;
+  animation: slideDown 0.3s ease-out;
+
+  &.error-message {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+
+    :host-context(.dark-mode) & {
+      background: rgba(244, 67, 54, 0.15);
+      border-color: rgba(244, 67, 54, 0.4);
+    }
+  }
+
+  &.success-message {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+
+    :host-context(.dark-mode) & {
+      background: rgba(76, 175, 80, 0.15);
+      border-color: rgba(76, 175, 80, 0.4);
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // ============ BUTTONS ============
 .btn {
   padding: 10px 16px;

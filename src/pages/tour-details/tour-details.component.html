@@ -1,12 +1,13 @@
 <div class="tour-details-container" *ngIf="tour">
+  <!-- Error/Success Messages -->
+  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
+  <div *ngIf="saveMessage" class="message success-message">{{ saveMessage }}</div>
+
   <!-- Header Navigation -->
   <header class="details-header">
     <button class="back-btn" (click)="goBack()" title="Back to home">← Back</button>
     <h1>{{ tour.name || 'New Tour' }}</h1>
     <div class="header-actions">
-      <!-- <button class="icon-btn favorite-btn" (click)="toggleFavorite()" [class.active]="tour.isFavorite" title="Toggle favorite">
-        ⭐
-      </button> -->
       <button class="btn btn-primary" (click)="toggleEdit()">
         {{ isEditing ? 'Save' : 'Edit' }}
       </button>
@@ -277,6 +278,6 @@
 
 @if (!tour) {
   <div class="loading-state">
-    <p>Loading tour...</p>
+    <p>{{ isLoading ? 'Loading tour...' : 'Tour not found' }}</p>
   </div>
 }
