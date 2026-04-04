@@ -3,6 +3,11 @@
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  transition: background 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
 
   * {
     box-sizing: border-box;
@@ -18,11 +23,23 @@
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
   border-right: 1px solid rgba(0, 0, 0, 0.05);
   overflow: hidden;
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: #2d2d44;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
+    border-right-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .sidebar-header {
   padding: 24px 20px 16px;
   border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+  transition: border-color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
 
   .app-title {
     margin: 0;
@@ -38,6 +55,11 @@
 .search-container {
   padding: 16px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: border-color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .search-inner {
@@ -55,16 +77,32 @@
   font-size: 14px;
   font-family: inherit;
   transition: all 0.2s ease;
+  background: white;
+  color: #333;
+
+  :host-context(.dark-mode) & {
+    background: #3a3a52;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+  }
 
   &:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    background: white;
+
+    :host-context(.dark-mode) & {
+      background: #3a3a52;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+    }
   }
 
   &::placeholder {
     color: #999;
+
+    :host-context(.dark-mode) & {
+      color: #777;
+    }
   }
 }
 
@@ -104,6 +142,11 @@
   color: #999;
   padding: 0 4px;
   font-weight: 500;
+  transition: color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    color: #aaa;
+  }
 }
 
 // ============ TOURS LIST ============
@@ -124,8 +167,16 @@
     background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 
+    :host-context(.dark-mode) & {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     &:hover {
       background: rgba(0, 0, 0, 0.3);
+
+      :host-context(.dark-mode) & {
+        background: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 }
@@ -134,6 +185,11 @@
   padding: 40px 20px;
   text-align: center;
   color: #999;
+  transition: color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    color: #aaa;
+  }
 
   p {
     margin: 0 0 8px;
@@ -145,6 +201,11 @@
     display: block;
     font-size: 12px;
     color: #bbb;
+    transition: color 0.3s ease;
+
+    :host-context(.dark-mode) & {
+      color: #888;
+    }
   }
 }
 
@@ -161,11 +222,22 @@
   cursor: pointer;
   transition: all 0.2s ease;
 
+  :host-context(.dark-mode) & {
+    background: #3a3a52;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
   &:hover {
     background: #f9f9f9;
     border-color: rgba(102, 126, 234, 0.3);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
     transform: translateX(2px);
+
+    :host-context(.dark-mode) & {
+      background: #444a63;
+      border-color: rgba(102, 126, 234, 0.4);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
   }
 
   &:active {
@@ -187,6 +259,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    color: #e0e0e0;
+  }
 }
 
 .tour-info {
@@ -204,6 +281,10 @@
     font-weight: 600;
     color: #667eea;
     min-width: 40px;
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+    }
   }
 
   .value {
@@ -211,6 +292,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: color 0.3s ease;
+
+    :host-context(.dark-mode) & {
+      color: #bbb;
+    }
   }
 }
 
@@ -220,6 +306,11 @@
   font-size: 12px;
   color: #888;
   margin-top: 4px;
+  transition: color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    color: #999;
+  }
 
   .distance,
   .time {
@@ -252,6 +343,10 @@
   &:hover {
     background: rgba(0, 0, 0, 0.05);
     transform: scale(1.1);
+
+    :host-context(.dark-mode) & {
+      background: rgba(255, 255, 255, 0.1);
+    }
   }
 
   &:active {
@@ -288,6 +383,12 @@
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   gap: 32px;
+  transition: background 0.3s ease, border-color 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: rgba(45, 45, 68, 0.95);
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
 }
 
 .nav-links {
@@ -306,9 +407,18 @@
   transition: all 0.2s ease;
   display: inline-block;
 
+  :host-context(.dark-mode) & {
+    color: #aaa;
+  }
+
   &:hover {
     color: #667eea;
     background: rgba(102, 126, 234, 0.05);
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+      background: rgba(102, 126, 234, 0.1);
+    }
   }
 
   &.active {
@@ -334,9 +444,18 @@
   cursor: pointer;
   transition: all 0.2s ease;
 
+  :host-context(.dark-mode) & {
+    background: rgba(102, 126, 234, 0.15);
+    color: #8b9fff;
+  }
+
   &:hover {
     background: rgba(102, 126, 234, 0.2);
     transform: scale(1.05);
+
+    :host-context(.dark-mode) & {
+      background: rgba(102, 126, 234, 0.25);
+    }
   }
 
   &:active {
@@ -363,22 +482,43 @@
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   max-width: 400px;
+  transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+
+  :host-context(.dark-mode) & {
+    background: rgba(45, 45, 68, 0.8);
+    color: rgba(224, 224, 224, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
 
   h2 {
     margin: 0 0 16px;
     font-size: 32px;
     color: #222;
+    transition: color 0.3s ease;
+
+    :host-context(.dark-mode) & {
+      color: #e0e0e0;
+    }
   }
 
   p {
     margin: 8px 0;
     line-height: 1.6;
     color: #666;
+    transition: color 0.3s ease;
+
+    :host-context(.dark-mode) & {
+      color: #aaa;
+    }
 
     &.hint {
       color: #999;
       font-size: 13px;
       margin-top: 16px;
+
+      :host-context(.dark-mode) & {
+        color: #888;
+      }
     }
   }
 }
