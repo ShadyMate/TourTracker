@@ -53,6 +53,10 @@
                 <span class="distance">📍 {{ tour.distance }} km</span>
                 <span class="time">⏱️ {{ tour.time }}</span>
               </div>
+              <div class="info-attributes">
+                <span class="attribute">📈 {{ getPopularity(tour) }} log{{ getPopularity(tour) !== 1 ? 's' : '' }}</span>
+                <span class="attribute">{{ getChildFriendlinessEmoji(getChildFriendliness(tour)) }} {{ getChildFriendliness(tour) }}/6</span>
+              </div>
             </div>
           </div>
           <div class="tour-actions">

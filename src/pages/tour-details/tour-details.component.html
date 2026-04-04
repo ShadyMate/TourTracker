@@ -169,6 +169,18 @@
               </p>
             } -->
           </div>
+
+          <div class="info-section">
+            <h4>📊 Computed Attributes</h4>
+            <p class="info-item">
+              <span class="label">Popularity:</span>
+              <span class="value">{{ getPopularity(tour) }} log{{ getPopularity(tour) !== 1 ? 's' : '' }}</span>
+            </p>
+            <p class="info-item">
+              <span class="label">Child-Friendliness:</span>
+              <span class="value">{{ getChildFriendlinessLabel(getChildFriendliness(tour)) }} ({{ getChildFriendliness(tour) }}/6)</span>
+            </p>
+          </div>
         </div>
       }
     </aside>
@@ -202,7 +214,7 @@
           }
         </div>
 
-        <!-- Add New Log Form -->
+        <!-- Add/Edit Log Form -->
         @if (showLogForm) {
           <form class="log-form">
             <div class="form-row">
@@ -237,8 +249,10 @@
             </div>
 
             <div class="form-actions">
-              <button type="button" class="btn btn-secondary" (click)="showLogForm = false">Cancel</button>
-              <button type="button" class="btn btn-primary" (click)="addLog()">Save Log Entry</button>
+              <button type="button" class="btn btn-secondary" (click)="cancelLogEdit()">Cancel</button>
+              <button type="button" class="btn btn-primary" (click)="editingLogId ? saveLogEdit() : addLog()">
+                {{ editingLogId ? 'Update Log Entry' : 'Save Log Entry' }}
+              </button>
             </div>
           </form>
         }
@@ -253,7 +267,10 @@
                     <span class="log-date">📅 {{ formatDate(log.date) }}</span>
                     <span class="log-time">⏱️ {{ log.startTime }} - {{ log.endTime }} ({{ log.totalTime }})</span>
                   </div>
-                  <button class="delete-btn" (click)="deleteLog(log.id)" title="Delete log entry">🗑️</button>
+                  <div class="log-actions">
+                    <button class="edit-btn" (click)="editLog(log.id)" title="Edit log entry">✏️</button>
+                    <button class="delete-btn" (click)="deleteLog(log.id)" title="Delete log entry">🗑️</button>
+                  </div>
                 </div>
                 <div class="log-details">
                   <span class="log-item">📍 {{ log.actualDistance }}km</span>

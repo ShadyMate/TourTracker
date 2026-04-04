@@ -54,11 +54,38 @@ export class HomeComponent implements OnInit {
     if (!this.searchQuery.trim()) { // This means if searchQuery is empty
       this.filteredTours = this.tours;
     } else {
-      this.filteredTours = this.tours.filter(tour =>
-        tour.name.toLowerCase().includes(this.searchQuery) ||
-        tour.from.toLowerCase().includes(this.searchQuery) ||
-        tour.to.toLowerCase().includes(this.searchQuery)
-      );
+      const query = this.searchQuery.toLowerCase();
+      this.filteredTours = this.tours.filter(tour => {
+        // Search in basic tour fields
+        const basicMatch =
+          tour.name.toLowerCase().includes(query) ||
+          tour.from.toLowerCase().includes(query) ||
+          tour.to.toLowerCase().includes(query) ||
+          tour.description.toLowerCase().includes(query);
+
+        // Search in logs
+        const logsMatch = tour.logs.some(log =>
+          log.notes.toLowerCase().includes(query) ||
+          log.difficulty.toString().includes(query)
+        );
+
+        // Search by computed attributes (popularity/logs count)
+        const popularityMatch =
+          query.includes('popular') ||
+          query.includes('log') ||
+          query === this.getPopularity(tour).toString();
+
+        // Search by child-friendliness level
+        const childFriendlyMatch =
+          (this.getChildFriendliness(tour).toString() === query) ||
+          (query.includes('child') && this.getChildFriendliness(tour) >= 4) ||
+          (query.includes('beginner') && this.getChildFriendliness(tour) >= 4) ||
+          (query.includes('easy') && this.getChildFriendliness(tour) >= 3) ||
+          (query.includes('hard') && this.getChildFriendliness(tour) <= 2) ||
+          (query.includes('challenging') && this.getChildFriendliness(tour) <= 2);
+
+        return basicMatch || logsMatch || popularityMatch || childFriendlyMatch;
+      });
     }
   }
 
@@ -99,6 +126,35 @@ export class HomeComponent implements OnInit {
   toggleFavorite(tourId: string): void {
     console.log('Toggle favorite:', tourId);
     // Add favorite functionality
+  }
+
+  getPopularity(tour: Tour): number {
+    return tour.logs.length;
+  }
+
+  getChildFriendliness(tour: Tour): number {
+    if (tour.logs.length === 0) return 3; // Default to neutral
+
+    let score = 0;
+    const avgDifficulty = tour.logs.reduce((sum, log) => sum + log.difficulty, 0) / tour.logs.length;
+    const avgTimeMinutes = tour.logs.reduce((sum, log) => {
+      const [h, m] = log.totalTime.split(':').map(Number);
+      return sum + (h * 60 + m);
+    }, 0) / tour.logs.length;
+    const avgDistance = tour.logs.reduce((sum, log) => sum + log.actualDistance, 0) / tour.logs.length;
+
+    if (avgDifficulty < 5) score += 2;
+    if (avgTimeMinutes < 180) score += 2; // Less than 3 hours
+    if (avgDistance < 15) score += 2;
+
+    return Math.min(6, score);
+  }
+
+  getChildFriendlinessEmoji(score: number): string {
+    if (score === 0) return '⚠️';
+    if (score <= 2) return '🧗';
+    if (score <= 4) return '🚶';
+    return '👧';
   }
 
   goToSettings(): void {

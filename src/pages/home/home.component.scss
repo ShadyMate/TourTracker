@@ -321,6 +321,29 @@
   }
 }
 
+.info-attributes {
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  margin-top: 6px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+  :host-context(.dark-mode) & {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .attribute {
+    color: #667eea;
+    font-weight: 500;
+    white-space: nowrap;
+
+    :host-context(.dark-mode) & {
+      color: #8b9fff;
+    }
+  }
+}
+
 .tour-actions {
   display: flex;
   gap: 6px;

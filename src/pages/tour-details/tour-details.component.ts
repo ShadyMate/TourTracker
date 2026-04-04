@@ -23,6 +23,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   isLoading = false;
   saveMessage = '';
   errorMessage = '';
+  editingLogId: string | null = null;
   private destroy$ = new Subject<void>();
   private saveMessageTimeout: ReturnType<typeof setTimeout> | undefined;
   private logMessageTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -282,6 +283,27 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.newLog.actualDistance <= 0) {
+      this.errorMessage = 'Actual distance must be greater than 0';
+      return;
+    }
+
+    if (this.newLog.difficulty < 1 || this.newLog.difficulty > 10) {
+      this.errorMessage = 'Difficulty must be between 1-10';
+      return;
+    }
+
+    // Validate end time is after start time
+    const [startH, startM] = this.newLog.startTime.split(':').map(Number);
+    const [endH, endM] = this.newLog.endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (endMinutes <= startMinutes) {
+      this.errorMessage = 'End time must be after start time';
+      return;
+    }
+
     if (!this.tour) {
       this.errorMessage = 'Tour not found';
       return;
@@ -315,10 +337,112 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   }
 
   deleteLog(logId: string) {
+    if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
+      return;
+    }
     if (this.tour) {
       this.tour.logs = this.tour.logs.filter(l => l.id !== logId);
       this.saveTour();
     }
+  }
+
+  editLog(logId: string) {
+    const logToEdit = this.tour?.logs.find(l => l.id === logId);
+    if (!logToEdit) return;
+
+    // Pre-populate form with log data
+    let dateStr = '';
+    if (logToEdit.date instanceof Date) {
+      dateStr = logToEdit.date.toISOString().split('T')[0];
+    } else if (typeof logToEdit.date === 'string') {
+      dateStr = (logToEdit.date as string).split('T')[0];
+    } else {
+      dateStr = new Date(logToEdit.date as any).toISOString().split('T')[0];
+    }
+
+    this.newLog = {
+      date: dateStr,
+      startTime: logToEdit.startTime,
+      endTime: logToEdit.endTime,
+      actualDistance: logToEdit.actualDistance,
+      difficulty: logToEdit.difficulty,
+      notes: logToEdit.notes
+    };
+
+    this.editingLogId = logId;
+    this.showLogForm = true;
+  }
+
+  saveLogEdit() {
+    // Validate required fields
+    if (!this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
+      this.errorMessage = 'Date, start time, and end time are required';
+      return;
+    }
+
+    if (this.newLog.actualDistance <= 0) {
+      this.errorMessage = 'Actual distance must be greater than 0';
+      return;
+    }
+
+    if (this.newLog.difficulty < 1 || this.newLog.difficulty > 10) {
+      this.errorMessage = 'Difficulty must be between 1-10';
+      return;
+    }
+
+    // Validate end time is after start time
+    const [startH, startM] = this.newLog.startTime.split(':').map(Number);
+    const [endH, endM] = this.newLog.endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (endMinutes <= startMinutes) {
+      this.errorMessage = 'End time must be after start time';
+      return;
+    }
+
+    if (!this.tour) {
+      this.errorMessage = 'Tour not found';
+      return;
+    }
+
+    // Find and update the log
+    const logIndex = this.tour.logs.findIndex(l => l.id === this.editingLogId);
+    if (logIndex === -1) {
+      this.errorMessage = 'Log entry not found';
+      return;
+    }
+
+    const updatedLog: TourLog = {
+      id: this.editingLogId!,
+      tourId: this.tour.id,
+      date: new Date(this.newLog.date),
+      startTime: this.newLog.startTime,
+      endTime: this.newLog.endTime,
+      actualDistance: this.newLog.actualDistance,
+      difficulty: this.newLog.difficulty,
+      totalTime: this.calculateDuration(this.newLog.startTime, this.newLog.endTime),
+      rating: this.tour.logs[logIndex].rating,
+      notes: this.newLog.notes
+    };
+
+    this.tour.logs[logIndex] = updatedLog;
+    this.saveTour();
+    this.cancelLogEdit();
+    this.saveMessage = 'Log entry updated successfully!';
+
+    // Clear any pending log message timeout
+    if (this.logMessageTimeout) {
+      clearTimeout(this.logMessageTimeout);
+    }
+    this.logMessageTimeout = setTimeout(() => {
+      this.saveMessage = '';
+    }, 3000);
+  }
+
+  cancelLogEdit() {
+    this.editingLogId = null;
+    this.resetLogForm();
   }
 
   private calculateDuration(start: string, end: string): string {
@@ -363,6 +487,35 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       month: '2-digit',
       day: '2-digit'
     });
+  }
+
+  getPopularity(tour: Tour): number {
+    return tour.logs.length;
+  }
+
+  getChildFriendliness(tour: Tour): number {
+    if (tour.logs.length === 0) return 3; // Default to neutral
+
+    let score = 0;
+    const avgDifficulty = tour.logs.reduce((sum, log) => sum + log.difficulty, 0) / tour.logs.length;
+    const avgTimeMinutes = tour.logs.reduce((sum, log) => {
+      const [h, m] = log.totalTime.split(':').map(Number);
+      return sum + (h * 60 + m);
+    }, 0) / tour.logs.length;
+    const avgDistance = tour.logs.reduce((sum, log) => sum + log.actualDistance, 0) / tour.logs.length;
+
+    if (avgDifficulty < 5) score += 2;
+    if (avgTimeMinutes < 180) score += 2; // Less than 3 hours
+    if (avgDistance < 15) score += 2;
+
+    return Math.min(6, score);
+  }
+
+  getChildFriendlinessLabel(score: number): string {
+    if (score === 0) return 'Not suitable';
+    if (score <= 2) return 'Challenging';
+    if (score <= 4) return 'Moderate';
+    return 'Very friendly';
   }
 }
 
