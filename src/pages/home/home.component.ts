@@ -19,10 +19,10 @@ import { Tour } from '../../models/tour.model'
 })
 export class HomeComponent implements OnInit {
   tours: Tour[] = [
-    { id: '1', name: 'My first Route', description: '', from: 'FH Technikum', to: 'Mt. Everest', transportType: '', distance: '8300km', time: '60d', logs: [] },
-    { id: '2', name: 'Alpine Hike', description: '', from: 'Innsbruck', to: 'Zugspitze', transportType: '', distance: '45km', time: '12h', logs: [] },
-    { id: '3', name: 'City Tour', description: '', from: 'Vienna', to: 'Bratislava', transportType: '', distance: '65km', time: '2d', logs: [] },
-    { id: '4', name: 'Danube Bike Trail', description: '', from: 'Passau', to: 'Vienna', transportType: '', distance: '320km', time: '5d',logs: [] }
+    // { id: '1', name: 'My first Route', description: '', from: 'FH Technikum', to: 'Mt. Everest', transportType: '', distance: '8300km', time: '60d', logs: [] },
+    // { id: '2', name: 'Alpine Hike', description: '', from: 'Innsbruck', to: 'Zugspitze', transportType: '', distance: '45km', time: '12h', logs: [] },
+    // { id: '3', name: 'City Tour', description: '', from: 'Vienna', to: 'Bratislava', transportType: '', distance: '65km', time: '2d', logs: [] },
+    // { id: '4', name: 'Danube Bike Trail', description: '', from: 'Passau', to: 'Vienna', transportType: '', distance: '320km', time: '5d',logs: [] }
   ];
 
   searchQuery: string = '';

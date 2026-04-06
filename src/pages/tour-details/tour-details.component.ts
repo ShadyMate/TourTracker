@@ -31,6 +31,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   // Form data - properly typed to match Tour interface
   tourForm: {
     name: string;
+    selectedImage: string;
     description: string;
     from: string;
     to: string;
@@ -45,6 +46,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     // isFavorite: boolean;
   } = {
     name: '',
+    selectedImage: '',
     description: '',
     from: '',
     to: '',
@@ -124,6 +126,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.tour = {
       id: 'temp-' + Date.now(),
       name: '',
+      selectedImage: '',
       description: '',
       from: '',
       to: '',
@@ -147,6 +150,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       this.tour = {
         id: '1',
         name: 'My first Route',
+        selectedImage: '',
         description: 'A wonderful mountain tour',
         from: 'FH Technikum',
         to: 'Mt. Everest',
@@ -180,6 +184,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     if (!this.tour) return;
     this.tourForm = {
       name: this.tour.name,
+      selectedImage: this.tour.selectedImage,
       description: this.tour.description,
       from: this.tour.from,
       to: this.tour.to,
@@ -225,6 +230,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
 
     // Update tour with form data
     this.tour.name = this.tourForm.name.trim();
+    this.tour.selectedImage = this.tourForm.selectedImage;
     this.tour.description = this.tourForm.description;
     this.tour.from = this.tourForm.from.trim();
     this.tour.to = this.tourForm.to.trim();
@@ -267,6 +273,10 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       this.isEditing = false;
       this.populateFormFromTour();
     }
+  }
+
+  selectImage(img: string) {
+    this.tourForm.selectedImage = img;
   }
 
   // toggleFavorite() {

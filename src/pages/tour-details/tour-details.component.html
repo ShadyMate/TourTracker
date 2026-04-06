@@ -34,6 +34,14 @@
           </div>
 
           <div class="form-group">
+            <label>Select image</label>
+
+            <img src="/img1.jpg" alt="Bicycle" (click)="selectImage('img1')" [class.selected]="tourForm.selectedImage === 'img1'">
+            <img src="/img2.jpg" alt="Großglockner" (click)="selectImage('img2')" [class.selected]="tourForm.selectedImage === 'img2'">
+            <img src="/img3.jpg" alt="Hiking" (click)="selectImage('img3')" [class.selected]="tourForm.selectedImage === 'img3'">
+          </div>
+
+          <div class="form-group">
             <label>Description</label>
             <textarea [(ngModel)]="tourForm.description" name="description" placeholder="Tour description" rows="3"></textarea>
           </div>
@@ -106,6 +114,7 @@
           <div class="info-header">
             <div>
               <h3>{{ tour.name }}</h3>
+              <img [src]="'/' + tour?.selectedImage + '.jpg'" alt="test" width="100%">
               <p class="info-text">{{ tour.description }}</p>
             </div>
           </div>

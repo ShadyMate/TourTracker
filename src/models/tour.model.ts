@@ -2,6 +2,7 @@ export interface Tour {
   // name, tour description, from, to, transport type, tour distance, estimated time, route information
   id: string;
   name: string;
+  selectedImage: string;
   description: string;
   from: string;
   to: string;

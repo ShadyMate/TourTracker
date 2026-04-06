@@ -847,3 +847,14 @@
     gap: 12px;
   }
 }
+
+// ============ IMAGES ============
+
+img {
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+img.selected {
+  border: 2px solid orange;
+}
