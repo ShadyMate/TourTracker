@@ -114,7 +114,12 @@
           <div class="info-header">
             <div>
               <h3>{{ tour.name }}</h3>
-              <img [src]="'/' + tour?.selectedImage + '.jpg'" alt="test" width="100%">
+              @if (tour.selectedImage) {
+                <img [src]="'/' + tour.selectedImage + '.jpg'" alt="test" width="100%">
+              }
+              @else {
+                <i>No image selected</i><br><br>
+              }
               <p class="info-text">{{ tour.description }}</p>
             </div>
           </div>
