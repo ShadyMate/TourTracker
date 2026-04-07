@@ -211,7 +211,38 @@ export class TourService {
 
   // Business logic: Calculations
   getPopularity(tour: Tour): number {
-    return tour.logs.length;
+    if (tour.logs.length === 0) return 1;
+
+    // Normalize logs count (assume max 20 logs = 10/10)
+    const logsScore = Math.min(tour.logs.length / 2, 10);
+    
+    // Normalize rating (1-5 scale to 0-10 scale)
+    const avgRating = this.getAverageRating(tour);
+    const ratingScore = (avgRating / 5) * 10;
+    
+    // Average of both scores
+    const popularity = (logsScore + ratingScore) / 2;
+    
+    return Math.max(1, Math.min(10, popularity));
+  }
+
+  getAverageRating(tour: Tour): number {
+    if (tour.logs.length === 0) return 2.5;
+    
+    const totalRating = tour.logs.reduce((sum, log) => sum + log.rating, 0);
+    return totalRating / tour.logs.length;
+  }
+
+  getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = (rating % 1) >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    
+    return {
+      full: fullStars,
+      half: hasHalfStar,
+      empty: emptyStars
+    };
   }
 
   getChildFriendliness(tour: Tour): number {
@@ -244,6 +275,21 @@ export class TourService {
     if (score <= 2) return 'Challenging';
     if (score <= 4) return 'Moderate';
     return 'Very friendly';
+  }
+
+  getAverageActualTime(tour: Tour): string {
+    if (tour.logs.length === 0) return 'N/A';
+
+    const totalMinutes = tour.logs.reduce((sum, log) => {
+      const [h, m] = log.totalTime.split(':').map(Number);
+      return sum + (h * 60 + m);
+    }, 0);
+
+    const avgMinutes = Math.round(totalMinutes / tour.logs.length);
+    const hours = Math.floor(avgMinutes / 60);
+    const minutes = avgMinutes % 60;
+
+    return `${hours}:${minutes.toString().padStart(2, '0')}`;
   }
 
   calculateDuration(startTime: string, endTime: string): string {

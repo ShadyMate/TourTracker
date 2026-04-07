@@ -66,6 +66,18 @@ export class HomeComponent implements OnInit {
     return this.tourService.getPopularity(tour);
   }
 
+  getAverageRating(tour: Tour): number {
+    return this.tourService.getAverageRating(tour);
+  }
+
+  getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
+    return this.tourService.getRatingStars(rating);
+  }
+
+  getAverageActualTime(tour: Tour): string {
+    return this.tourService.getAverageActualTime(tour);
+  }
+
   getChildFriendliness(tour: Tour): number {
     return this.tourService.getChildFriendliness(tour);
   }

@@ -858,3 +858,104 @@ img {
 img.selected {
   border: 2px solid orange;
 }
+
+// ============ STAR RATING ============
+.star-rating-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  .star-btn {
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    font-size: 24px;
+    line-height: 1;
+    transition: all 0.2s ease;
+    color: #ddd;
+
+    :host-context(.dark-mode) & {
+      color: #555;
+    }
+
+    .star-icon {
+      display: inline-block;
+      transition: all 0.2s ease;
+
+      &.half {
+        position: relative;
+        &::after {
+          content: '☆';
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 50%;
+          overflow: hidden;
+        }
+      }
+    }
+
+    &.active {
+      color: #ffc107;
+
+      :host-context(.dark-mode) & {
+        color: #ffc107;
+      }
+    }
+
+    &:hover {
+      transform: scale(1.15);
+    }
+  }
+
+  .rating-value {
+    margin-left: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+
+    :host-context(.dark-mode) & {
+      color: #999;
+    }
+  }
+}
+
+.rating-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+
+  .star {
+    font-size: 16px;
+    line-height: 1;
+
+    &.filled {
+      color: #ffc107;
+    }
+
+    &.half {
+      color: #ffc107;
+    }
+
+    &.empty {
+      color: #ddd;
+
+      :host-context(.dark-mode) & {
+        color: #555;
+      }
+    }
+  }
+
+  .rating-text {
+    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+
+    :host-context(.dark-mode) & {
+      color: #999;
+    }
+  }
+}

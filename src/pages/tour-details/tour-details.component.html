@@ -144,8 +144,16 @@
                 <span class="stat-value">{{ tour()!.distance }}km</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Time</span>
+                <span class="stat-label">Est. Time</span>
                 <span class="stat-value">{{ tour()!.time }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Avg. Actual</span>
+                <span class="stat-value">{{ getAverageActualTime(tour()!) }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Logs</span>
+                <span class="stat-value">{{ tour()!.logs.length }}</span>
               </div>
             </div>
 
@@ -187,8 +195,24 @@
           <div class="info-section">
             <h4>📊 Computed Attributes</h4>
             <p class="info-item">
+              <span class="label">Average Rating:</span>
+              <span class="value rating-display">
+                @for (i of [1, 2, 3, 4, 5]; track i) {
+                  @let stars = getRatingStars(getAverageRating(tour()!));
+                  @if (i <= stars.full) {
+                    <span class="star filled">★</span>
+                  } @else if (i === stars.full + 1 && stars.half) {
+                    <span class="star half">⯨</span>
+                  } @else {
+                    <span class="star empty">☆</span>
+                  }
+                }
+                <span class="rating-text">{{ getAverageRating(tour()!).toFixed(1) }}/5</span>
+              </span>
+            </p>
+            <p class="info-item">
               <span class="label">Popularity:</span>
-              <span class="value">{{ getPopularity(tour()!) }} log{{ getPopularity(tour()!) !== 1 ? 's' : '' }}</span>
+              <span class="value">{{ getPopularity(tour()!).toFixed(1) }}/10</span>
             </p>
             <p class="info-item">
               <span class="label">Child-Friendliness:</span>
@@ -258,6 +282,27 @@
             </div>
 
             <div class="form-group">
+              <label>Rating</label>
+              <div class="star-rating-input">
+                @for (star of [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]; track star) {
+                  <button 
+                    type="button"
+                    class="star-btn"
+                    [class.active]="newLog.rating >= star"
+                    (click)="setRating(star)"
+                    title="{{ star }} stars">
+                    @if (star % 1 === 0) {
+                      <span class="star-icon">{{ newLog.rating >= star ? '★' : '☆' }}</span>
+                    } @else {
+                      <span class="star-icon half">{{ newLog.rating >= star ? '⯨' : '☆' }}</span>
+                    }
+                  </button>
+                }
+                <span class="rating-value">{{ newLog.rating }}/5</span>
+              </div>
+            </div>
+
+            <div class="form-group">
               <label>Notes</label>
               <textarea [(ngModel)]="newLog.notes" name="logNotes" placeholder="Additional notes about this tour" rows="3"></textarea>
             </div>
@@ -289,7 +334,19 @@
                 <div class="log-details">
                   <span class="log-item">📍 {{ log.actualDistance }}km</span>
                   <span class="log-item">⚙️ Difficulty: {{ log.difficulty }}/10</span>
-                  <span class="log-item" *ngIf="log.rating > 0">⭐ {{ log.rating }}/5</span>
+                  <span class="log-item rating-display">
+                    @for (i of [1, 2, 3, 4, 5]; track i) {
+                      @let stars = getRatingStars(log.rating);
+                      @if (i <= stars.full) {
+                        <span class="star filled">★</span>
+                      } @else if (i === stars.full + 1 && stars.half) {
+                        <span class="star half">⯨</span>
+                      } @else {
+                        <span class="star empty">☆</span>
+                      }
+                    }
+                    <span class="rating-text">{{ log.rating }}/5</span>
+                  </span>
                 </div>
                 @if (log.notes) {
                   <p class="log-notes">{{ log.notes }}</p>

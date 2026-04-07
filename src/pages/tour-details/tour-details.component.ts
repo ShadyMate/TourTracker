@@ -58,6 +58,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     endTime: string;
     actualDistance: number;
     difficulty: number;
+    rating: number;
     notes: string;
   } = {
     date: '',
@@ -65,6 +66,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     endTime: '',
     actualDistance: 0,
     difficulty: 5,
+    rating: 2.5,
     notes: ''
   };
 
@@ -281,7 +283,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       actualDistance: this.newLog.actualDistance,
       difficulty: this.newLog.difficulty,
       totalTime,
-      rating: 0,
+      rating: this.newLog.rating,
       notes: this.newLog.notes
     });
 
@@ -334,6 +336,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       endTime: logToEdit.endTime,
       actualDistance: logToEdit.actualDistance,
       difficulty: logToEdit.difficulty,
+      rating: logToEdit.rating,
       notes: logToEdit.notes
     };
 
@@ -367,6 +370,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       actualDistance: this.newLog.actualDistance,
       difficulty: this.newLog.difficulty,
       totalTime,
+      rating: this.newLog.rating,
       notes: this.newLog.notes
     });
 
@@ -397,6 +401,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       endTime: '',
       actualDistance: 0,
       difficulty: 5,
+      rating: 2.5,
       notes: ''
     };
     this.showLogForm.set(false);
@@ -407,8 +412,20 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
-  getRatingStars(rating: number): number[] {
-    return Array(5).fill(0).map((_, i) => i < rating ? 1 : 0);
+  getAverageRating(tour: Tour): number {
+    return this.tourService.getAverageRating(tour);
+  }
+
+  getAverageActualTime(tour: Tour): string {
+    return this.tourService.getAverageActualTime(tour);
+  }
+
+  getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
+    return this.tourService.getRatingStars(rating);
+  }
+
+  setRating(stars: number): void {
+    this.newLog.rating = stars;
   }
 
   formatDate(date: Date): string {

@@ -51,10 +51,26 @@
               </div>
               <div class="info-row">
                 <span class="distance">📍 {{ tour.distance }} km</span>
-                <span class="time">⏱️ {{ tour.time }}</span>
+                <span class="time">⏱️ Est: {{ tour.time }}</span>
+              </div>
+              <div class="info-row">
+                <span class="time">⏱️ Avg: {{ getAverageActualTime(tour) }}</span>
               </div>
               <div class="info-attributes">
-                <span class="attribute">📈 {{ getPopularity(tour) }} log{{ getPopularity(tour) !== 1 ? 's' : '' }}</span>
+                <span class="attribute rating-display">
+                  @for (i of [1, 2, 3, 4, 5]; track i) {
+                    @let stars = getRatingStars(getAverageRating(tour));
+                    @if (i <= stars.full) {
+                      <span class="star filled">★</span>
+                    } @else if (i === stars.full + 1 && stars.half) {
+                      <span class="star half">⯨</span>
+                    } @else {
+                      <span class="star empty">☆</span>
+                    }
+                  }
+                  <span class="rating-text">{{ getAverageRating(tour).toFixed(1) }}</span>
+                </span>
+                <span class="attribute">📊 {{ getPopularity(tour).toFixed(1) }}/10</span>
                 <span class="attribute">{{ getChildFriendlinessEmoji(getChildFriendliness(tour)) }} {{ getChildFriendliness(tour) }}/6</span>
               </div>
             </div>

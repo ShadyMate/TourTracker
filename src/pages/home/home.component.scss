@@ -588,3 +588,42 @@
     max-width: 100%;
   }
 }
+
+// ============ STAR RATING ============
+.rating-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+
+  .star {
+    font-size: 14px;
+    line-height: 1;
+
+    &.filled {
+      color: #ffc107;
+    }
+
+    &.half {
+      color: #ffc107;
+    }
+
+    &.empty {
+      color: #ddd;
+
+      :host-context(.dark-mode) & {
+        color: #555;
+      }
+    }
+  }
+
+  .rating-text {
+    margin-left: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+
+    :host-context(.dark-mode) & {
+      color: #999;
+    }
+  }
+}
