@@ -3,27 +3,28 @@
     <!-- Header -->
     <div class="auth-header">
       <h1>TourTracker</h1>
-      <p class="subtitle">{{ isLoginMode ? 'Welcome Back' : 'Join Our Community' }}</p>
+      <p class="subtitle">{{ isLoginMode() ? 'Welcome Back' : 'Join Our Community' }}</p>
     </div>
 
     <!-- Error Message -->
-    @if (error) {
+    @if (error()) {
       <div class="error-message">
         <span class="error-icon">⚠️</span>
-        {{ error }}
+        {{ error() }}
       </div>
     }
 
     <!-- Form -->
     <form (ngSubmit)="submit()" class="auth-form">
       <!-- Register Only Fields -->
-      @if (!isLoginMode) {
+      @if (!isLoginMode()) {
         <div class="form-group">
           <label for="firstName">First Name</label>
           <input
             type="text"
             id="firstName"
-            [(ngModel)]="firstName"
+            [ngModel]="firstName()"
+            (ngModelChange)="onFirstNameChange($event)"
             name="firstName"
             placeholder="John"
             required>
@@ -34,7 +35,8 @@
           <input
             type="text"
             id="lastName"
-            [(ngModel)]="lastName"
+            [ngModel]="lastName()"
+            (ngModelChange)="onLastNameChange($event)"
             name="lastName"
             placeholder="Doe"
             required>
@@ -47,7 +49,8 @@
         <input
           type="email"
           id="email"
-          [(ngModel)]="email"
+          [ngModel]="email()"
+          (ngModelChange)="onEmailChange($event)"
           name="email"
           placeholder="your@email.com"
           required>
@@ -59,31 +62,32 @@
         <input
           type="password"
           id="password"
-          [(ngModel)]="password"
+          [ngModel]="password()"
+          (ngModelChange)="onPasswordChange($event)"
           name="password"
           placeholder="••••••••"
           required>
-        @if (!isLoginMode) {
+        @if (!isLoginMode()) {
           <small class="password-hint">At least 6 characters</small>
         }
       </div>
 
       <!-- Submit Button -->
-      <button type="submit" class="submit-btn" [disabled]="loading">
-        @if (loading) {
+      <button type="submit" class="submit-btn" [disabled]="loading()">
+        @if (loading()) {
           <span class="loading-spinner"></span>
-          {{ isLoginMode ? 'Logging in...' : 'Creating Account...' }}
+          {{ isLoginMode() ? 'Logging in...' : 'Creating Account...' }}
         } @else {
-          {{ isLoginMode ? 'Login' : 'Create Account' }}
+          {{ isLoginMode() ? 'Login' : 'Create Account' }}
         }
       </button>
     </form>
 
     <!-- Toggle Link -->
     <div class="auth-footer">
-      <p>{{ isLoginMode ? "Don't have an account?" : 'Already have an account?' }}</p>
+      <p>{{ isLoginMode() ? "Don't have an account?" : 'Already have an account?' }}</p>
       <button type="button" class="toggle-link" (click)="toggleMode()">
-        {{ isLoginMode ? 'Sign Up' : 'Login' }}
+        {{ isLoginMode() ? 'Sign Up' : 'Login' }}
       </button>
     </div>
   </div>

@@ -1,16 +1,15 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-// Register page redirects to login component
-// The login/register functionality is unified in the login component
-// This component navigates to /login which displays the login component
 @Component({
   selector: 'app-register',
-  standalone: true,
-  template: ''
+  template: '',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RegisterComponent {
-  constructor(private router: Router) {
+  private router = inject(Router);
+
+  constructor() {
     this.router.navigate(['/login']);
   }
 }

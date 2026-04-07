@@ -20,12 +20,12 @@
         <div class="setting-control">
           <button
             class="toggle-switch"
-            [class.active]="isDarkMode"
+            [class.active]="isDarkMode()"
             (click)="toggleDarkMode()"
-            [attr.aria-label]="isDarkMode ? 'Turn off dark mode' : 'Turn on dark mode'">
+            [attr.aria-label]="isDarkMode() ? 'Turn off dark mode' : 'Turn on dark mode'">
             <span class="toggle-circle"></span>
           </button>
-          <span class="toggle-label">{{ isDarkMode ? 'ON' : 'OFF' }}</span>
+          <span class="toggle-label">{{ isDarkMode() ? 'ON' : 'OFF' }}</span>
         </div>
       </div>
 
@@ -35,14 +35,14 @@
       <div class="theme-preview">
         <h3>Theme Preview</h3>
         <div class="preview-grid">
-          <div class="preview-card light-preview" [class.active]="!isDarkMode">
+          <div class="preview-card light-preview" [class.active]="!isDarkMode()">
             <div class="preview-header">Light</div>
             <div class="preview-content">
               <div class="preview-line"></div>
               <div class="preview-line short"></div>
             </div>
           </div>
-          <div class="preview-card dark-preview" [class.active]="isDarkMode">
+          <div class="preview-card dark-preview" [class.active]="isDarkMode()">
             <div class="preview-header">Dark</div>
             <div class="preview-content">
               <div class="preview-line"></div>

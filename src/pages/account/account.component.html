@@ -1,79 +1,81 @@
-<div class="account-container" *ngIf="!isLoading && user">
-  <!-- Header -->
-  <header class="account-header">
-    <button class="back-btn" (click)="goBack()">← Back to Home</button>
-    <h1>My Account</h1>
-    <div class="spacer"></div>
-  </header>
+@if (!isLoading() && user()) {
+  <div class="account-container">
+    <!-- Header -->
+    <header class="account-header">
+      <button class="back-btn" (click)="goBack()">← Back to Home</button>
+      <h1>My Account</h1>
+      <div class="spacer"></div>
+    </header>
 
-  <!-- Account Content -->
-  <main class="account-content">
-    <!-- Profile Card -->
-    <div class="profile-card">
-      <div class="profile-avatar">
-        {{ getAvatarInitials() }}
-      </div>
-      <div class="profile-info">
-        <h2>{{ user.firstName }} {{ user.lastName }}</h2>
-        <p class="username">@{{ user.username }}</p>
-        <p class="email">{{ user.email }}</p>
-      </div>
-    </div>
-
-    <!-- Account Info Card -->
-    <div class="info-card">
-      <h3>Account Information</h3>
-
-      <div class="info-item">
-        <span class="label">First Name</span>
-        <span class="value">{{ user.firstName }}</span>
+    <!-- Account Content -->
+    <main class="account-content">
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="profile-avatar">
+          {{ avatarInitials() }}
+        </div>
+        <div class="profile-info">
+          <h2>{{ user()?.firstName }} {{ user()?.lastName }}</h2>
+          <p class="username">@{{ user()?.username }}</p>
+          <p class="email">{{ user()?.email }}</p>
+        </div>
       </div>
 
-      <div class="info-item">
-        <span class="label">Last Name</span>
-        <span class="value">{{ user.lastName }}</span>
+      <!-- Account Info Card -->
+      <div class="info-card">
+        <h3>Account Information</h3>
+
+        <div class="info-item">
+          <span class="label">First Name</span>
+          <span class="value">{{ user()?.firstName }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="label">Last Name</span>
+          <span class="value">{{ user()?.lastName }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="label">Username</span>
+          <span class="value">{{ user()?.username }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="label">Email</span>
+          <span class="value">{{ user()?.email }}</span>
+        </div>
+
+        <div class="info-item">
+          <span class="label">User ID</span>
+          <span class="value mono">{{ user()?.id }}</span>
+        </div>
       </div>
 
-      <div class="info-item">
-        <span class="label">Username</span>
-        <span class="value">{{ user.username }}</span>
+      <!-- Settings Link -->
+      <div class="card">
+        <button class="card-link" (click)="goToSettings()">
+          <span class="icon">⚙️</span>
+          <span class="card-text">
+            <strong>Settings</strong>
+            <p>Manage app preferences and appearance</p>
+          </span>
+          <span class="arrow">→</span>
+        </button>
       </div>
 
-      <div class="info-item">
-        <span class="label">Email</span>
-        <span class="value">{{ user.email }}</span>
+      <!-- Danger Zone -->
+      <div class="danger-card">
+        <h3>Danger Zone</h3>
+        <button class="btn btn-danger" (click)="logout()">
+          🚪 Logout
+        </button>
+        <p class="warning-text">You will be returned to the login page</p>
       </div>
+    </main>
+  </div>
+}
 
-      <div class="info-item">
-        <span class="label">User ID</span>
-        <span class="value mono">{{ user.id }}</span>
-      </div>
-    </div>
-
-    <!-- Settings Link -->
-    <div class="card">
-      <button class="card-link" (click)="goToSettings()">
-        <span class="icon">⚙️</span>
-        <span class="card-text">
-          <strong>Settings</strong>
-          <p>Manage app preferences and appearance</p>
-        </span>
-        <span class="arrow">→</span>
-      </button>
-    </div>
-
-    <!-- Danger Zone -->
-    <div class="danger-card">
-      <h3>Danger Zone</h3>
-      <button class="btn btn-danger" (click)="logout()">
-        🚪 Logout
-      </button>
-      <p class="warning-text">You will be returned to the login page</p>
-    </div>
-  </main>
-</div>
-
-@if (isLoading) {
+@if (isLoading()) {
   <div class="loading-state">
     <p>Loading account...</p>
   </div>

@@ -1,11 +1,12 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`
+  template: `<router-outlet></router-outlet>`,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
   title = 'TourTracker';

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,7 +11,8 @@ import { takeUntil } from 'rxjs/operators';
   selector: 'app-tour-details',
   imports: [CommonModule, FormsModule],
   templateUrl: './tour-details.component.html',
-  styleUrls: ['./tour-details.component.scss']
+  styleUrls: ['./tour-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TourDetailsComponent implements OnInit, OnDestroy {
   private tourService = inject(TourService);
