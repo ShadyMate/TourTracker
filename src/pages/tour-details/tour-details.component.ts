@@ -1,34 +1,37 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Tour, TourLog } from '../../models/tour.model';
+import { TourService } from '../../services/tour.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-tour-details',
-  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './tour-details.component.html',
   styleUrls: ['./tour-details.component.scss']
 })
 export class TourDetailsComponent implements OnInit, OnDestroy {
-  // Tour data
-  tour: Tour | null = null;
-  tourId: string | null = null;
-  isNewTour = false;
-  isEditing = false;
-  showLogForm = false;
-  isLoading = false;
-  saveMessage = '';
-  errorMessage = '';
-  editingLogId: string | null = null;
+  private tourService = inject(TourService);
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+
+  tour = signal<Tour | null>(null);
+  tourId = signal<string | null>(null);
+  isNewTour = signal(false);
+  isEditing = signal(false);
+  showLogForm = signal(false);
+  isLoading = signal(false);
+  saveMessage = signal('');
+  errorMessage = signal('');
+  editingLogId = signal<string | null>(null);
+  
   private destroy$ = new Subject<void>();
   private saveMessageTimeout: ReturnType<typeof setTimeout> | undefined;
   private logMessageTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  // Form data - properly typed to match Tour interface
   tourForm: {
     name: string;
     selectedImage: string;
@@ -38,12 +41,6 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
     distance: string;
     time: string;
-    // difficulty: number;
-    // elevationUp: number;
-    // elevationDown: number;
-    // childFriendly: boolean;
-    // rating: number;
-    // isFavorite: boolean;
   } = {
     name: '',
     selectedImage: '',
@@ -52,13 +49,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     to: '',
     transportType: 'hiking',
     distance: '0',
-    time: '',
-    // difficulty: 5,
-    // elevationUp: 0,
-    // elevationDown: 0,
-    // childFriendly: false,
-    // rating: 0,
-    // isFavorite: false
+    time: ''
   };
 
   newLog: {
@@ -79,24 +70,21 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
 
   transportTypes = ['hiking', 'cycling', 'running', 'walking'];
 
-  private activatedRoute = inject(ActivatedRoute);
-  private router = inject(Router);
-
   private getCurrentIsoDate(): string {
     return new Date().toISOString().split('T')[0];
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.newLog.date = this.getCurrentIsoDate();
 
     this.activatedRoute.params
       .pipe(takeUntil(this.destroy$))
       .subscribe(params => {
-        this.tourId = params['id'];
+        this.tourId.set(params['id']);
 
-        if (this.tourId === 'new') {
-          this.isNewTour = true;
-          this.isEditing = true;
+        if (this.tourId() === 'new') {
+          this.isNewTour.set(true);
+          this.isEditing.set(true);
           this.initializeNewTour();
         } else {
           this.loadTour();
@@ -104,14 +92,13 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
           this.activatedRoute.queryParams
             .pipe(takeUntil(this.destroy$))
             .subscribe(q => {
-              this.isEditing = q['edit'] === 'true';
+              this.isEditing.set(q['edit'] === 'true');
             });
         }
       });
   }
 
-  ngOnDestroy() {
-    // Clear any pending timeouts
+  ngOnDestroy(): void {
     if (this.saveMessageTimeout) {
       clearTimeout(this.saveMessageTimeout);
     }
@@ -122,8 +109,8 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  initializeNewTour() {
-    this.tour = {
+  initializeNewTour(): void {
+    this.tour.set({
       id: 'temp-' + Date.now(),
       name: '',
       selectedImage: '',
@@ -134,20 +121,19 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       time: '',
       transportType: 'hiking',
       logs: []
-    };
+    });
     this.populateFormFromTour();
   }
 
-  loadTour() {
-    this.isLoading = true;
-    // In a real app, this would load from a service
-    // For now, load from the home component's tour data
-    const tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
-    this.tour = tours.find((t: Tour) => t.id === this.tourId) || null;
+  loadTour(): void {
+    this.isLoading.set(true);
+    const id = this.tourId();
+    if (!id) return;
 
-    if (!this.tour && this.tourId === '1') {
-      // Mock data for tour 1
-      this.tour = {
+    const foundTour = this.tourService.getTourById(id);
+    
+    if (!foundTour && id === '1') {
+      this.tour.set({
         id: '1',
         name: 'My first Route',
         selectedImage: '',
@@ -171,196 +157,168 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
             notes: 'More difficult than usual, due to rainy weather'
           }
         ]
-      };
+      });
+    } else {
+      this.tour.set(foundTour || null);
     }
 
-    if (this.tour) {
+    if (this.tour()) {
       this.populateFormFromTour();
     }
-    this.isLoading = false;
+    this.isLoading.set(false);
   }
 
-  populateFormFromTour() {
-    if (!this.tour) return;
+  populateFormFromTour(): void {
+    const currentTour = this.tour();
+    if (!currentTour) return;
+    
     this.tourForm = {
-      name: this.tour.name,
-      selectedImage: this.tour.selectedImage,
-      description: this.tour.description,
-      from: this.tour.from,
-      to: this.tour.to,
-      distance: this.tour.distance,
-      time: this.tour.time,
-      transportType: this.tour.transportType,
-      // difficulty: this.tour.difficulty,
-      // elevationUp: this.tour.elevationUp,
-      // elevationDown: this.tour.elevationDown,
-      // childFriendly: this.tour.childFriendly,
-      // rating: this.tour.rating,
-      // isFavorite: this.tour.isFavorite
+      name: currentTour.name,
+      selectedImage: currentTour.selectedImage,
+      description: currentTour.description,
+      from: currentTour.from,
+      to: currentTour.to,
+      distance: currentTour.distance,
+      time: currentTour.time,
+      transportType: currentTour.transportType
     };
   }
 
-  saveTour() {
-    // Clear previous messages
-    this.errorMessage = '';
-    this.saveMessage = '';
+  saveTour(): void {
+    this.errorMessage.set('');
+    this.saveMessage.set('');
 
-    // Clear any pending save message timeout
     if (this.saveMessageTimeout) {
       clearTimeout(this.saveMessageTimeout);
     }
 
-    // Validate all required fields
-    if (!this.tourForm.name.trim()) {
-      this.errorMessage = 'Tour name is required';
+    const validationError = this.tourService.validateTourForm(this.tourForm);
+    if (validationError) {
+      this.errorMessage.set(validationError);
       return;
     }
 
-    if (!this.tourForm.from.trim()) {
-      this.errorMessage = 'Starting point is required';
-      return;
-    }
+    const currentTour = this.tour();
+    if (!currentTour) return;
 
-    if (!this.tourForm.to.trim()) {
-      this.errorMessage = 'Destination is required';
-      return;
-    }
+    const updates: Partial<Tour> = {
+      name: this.tourForm.name.trim(),
+      selectedImage: this.tourForm.selectedImage,
+      description: this.tourForm.description,
+      from: this.tourForm.from.trim(),
+      to: this.tourForm.to.trim(),
+      distance: this.tourForm.distance,
+      time: this.tourForm.time,
+      transportType: this.tourForm.transportType
+    };
 
-    if (!this.tour) return;
-
-    // Update tour with form data
-    this.tour.name = this.tourForm.name.trim();
-    this.tour.selectedImage = this.tourForm.selectedImage;
-    this.tour.description = this.tourForm.description;
-    this.tour.from = this.tourForm.from.trim();
-    this.tour.to = this.tourForm.to.trim();
-    this.tour.distance = this.tourForm.distance;
-    this.tour.time = this.tourForm.time;
-    this.tour.transportType = this.tourForm.transportType;
-
-    // Save to sessionStorage for now
-    let tours = JSON.parse(sessionStorage.getItem('tours') || '[]');
-    if (this.isNewTour) {
-      tours.push(this.tour);
-      this.isNewTour = false;
+    if (this.isNewTour()) {
+      const newTour = this.tourService.addTour({
+        ...currentTour,
+        ...updates,
+        logs: []
+      });
+      this.tour.set(newTour);
+      this.tourId.set(newTour.id);
+      this.isNewTour.set(false);
     } else {
-      tours = tours.map((t: Tour) => t.id === this.tour?.id ? this.tour : t);
+      this.tourService.updateTour(currentTour.id, updates);
+      this.tour.set({ ...currentTour, ...updates });
     }
-    sessionStorage.setItem('tours', JSON.stringify(tours));
 
-    this.isEditing = false;
-    this.saveMessage = 'Tour saved successfully!';
-    // Clear success message after 3 seconds
+    this.isEditing.set(false);
+    this.saveMessage.set('Tour saved successfully!');
     this.saveMessageTimeout = setTimeout(() => {
-      this.saveMessage = '';
+      this.saveMessage.set('');
     }, 3000);
   }
 
-  toggleEdit() {
-    if (this.isEditing) {
+  toggleEdit(): void {
+    if (this.isEditing()) {
       this.saveTour();
     } else {
-      this.isEditing = true;
+      this.isEditing.set(true);
     }
   }
 
-  cancel() {
-    this.errorMessage = '';
-    this.saveMessage = '';
-    if (this.isNewTour) {
+  cancel(): void {
+    this.errorMessage.set('');
+    this.saveMessage.set('');
+    if (this.isNewTour()) {
       this.router.navigate(['/']);
     } else {
-      this.isEditing = false;
+      this.isEditing.set(false);
       this.populateFormFromTour();
     }
   }
 
-  selectImage(img: string) {
+  selectImage(img: string): void {
     this.tourForm.selectedImage = img;
   }
 
-  // toggleFavorite() {
-  //   if (this.tour) {
-  //     this.tour.isFavorite = !this.tour.isFavorite;
-  //     this.saveTour();
-  //   }
-  // }
-
-  addLog() {
-    // Validate required fields
-    if (!this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
-      this.errorMessage = 'Date, start time, and end time are required';
+  addLog(): void {
+    const validationError = this.tourService.validateLogForm({
+      ...this.newLog,
+      date: new Date(this.newLog.date)
+    });
+    if (validationError) {
+      this.errorMessage.set(validationError);
       return;
     }
 
-    if (this.newLog.actualDistance <= 0) {
-      this.errorMessage = 'Actual distance must be greater than 0';
+    const currentTour = this.tour();
+    if (!currentTour) {
+      this.errorMessage.set('Tour not found');
       return;
     }
 
-    if (this.newLog.difficulty < 1 || this.newLog.difficulty > 10) {
-      this.errorMessage = 'Difficulty must be between 1-10';
-      return;
-    }
-
-    // Validate end time is after start time
-    const [startH, startM] = this.newLog.startTime.split(':').map(Number);
-    const [endH, endM] = this.newLog.endTime.split(':').map(Number);
-    const startMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
-
-    if (endMinutes <= startMinutes) {
-      this.errorMessage = 'End time must be after start time';
-      return;
-    }
-
-    if (!this.tour) {
-      this.errorMessage = 'Tour not found';
-      return;
-    }
-
-    const log: TourLog = {
-      id: Date.now().toString(),
-      tourId: this.tour.id,
+    const totalTime = this.tourService.calculateDuration(this.newLog.startTime, this.newLog.endTime);
+    
+    const newLog = this.tourService.addTourLog(currentTour.id, {
       date: new Date(this.newLog.date),
-      startTime: this.newLog.startTime || '',
-      endTime: this.newLog.endTime || '',
-      actualDistance: this.newLog.actualDistance || 0,
-      difficulty: this.newLog.difficulty || 5,
-      totalTime: this.calculateDuration(this.newLog.startTime || '', this.newLog.endTime || ''),
+      startTime: this.newLog.startTime,
+      endTime: this.newLog.endTime,
+      actualDistance: this.newLog.actualDistance,
+      difficulty: this.newLog.difficulty,
+      totalTime,
       rating: 0,
-      notes: this.newLog.notes || ''
-    };
+      notes: this.newLog.notes
+    });
 
-    this.tour.logs.push(log);
-    this.saveTour();
-    this.resetLogForm();
-    this.saveMessage = 'Log entry added successfully!';
+    if (newLog) {
+      const updatedTour = this.tourService.getTourById(currentTour.id);
+      this.tour.set(updatedTour || currentTour);
+      this.resetLogForm();
+      this.saveMessage.set('Log entry added successfully!');
 
-    // Clear any pending log message timeout
-    if (this.logMessageTimeout) {
-      clearTimeout(this.logMessageTimeout);
+      if (this.logMessageTimeout) {
+        clearTimeout(this.logMessageTimeout);
+      }
+      this.logMessageTimeout = setTimeout(() => {
+        this.saveMessage.set('');
+      }, 3000);
     }
-    this.logMessageTimeout = setTimeout(() => {
-      this.saveMessage = '';
-    }, 3000);
   }
 
-  deleteLog(logId: string) {
+  deleteLog(logId: string): void {
     if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
       return;
     }
-    if (this.tour) {
-      this.tour.logs = this.tour.logs.filter(l => l.id !== logId);
-      this.saveTour();
+    
+    const currentTour = this.tour();
+    if (!currentTour) return;
+
+    const success = this.tourService.deleteTourLog(currentTour.id, logId);
+    if (success) {
+      const updatedTour = this.tourService.getTourById(currentTour.id);
+      this.tour.set(updatedTour || currentTour);
     }
   }
 
-  editLog(logId: string) {
-    const logToEdit = this.tour?.logs.find(l => l.id === logId);
+  editLog(logId: string): void {
+    const logToEdit = this.tour()?.logs.find(l => l.id === logId);
     if (!logToEdit) return;
 
-    // Pre-populate form with log data
     let dateStr = '';
     if (logToEdit.date instanceof Date) {
       dateStr = logToEdit.date.toISOString().split('T')[0];
@@ -379,98 +337,60 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       notes: logToEdit.notes
     };
 
-    this.editingLogId = logId;
-    this.showLogForm = true;
+    this.editingLogId.set(logId);
+    this.showLogForm.set(true);
   }
 
-  saveLogEdit() {
-    // Validate required fields
-    if (!this.newLog.date || !this.newLog.startTime || !this.newLog.endTime) {
-      this.errorMessage = 'Date, start time, and end time are required';
+  saveLogEdit(): void {
+    const validationError = this.tourService.validateLogForm({
+      ...this.newLog,
+      date: new Date(this.newLog.date)
+    });
+    if (validationError) {
+      this.errorMessage.set(validationError);
       return;
     }
 
-    if (this.newLog.actualDistance <= 0) {
-      this.errorMessage = 'Actual distance must be greater than 0';
+    const currentTour = this.tour();
+    const logId = this.editingLogId();
+    if (!currentTour || !logId) {
+      this.errorMessage.set('Tour or log not found');
       return;
     }
 
-    if (this.newLog.difficulty < 1 || this.newLog.difficulty > 10) {
-      this.errorMessage = 'Difficulty must be between 1-10';
-      return;
-    }
-
-    // Validate end time is after start time
-    const [startH, startM] = this.newLog.startTime.split(':').map(Number);
-    const [endH, endM] = this.newLog.endTime.split(':').map(Number);
-    const startMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
-
-    if (endMinutes <= startMinutes) {
-      this.errorMessage = 'End time must be after start time';
-      return;
-    }
-
-    if (!this.tour) {
-      this.errorMessage = 'Tour not found';
-      return;
-    }
-
-    // Find and update the log
-    const logIndex = this.tour.logs.findIndex(l => l.id === this.editingLogId);
-    if (logIndex === -1) {
-      this.errorMessage = 'Log entry not found';
-      return;
-    }
-
-    const updatedLog: TourLog = {
-      id: this.editingLogId!,
-      tourId: this.tour.id,
+    const totalTime = this.tourService.calculateDuration(this.newLog.startTime, this.newLog.endTime);
+    
+    const success = this.tourService.updateTourLog(currentTour.id, logId, {
       date: new Date(this.newLog.date),
       startTime: this.newLog.startTime,
       endTime: this.newLog.endTime,
       actualDistance: this.newLog.actualDistance,
       difficulty: this.newLog.difficulty,
-      totalTime: this.calculateDuration(this.newLog.startTime, this.newLog.endTime),
-      rating: this.tour.logs[logIndex].rating,
+      totalTime,
       notes: this.newLog.notes
-    };
+    });
 
-    this.tour.logs[logIndex] = updatedLog;
-    this.saveTour();
-    this.cancelLogEdit();
-    this.saveMessage = 'Log entry updated successfully!';
+    if (success) {
+      const updatedTour = this.tourService.getTourById(currentTour.id);
+      this.tour.set(updatedTour || currentTour);
+      this.cancelLogEdit();
+      this.saveMessage.set('Log entry updated successfully!');
 
-    // Clear any pending log message timeout
-    if (this.logMessageTimeout) {
-      clearTimeout(this.logMessageTimeout);
+      if (this.logMessageTimeout) {
+        clearTimeout(this.logMessageTimeout);
+      }
+      this.logMessageTimeout = setTimeout(() => {
+        this.saveMessage.set('');
+      }, 3000);
     }
-    this.logMessageTimeout = setTimeout(() => {
-      this.saveMessage = '';
-    }, 3000);
   }
 
-  cancelLogEdit() {
-    this.editingLogId = null;
+  cancelLogEdit(): void {
+    this.editingLogId.set(null);
     this.resetLogForm();
   }
 
-  private calculateDuration(start: string, end: string): string {
-    try {
-      const [startH, startM] = start.split(':').map(Number);
-      const [endH, endM] = end.split(':').map(Number);
-      const startMin = startH * 60 + startM;
-      const endMin = endH * 60 + endM;
-      const duration = Math.max(0, endMin - startMin);
-      const hours = Math.floor(duration / 60);
-      const minutes = duration % 60;
-      return `${hours}:${String(minutes).padStart(2, '0')}`;
-    } catch {
-      return '0:00';
-    }
-  }
-
-  private resetLogForm() {
+  private resetLogForm(): void {
     this.newLog = {
       date: this.getCurrentIsoDate(),
       startTime: '',
@@ -479,11 +399,11 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       difficulty: 5,
       notes: ''
     };
-    this.showLogForm = false;
-    this.errorMessage = '';
+    this.showLogForm.set(false);
+    this.errorMessage.set('');
   }
 
-  goBack() {
+  goBack(): void {
     this.router.navigate(['/']);
   }
 
@@ -500,33 +420,15 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   }
 
   getPopularity(tour: Tour): number {
-    return tour.logs.length;
+    return this.tourService.getPopularity(tour);
   }
 
   getChildFriendliness(tour: Tour): number {
-    if (tour.logs.length === 0) return 3; // Default to neutral
-
-    let score = 0;
-    const avgDifficulty = tour.logs.reduce((sum, log) => sum + log.difficulty, 0) / tour.logs.length;
-    const avgTimeMinutes = tour.logs.reduce((sum, log) => {
-      const [h, m] = log.totalTime.split(':').map(Number);
-      return sum + (h * 60 + m);
-    }, 0) / tour.logs.length;
-    const avgDistance = tour.logs.reduce((sum, log) => sum + log.actualDistance, 0) / tour.logs.length;
-
-    if (avgDifficulty < 5) score += 2;
-    if (avgTimeMinutes < 180) score += 2; // Less than 3 hours
-    if (avgDistance < 15) score += 2;
-
-    return Math.min(6, score);
+    return this.tourService.getChildFriendliness(tour);
   }
 
   getChildFriendlinessLabel(score: number): string {
-    if (score === 0) return 'Not suitable';
-    if (score <= 2) return 'Challenging';
-    if (score <= 4) return 'Moderate';
-    return 'Very friendly';
+    return this.tourService.getChildFriendlinessLabel(score);
   }
 }
-
 

@@ -9,8 +9,8 @@
       <div class="search-inner">
         <input
           type="text"
-          [(ngModel)]="searchQuery"
-          (input)="onSearchInput(searchQuery)"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="onSearchInput($event)"
           placeholder="Search tours..."
           class="search-input"
           autocomplete="off">
@@ -18,25 +18,25 @@
           <span class="icon">+</span>
         </button>
       </div>
-      <div class="results-count" *ngIf="searchQuery">
-        {{ filteredTours.length }} result<span *ngIf="filteredTours.length !== 1">s</span>
+      <div class="results-count" *ngIf="searchQuery()">
+        {{ filteredTours().length }} result<span *ngIf="filteredTours().length !== 1">s</span>
       </div>
     </div>
 
     <div class="tours-list">
-      @if (filteredTours.length === 0 && searchQuery) {
+      @if (filteredTours().length === 0 && searchQuery()) {
         <div class="empty-state">
           <p>No tours found</p>
           <small>Try a different search or add a new tour</small>
         </div>
-      } @else if (filteredTours.length === 0) {
+      } @else if (filteredTours().length === 0) {
         <div class="empty-state">
           <p>No tours yet</p>
           <small>Create your first tour</small>
         </div>
       }
 
-      @for (tour of filteredTours; track tour.id) {
+      @for (tour of filteredTours(); track tour.id) {
         <div class="tour-card" (click)="goToTour(tour.id)">
           <div class="tour-details">
             <h4 class="tour-name">{{ tour.name }}</h4>

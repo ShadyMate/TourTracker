@@ -1,13 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { User } from '../models/user.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private storage = inject(StorageService);
   private currentUser = signal<User | null>(null);
   private isAuthenticated = signal(false);
-  private isDarkMode = signal<boolean>(this.loadDarkModePreference());
+  private isDarkMode = signal<boolean>(this.storage.getDarkModePreference());
 
   getCurrentUser() {
     return this.currentUser.asReadonly();
@@ -21,8 +23,7 @@ export class AuthService {
     return this.isDarkMode.asReadonly();
   }
 
-  login(email: string, password: string) {
-    // Mock login
+  login(email: string, password: string): User {
     const user: User = {
       id: '1',
       email,
@@ -35,12 +36,12 @@ export class AuthService {
     return user;
   }
 
-  logout() {
+  logout(): void {
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
   }
 
-  register(email: string, password: string, firstName: string, lastName: string) {
+  register(email: string, password: string, firstName: string, lastName: string): User {
     const user: User = {
       id: Math.random().toString(36).substr(2, 9),
       email,
@@ -53,41 +54,14 @@ export class AuthService {
     return user;
   }
 
-  toggleDarkMode() {
+  toggleDarkMode(): void {
     const newValue = !this.isDarkMode();
     this.isDarkMode.set(newValue);
-    this.saveDarkModePreference(newValue);
-    this.applyDarkMode(newValue);
+    this.storage.saveDarkModePreference(newValue);
   }
 
-  setDarkMode(isDark: boolean) {
+  setDarkMode(isDark: boolean): void {
     this.isDarkMode.set(isDark);
-    this.saveDarkModePreference(isDark);
-    this.applyDarkMode(isDark);
-  }
-
-  private applyDarkMode(isDark: boolean) {
-    if (isDark) {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
-    }
-  }
-
-  private saveDarkModePreference(isDark: boolean) {
-    localStorage.setItem('darkMode', isDark.toString());
-  }
-
-  private loadDarkModePreference(): boolean {
-    const saved = localStorage.getItem('darkMode');
-    if (saved !== null) {
-      return saved === 'true';
-    }
-    // Default to system preference
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-
-  initializeDarkMode() {
-    this.applyDarkMode(this.isDarkMode());
+    this.storage.saveDarkModePreference(isDark);
   }
 }

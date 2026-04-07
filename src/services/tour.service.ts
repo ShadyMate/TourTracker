@@ -1,106 +1,299 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Tour, TourLog } from '../models/tour.model';
+import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TourService {
-  private tours = signal<Tour[]>([
-    {
-      id: '1',
-      name: 'My favourite Tour',
-      description: 'A scenic hiking tour',
-      from: 'FH Technikum',
-      to: 'Kahlenberg',
-      distance: '6.6',
-      time: '1h 56m',
-      transportType: 'hiking',
-      selectedImage: '',
-      // difficulty: 3,
-      // rating: 3,
-      // elevationUp: 0,
-      // elevationDown: 0,
-      // childFriendly: true,
-      // isFavorite: true,
-      logs: [],
-      // createdAt: new Date(),
-      // updatedAt: new Date()
-    },
-    {
-      id: '2',
-      name: 'Mountain Peak Adventure',
-      description: 'Challenge yourself with this mountain hike',
-      from: 'Vienna',
-      to: 'Mt. Everest Base',
-      distance: '8300',
-      time: '60 days',
-      transportType: 'hiking',
-      selectedImage: '',
-      // difficulty: 5,
-      // rating: 4,
-      // elevationUp: 5000,
-      // elevationDown: 5000,
-      // childFriendly: false,
-      // isFavorite: false,
-      logs: [],
-      // createdAt: new Date(),
-      // updatedAt: new Date()
-    },
-    {
-      id: '3',
-      name: 'City Cycling Tour',
-      description: 'Explore the city on a bike',
-      from: 'City Center',
-      to: 'Suburbs',
-      distance: '25',
-      time: '2h 30m',
-      transportType: 'cycling',
-      selectedImage: '',
-      // difficulty: 2,
-      // rating: 4,
-      // elevationUp: 100,
-      // elevationDown: 100,
-      // childFriendly: true,
-      // isFavorite: false,
-      logs: [],
-      // createdAt: new Date(),
-      // updatedAt: new Date()
-    }
-  ]);
+  private storage = inject(StorageService);
+  private tours = signal<Tour[]>(this.loadInitialTours());
 
-  private tourLogs = signal<TourLog[]>([]);
+  private loadInitialTours(): Tour[] {
+    const stored = this.storage.getTours();
+    if (stored.length > 0) {
+      return stored;
+    }
+    
+    // Default tours if storage is empty
+    return [
+      {
+        id: '1',
+        name: 'My favourite Tour',
+        description: 'A scenic hiking tour',
+        from: 'FH Technikum',
+        to: 'Kahlenberg',
+        distance: '6.6',
+        time: '1h 56m',
+        transportType: 'hiking',
+        selectedImage: '',
+        logs: []
+      },
+      {
+        id: '2',
+        name: 'Mountain Peak Adventure',
+        description: 'Challenge yourself with this mountain hike',
+        from: 'Vienna',
+        to: 'Mt. Everest Base',
+        distance: '8300',
+        time: '60 days',
+        transportType: 'hiking',
+        selectedImage: '',
+        logs: []
+      },
+      {
+        id: '3',
+        name: 'City Cycling Tour',
+        description: 'Explore the city on a bike',
+        from: 'City Center',
+        to: 'Suburbs',
+        distance: '25',
+        time: '2h 30m',
+        transportType: 'cycling',
+        selectedImage: '',
+        logs: []
+      }
+    ];
+  }
 
   getTours() {
     return this.tours.asReadonly();
   }
 
-  getTourById(id: string) {
+  getTourById(id: string): Tour | undefined {
     return this.tours().find(tour => tour.id === id);
   }
 
-  addTour(tour: Omit<Tour, 'id'>) {
+  addTour(tour: Omit<Tour, 'id'>): Tour {
     const newTour: Tour = {
       ...tour,
       id: Math.random().toString(36).substr(2, 9)
     };
-    this.tours.update(tours => [...tours, newTour]);
+    this.tours.update(tours => {
+      const updated = [...tours, newTour];
+      this.storage.saveTours(updated);
+      return updated;
+    });
     return newTour;
   }
 
-  deleteTour(id: string) {
-    this.tours.update(tours => tours.filter(tour => tour.id !== id));
+  updateTour(id: string, updates: Partial<Tour>): boolean {
+    let found = false;
+    this.tours.update(tours => {
+      const updated = tours.map(tour => {
+        if (tour.id === id) {
+          found = true;
+          return { ...tour, ...updates, id };
+        }
+        return tour;
+      });
+      if (found) {
+        this.storage.saveTours(updated);
+      }
+      return updated;
+    });
+    return found;
   }
 
-  getTourLogs(tourId: string) {
-    return this.tourLogs().filter(log => log.tourId === tourId);
+  deleteTour(id: string): void {
+    this.tours.update(tours => {
+      const updated = tours.filter(tour => tour.id !== id);
+      this.storage.saveTours(updated);
+      return updated;
+    });
   }
 
-  addTourLog(log: Omit<TourLog, 'id'>) {
+  addTourLog(tourId: string, log: Omit<TourLog, 'id' | 'tourId'>): TourLog | null {
     const newLog: TourLog = {
       ...log,
-      id: Math.random().toString(36).substr(2, 9)
+      id: Date.now().toString(),
+      tourId
     };
-    this.tourLogs.update(logs => [...logs, newLog]);
-    return newLog;
+    
+    let success = false;
+    this.tours.update(tours => {
+      const updated = tours.map(tour => {
+        if (tour.id === tourId) {
+          success = true;
+          return { ...tour, logs: [...tour.logs, newLog] };
+        }
+        return tour;
+      });
+      if (success) {
+        this.storage.saveTours(updated);
+      }
+      return updated;
+    });
+    
+    return success ? newLog : null;
+  }
+
+  updateTourLog(tourId: string, logId: string, updates: Partial<TourLog>): boolean {
+    let success = false;
+    this.tours.update(tours => {
+      const updated = tours.map(tour => {
+        if (tour.id === tourId) {
+          const updatedLogs = tour.logs.map(log => {
+            if (log.id === logId) {
+              success = true;
+              return { ...log, ...updates, id: logId, tourId };
+            }
+            return log;
+          });
+          return { ...tour, logs: updatedLogs };
+        }
+        return tour;
+      });
+      if (success) {
+        this.storage.saveTours(updated);
+      }
+      return updated;
+    });
+    return success;
+  }
+
+  deleteTourLog(tourId: string, logId: string): boolean {
+    let success = false;
+    this.tours.update(tours => {
+      const updated = tours.map(tour => {
+        if (tour.id === tourId) {
+          const updatedLogs = tour.logs.filter(log => log.id !== logId);
+          if (updatedLogs.length !== tour.logs.length) {
+            success = true;
+          }
+          return { ...tour, logs: updatedLogs };
+        }
+        return tour;
+      });
+      if (success) {
+        this.storage.saveTours(updated);
+      }
+      return updated;
+    });
+    return success;
+  }
+
+  // Business logic: Filtering
+  filterTours(tours: Tour[], query: string): Tour[] {
+    if (!query.trim()) {
+      return tours;
+    }
+
+    const lowerQuery = query.toLowerCase();
+    return tours.filter(tour => {
+      const basicMatch =
+        tour.name.toLowerCase().includes(lowerQuery) ||
+        tour.from.toLowerCase().includes(lowerQuery) ||
+        tour.to.toLowerCase().includes(lowerQuery) ||
+        tour.description.toLowerCase().includes(lowerQuery);
+
+      const logsMatch = tour.logs.some(log =>
+        log.notes.toLowerCase().includes(lowerQuery) ||
+        log.difficulty.toString().includes(lowerQuery)
+      );
+
+      const popularityMatch =
+        lowerQuery.includes('popular') ||
+        lowerQuery.includes('log') ||
+        lowerQuery === this.getPopularity(tour).toString();
+
+      const childFriendlyMatch =
+        this.getChildFriendliness(tour).toString() === lowerQuery ||
+        (lowerQuery.includes('child') && this.getChildFriendliness(tour) >= 4) ||
+        (lowerQuery.includes('beginner') && this.getChildFriendliness(tour) >= 4) ||
+        (lowerQuery.includes('easy') && this.getChildFriendliness(tour) >= 3) ||
+        (lowerQuery.includes('hard') && this.getChildFriendliness(tour) <= 2) ||
+        (lowerQuery.includes('challenging') && this.getChildFriendliness(tour) <= 2);
+
+      return basicMatch || logsMatch || popularityMatch || childFriendlyMatch;
+    });
+  }
+
+  // Business logic: Calculations
+  getPopularity(tour: Tour): number {
+    return tour.logs.length;
+  }
+
+  getChildFriendliness(tour: Tour): number {
+    if (tour.logs.length === 0) return 3;
+
+    let score = 0;
+    const avgDifficulty = tour.logs.reduce((sum, log) => sum + log.difficulty, 0) / tour.logs.length;
+    const avgTimeMinutes = tour.logs.reduce((sum, log) => {
+      const [h, m] = log.totalTime.split(':').map(Number);
+      return sum + (h * 60 + m);
+    }, 0) / tour.logs.length;
+    const avgDistance = tour.logs.reduce((sum, log) => sum + log.actualDistance, 0) / tour.logs.length;
+
+    if (avgDifficulty < 5) score += 2;
+    if (avgTimeMinutes < 180) score += 2;
+    if (avgDistance < 15) score += 2;
+
+    return Math.min(6, score);
+  }
+
+  getChildFriendlinessEmoji(score: number): string {
+    if (score === 0) return '⚠️';
+    if (score <= 2) return '🧗';
+    if (score <= 4) return '🚶';
+    return '👧';
+  }
+
+  getChildFriendlinessLabel(score: number): string {
+    if (score === 0) return 'Not suitable';
+    if (score <= 2) return 'Challenging';
+    if (score <= 4) return 'Moderate';
+    return 'Very friendly';
+  }
+
+  calculateDuration(startTime: string, endTime: string): string {
+    try {
+      const [startH, startM] = startTime.split(':').map(Number);
+      const [endH, endM] = endTime.split(':').map(Number);
+      const startMin = startH * 60 + startM;
+      const endMin = endH * 60 + endM;
+      const duration = Math.max(0, endMin - startMin);
+      const hours = Math.floor(duration / 60);
+      const minutes = duration % 60;
+      return `${hours}:${String(minutes).padStart(2, '0')}`;
+    } catch {
+      return '0:00';
+    }
+  }
+
+  validateTourForm(form: Partial<Tour>): string | null {
+    if (!form.name?.trim()) {
+      return 'Tour name is required';
+    }
+    if (!form.from?.trim()) {
+      return 'Starting point is required';
+    }
+    if (!form.to?.trim()) {
+      return 'Destination is required';
+    }
+    return null;
+  }
+
+  validateLogForm(log: Partial<TourLog>): string | null {
+    if (!log.date || !log.startTime || !log.endTime) {
+      return 'Date, start time, and end time are required';
+    }
+    if (log.actualDistance !== undefined && log.actualDistance <= 0) {
+      return 'Actual distance must be greater than 0';
+    }
+    if (log.difficulty !== undefined && (log.difficulty < 1 || log.difficulty > 10)) {
+      return 'Difficulty must be between 1-10';
+    }
+
+    const [startH, startM] = log.startTime.split(':').map(Number);
+    const [endH, endM] = log.endTime.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    if (endMinutes <= startMinutes) {
+      return 'End time must be after start time';
+    }
+
+    return null;
   }
 }

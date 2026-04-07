@@ -1,15 +1,15 @@
-<div class="tour-details-container" *ngIf="tour">
+<div class="tour-details-container" *ngIf="tour()">
   <!-- Error/Success Messages -->
-  <div *ngIf="errorMessage" class="message error-message">{{ errorMessage }}</div>
-  <div *ngIf="saveMessage" class="message success-message">{{ saveMessage }}</div>
+  <div *ngIf="errorMessage()" class="message error-message">{{ errorMessage() }}</div>
+  <div *ngIf="saveMessage()" class="message success-message">{{ saveMessage() }}</div>
 
   <!-- Header Navigation -->
   <header class="details-header">
     <button class="back-btn" (click)="goBack()" title="Back to home">← Back</button>
-    <h1>{{ tour.name || 'New Tour' }}</h1>
+    <h1>{{ tour()!.name || 'New Tour' }}</h1>
     <div class="header-actions">
       <button class="btn btn-primary" (click)="toggleEdit()">
-        {{ isEditing ? 'Save' : 'Edit' }}
+        {{ isEditing() ? 'Save' : 'Edit' }}
       </button>
     </div>
   </header>
@@ -18,7 +18,7 @@
   <div class="details-layout">
     <!-- Left Panel: Tour Info -->
     <aside class="details-panel">
-      @if (isEditing) {
+      @if (isEditing()) {
         <!-- Edit Mode Form -->
         <form class="edit-form">
           <div class="form-group">
@@ -104,7 +104,7 @@
           <div class="form-actions">
             <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
             <button type="button" class="btn btn-primary" (click)="saveTour()">
-              {{ isNewTour ? 'Create Tour' : 'Save Changes' }}
+              {{ isNewTour() ? 'Create Tour' : 'Save Changes' }}
             </button>
           </div>
         </form>
@@ -113,14 +113,14 @@
         <div class="tour-info">
           <div class="info-header">
             <div>
-              <h3>{{ tour.name }}</h3>
-              @if (tour.selectedImage) {
-                <img [src]="'/' + tour.selectedImage + '.jpg'" alt="test" width="100%">
+              <h3>{{ tour()!.name }}</h3>
+              @if (tour()!.selectedImage) {
+                <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="test" width="100%">
               }
               @else {
                 <i>No image selected</i><br><br>
               }
-              <p class="info-text">{{ tour.description }}</p>
+              <p class="info-text">{{ tour()!.description }}</p>
             </div>
           </div>
 
@@ -128,11 +128,11 @@
             <h4>📍 Route</h4>
             <p class="info-item">
               <span class="label">From:</span>
-              <span class="value">{{ tour.from }}</span>
+              <span class="value">{{ tour()!.from }}</span>
             </p>
             <p class="info-item">
               <span class="label">To:</span>
-              <span class="value">{{ tour.to }}</span>
+              <span class="value">{{ tour()!.to }}</span>
             </p>
           </div>
 
@@ -141,11 +141,11 @@
             <div class="stats-grid">
               <div class="stat">
                 <span class="stat-label">Distance</span>
-                <span class="stat-value">{{ tour.distance }}km</span>
+                <span class="stat-value">{{ tour()!.distance }}km</span>
               </div>
               <div class="stat">
                 <span class="stat-label">Time</span>
-                <span class="stat-value">{{ tour.time }}</span>
+                <span class="stat-value">{{ tour()!.time }}</span>
               </div>
             </div>
 
@@ -163,7 +163,7 @@
             <h4>⚙️ Details</h4>
             <p class="info-item">
               <span class="label">Type:</span>
-              <span class="value">{{ tour.transportType | titlecase }}</span>
+              <span class="value">{{ tour()!.transportType | titlecase }}</span>
             </p>
             <!-- <p class="info-item">
               <span class="label">Difficulty:</span>
@@ -188,11 +188,11 @@
             <h4>📊 Computed Attributes</h4>
             <p class="info-item">
               <span class="label">Popularity:</span>
-              <span class="value">{{ getPopularity(tour) }} log{{ getPopularity(tour) !== 1 ? 's' : '' }}</span>
+              <span class="value">{{ getPopularity(tour()!) }} log{{ getPopularity(tour()!) !== 1 ? 's' : '' }}</span>
             </p>
             <p class="info-item">
               <span class="label">Child-Friendliness:</span>
-              <span class="value">{{ getChildFriendlinessLabel(getChildFriendliness(tour)) }} ({{ getChildFriendliness(tour) }}/6)</span>
+              <span class="value">{{ getChildFriendlinessLabel(getChildFriendliness(tour()!)) }} ({{ getChildFriendliness(tour()!) }}/6)</span>
             </p>
           </div>
         </div>
@@ -221,15 +221,15 @@
       <section class="logs-section">
         <div class="logs-header">
           <h2>📋 Tour Log</h2>
-          @if (!showLogForm) {
-            <button class="btn btn-small btn-primary" (click)="showLogForm = true">
+          @if (!showLogForm()) {
+            <button class="btn btn-small btn-primary" (click)="showLogForm.set(true)">
               + Add Log Entry
             </button>
           }
         </div>
 
         <!-- Add/Edit Log Form -->
-        @if (showLogForm) {
+        @if (showLogForm()) {
           <form class="log-form">
             <div class="form-row">
               <div class="form-group">
@@ -264,8 +264,8 @@
 
             <div class="form-actions">
               <button type="button" class="btn btn-secondary" (click)="cancelLogEdit()">Cancel</button>
-              <button type="button" class="btn btn-primary" (click)="editingLogId ? saveLogEdit() : addLog()">
-                {{ editingLogId ? 'Update Log Entry' : 'Save Log Entry' }}
+              <button type="button" class="btn btn-primary" (click)="editingLogId() ? saveLogEdit() : addLog()">
+                {{ editingLogId() ? 'Update Log Entry' : 'Save Log Entry' }}
               </button>
             </div>
           </form>
@@ -273,8 +273,8 @@
 
         <!-- Logs List -->
         <div class="logs-list">
-          @if (tour.logs && tour.logs.length > 0) {
-            @for (log of tour.logs; track log.id) {
+          @if (tour()!.logs && tour()!.logs.length > 0) {
+            @for (log of tour()!.logs; track log.id) {
               <div class="log-entry">
                 <div class="log-header">
                   <div class="log-meta">
@@ -307,8 +307,8 @@
   </div>
 </div>
 
-@if (!tour) {
+@if (!tour()) {
   <div class="loading-state">
-    <p>{{ isLoading ? 'Loading tour...' : 'Tour not found' }}</p>
+    <p>{{ isLoading() ? 'Loading tour...' : 'Tour not found' }}</p>
   </div>
 }
