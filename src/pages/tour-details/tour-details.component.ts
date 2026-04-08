@@ -125,6 +125,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       distance: '0',
       time: '',
       transportType: 'hiking',
+      childFriendly: false,
       logs: []
     });
     this.populateFormFromTour();
@@ -148,6 +149,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         distance: '8300',
         time: '60d',
         transportType: 'hiking',
+        childFriendly: false,
         logs: [
           {
             id: 'log1',
