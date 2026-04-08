@@ -1,5 +1,7 @@
-@if (toast.message()) {
-    <div class="toast" [class.error]="toast.isError() == true">
-        {{ toast.message() }}
-    </div>
-}
+<div class="toast-container">
+    @for (message of toast.messages(); track message.id) {
+        <div class="toast" [class.error]="message.isError">
+            {{ message.message }}
+        </div>
+    }
+</div>
