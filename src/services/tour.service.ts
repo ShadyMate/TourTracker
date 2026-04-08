@@ -27,6 +27,7 @@ export class TourService {
         time: '1h 56m',
         transportType: 'hiking',
         selectedImage: '',
+        childFriendly: true,
         logs: []
       },
       {
@@ -39,6 +40,7 @@ export class TourService {
         time: '60 days',
         transportType: 'hiking',
         selectedImage: '',
+        childFriendly: false,
         logs: []
       },
       {
@@ -51,6 +53,7 @@ export class TourService {
         time: '2h 30m',
         transportType: 'cycling',
         selectedImage: '',
+        childFriendly: true,
         logs: []
       }
     ];

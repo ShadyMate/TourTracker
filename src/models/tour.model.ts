@@ -1,5 +1,4 @@
 export interface Tour {
-  // name, tour description, from, to, transport type, tour distance, estimated time, route information
   id: string;
   name: string;
   selectedImage: string;
@@ -9,16 +8,8 @@ export interface Tour {
   transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
   distance: string;
   time: string;
-  // difficulty: number; // 1-10
-  // rating: number; // 1-5
-  // imageUrl?: string;
-  // elevationUp: number; // in meters
-  // elevationDown: number; // in meters
-  // childFriendly: boolean;
-  // isFavorite: boolean;
+  childFriendly: boolean;
   logs: TourLog[];
-  // createdAt: Date;
-  // updatedAt: Date;
 }
 
 export interface TourLog {
