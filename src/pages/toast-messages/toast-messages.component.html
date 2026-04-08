@@ -1,0 +1,5 @@
+@if (toast.message()) {
+    <div class="toast" [class.error]="toast.isError() == true">
+        {{ toast.message() }}
+    </div>
+}

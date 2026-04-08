@@ -6,6 +6,7 @@ import { Tour, TourLog } from '../../models/tour.model';
 import { TourService } from '../../services/tour.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-tour-details',
@@ -16,6 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class TourDetailsComponent implements OnInit, OnDestroy {
   private tourService = inject(TourService);
+  private toastService = inject(ToastService);
   private activatedRoute = inject(ActivatedRoute);
   private router = inject(Router);
 
@@ -197,7 +199,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
 
     const validationError = this.tourService.validateTourForm(this.tourForm);
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.toastService.show(validationError, true);
       return;
     }
 
@@ -230,7 +232,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     }
 
     this.isEditing.set(false);
-    this.saveMessage.set('Tour saved successfully!');
+    this.toastService.show('Tour saved successfully!', false);
     this.saveMessageTimeout = setTimeout(() => {
       this.saveMessage.set('');
     }, 3000);
@@ -265,13 +267,13 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       date: new Date(this.newLog.date)
     });
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.toastService.show(validationError, true);
       return;
     }
 
     const currentTour = this.tour();
     if (!currentTour) {
-      this.errorMessage.set('Tour not found');
+      this.toastService.show('Tour not found', true);
       return;
     }
 
@@ -292,7 +294,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       const updatedTour = this.tourService.getTourById(currentTour.id);
       this.tour.set(updatedTour || currentTour);
       this.resetLogForm();
-      this.saveMessage.set('Log entry added successfully!');
+      this.toastService.show('Log entry added successfully!', false);
 
       if (this.logMessageTimeout) {
         clearTimeout(this.logMessageTimeout);
@@ -351,14 +353,14 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       date: new Date(this.newLog.date)
     });
     if (validationError) {
-      this.errorMessage.set(validationError);
+      this.toastService.show(validationError, true);
       return;
     }
 
     const currentTour = this.tour();
     const logId = this.editingLogId();
     if (!currentTour || !logId) {
-      this.errorMessage.set('Tour or log not found');
+      this.toastService.show('Tour or log not found', true);
       return;
     }
 
@@ -379,7 +381,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       const updatedTour = this.tourService.getTourById(currentTour.id);
       this.tour.set(updatedTour || currentTour);
       this.cancelLogEdit();
-      this.saveMessage.set('Log entry updated successfully!');
+      this.toastService.show('Log entry updated successfully!', false);
 
       if (this.logMessageTimeout) {
         clearTimeout(this.logMessageTimeout);

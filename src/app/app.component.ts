@@ -1,11 +1,12 @@
 import { Component, ChangeDetectionStrategy, effect, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ToastMessages } from "../pages/toast-messages/toast-messages.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  template: `<router-outlet></router-outlet>`,
+  imports: [RouterOutlet, ToastMessages],
+  templateUrl: './app.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App {
