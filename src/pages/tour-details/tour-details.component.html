@@ -202,7 +202,10 @@
                   @if (i <= stars.full) {
                     <span class="star filled">★</span>
                   } @else if (i === stars.full + 1 && stars.half) {
-                    <span class="star half">⯨</span>
+                    <span class="star half">
+                      <span class="star-empty">☆</span>
+                      <span class="star-filled">★</span>
+                    </span>
                   } @else {
                     <span class="star empty">☆</span>
                   }
@@ -294,7 +297,10 @@
                     @if (star % 1 === 0) {
                       <span class="star-icon">{{ newLog.rating >= star ? '★' : '☆' }}</span>
                     } @else {
-                      <span class="star-icon half">{{ newLog.rating >= star ? '⯨' : '☆' }}</span>
+                      <span class="star-icon half">
+                        <span class="half-empty">☆</span>
+                        <span class="half-filled">★</span>
+                      </span>
                     }
                   </button>
                 }
@@ -340,7 +346,10 @@
                       @if (i <= stars.full) {
                         <span class="star filled">★</span>
                       } @else if (i === stars.full + 1 && stars.half) {
-                        <span class="star half">⯨</span>
+                        <span class="star half">
+                          <span class="star-empty">☆</span>
+                          <span class="star-filled">★</span>
+                        </span>
                       } @else {
                         <span class="star empty">☆</span>
                       }

@@ -80,7 +80,10 @@
                       @if (i <= stars.full) {
                         <span class="star filled">★</span>
                       } @else if (i === stars.full + 1 && stars.half) {
-                        <span class="star half">⯨</span>
+                        <span class="star half">
+                          <span class="star-empty">☆</span>
+                          <span class="star-filled">★</span>
+                        </span>
                       } @else {
                         <span class="star empty">☆</span>
                       }

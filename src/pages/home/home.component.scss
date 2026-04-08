@@ -595,7 +595,26 @@
     }
 
     &.half {
+      position: relative;
+      display: inline-block;
       color: #ffc107;
+
+      .star-empty {
+        color: #ddd;
+
+        :host-context(.dark-mode) & {
+          color: #555;
+        }
+      }
+
+      .star-filled {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 50%;
+        overflow: hidden;
+        color: #ffc107;
+      }
     }
 
     &.empty {
