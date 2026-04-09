@@ -10,7 +10,6 @@ TourTracker is an Angular-based web application for SWEN2 that allows users to p
 - **Tour Logging**: Record actual tour experiences with distance, time, difficulty, and notes
 - **User Authentication**: Login and registration system with token-based authentication
 - **Map Integration**: Display tours on a regional map with tour markers
-- **Favorites System**: Mark tours as favorites
 - **User Profiles**: Account settings and profile management
 - **Dark Mode Support**: Toggle between light and dark themes
 
@@ -30,12 +29,14 @@ TourTracker/
 │   │       ├── settings/      # Application settings
 │   │       ├── account/       # User account management
 │   │       └── tour-details/  # Detailed tour view with logs
+│   │       └── toast-messages/ # Reusable web-UI component
 │   ├── models/                # TypeScript interfaces
 │   │   ├── tour.model.ts      # Tour and TourLog interfaces
 │   │   └── user.model.ts      # User and AuthResponse interfaces
 │   ├── services/              # Angular services
 │   │   ├── auth.service.ts    # Authentication and user management
 │   │   ├── tour.service.ts    # Tour CRUD operations and management
+|   |   ├── toast.service.ts   # Error and success messages as toast notification
 │   │   ├── user.service.ts    # User profile management
 │   │   ├── map.service.ts     # Map API integration
 │   │   └── storage.service.ts # Local storage persistence
@@ -150,6 +151,13 @@ Manages user profile and account information.
 - `updateProfile(updates)` - Update user information
 - `uploadAvatar(file)` - Update profile picture
 
+### ToastService
+Error and success messages show as toast notifications.
+
+**Key Methods:**
+- `show(message, isError, duration)` - Shows respective notification
+- `remove(id)` - Removes message again after duration is over
+
 ## Routing
 
 ```
@@ -176,13 +184,17 @@ Manages user profile and account information.
 - **Route Map**: Detailed map showing the planned route
 - **Tour Logs Section**: Scrollable list of past tour executions
 - **Editing Controls**: Pencil icon to edit tour
-- **Actions**: Delete and favorite buttons
+- **Actions**: Edit and Delete button
 
 ### User Authentication Pages
 - **Login Page**: Email/username and password input with login button
 - **Register Page**: Form for creating new account
 - **Account Page**: User profile management with avatar
 - **Settings Page**: Application preferences (dark mode, notifications, etc.)
+
+### Toast Messages Notification (Reusable web-UI component)
+- **Notification**: Pops up in its respective color for a certain time to show the error or success
+- **Reusable web-UI component**: Reusable for every error or success message
 
 ## Technology Stack
 
