@@ -35,8 +35,10 @@
             <span class="icon">+</span>
           </button>
         </div>
-        <div class="results-count" *ngIf="searchQuery()">
-          {{ filteredTours().length }} result<span *ngIf="filteredTours().length !== 1">s</span>
+        <div class="results-count">
+          @if (searchQuery()) {
+            {{ filteredTours().length }} result<span>@if (filteredTours().length !== 1) { s }</span>
+          }
         </div>
       </div>
 
