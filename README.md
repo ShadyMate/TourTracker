@@ -179,8 +179,7 @@ Error and success messages show as toast notifications.
 - **Create Tour Button**: Floating action button for creating new tours
 
 ### Tour Details Page
-- **Tour Information Panel**: Name, starting point, destination, distance, time
-- **Elevation Profile**: Visual representation of elevation changes
+- **Tour Information Panel**: Name, image, starting point, destination, distance, time
 - **Route Map**: Detailed map showing the planned route
 - **Tour Logs Section**: Scrollable list of past tour executions
 - **Editing Controls**: Pencil icon to edit tour
