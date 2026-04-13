@@ -443,7 +443,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     });
 
     if (newLog) {
-      return newLog;
+      
       // Fetch updated tour with new log
       const updatedTour = this.tourService.getTourById(currentTour.id);
       this.tour.set(updatedTour || currentTour);
