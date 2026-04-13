@@ -443,7 +443,6 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     });
 
     if (newLog) {
-      return newLog;
       // Fetch updated tour with new log
       const updatedTour = this.tourService.getTourById(currentTour.id);
       this.tour.set(updatedTour || currentTour);
@@ -603,11 +602,6 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.router.navigate(['/']);
   }
 
-  // ═══════════════════════════════════════════════════════════════
-  // DISPLAY HELPERS: Calculate values for template display
-  // These delegate to service - component doesn't do calculations
-  // ═══════════════════════════════════════════════════════════════
-
   getAverageRating(tour: Tour): number {
     return this.tourService.getAverageRating(tour);
   }
@@ -620,18 +614,10 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     return this.tourService.getRatingStars(rating);
   }
 
-  /**
-   * RATING INPUT HANDLER: Update rating when user clicks stars
-   * Called from template when user clicks star buttons in log form
-   */
   setRating(stars: number): void {
     this.newLog.rating = stars;
   }
 
-  /**
-   * DATE FORMATTING: Convert Date object to display string
-   * Used in template to show formatted dates for logs
-   */
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
