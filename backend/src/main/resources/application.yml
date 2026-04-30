@@ -10,20 +10,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
     open-in-view: false
-
-  # Datasource Configuration
-  datasource:
-    url: jdbc:h2:mem:tourtracker
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
-
-  # H2 Console Configuration (disabled - use REST API for database operations)
-  h2:
-    console:
-      enabled: false
 
   # Jackson Configuration
   jackson:
