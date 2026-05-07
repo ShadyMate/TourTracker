@@ -235,20 +235,11 @@
 
     <!-- Right Panel: Map and Logs -->
     <main class="details-main">
-      <!-- Map Placeholder -->
+      <!-- Interactive Map Component -->
       <div class="map-section">
-        <div class="map-placeholder">
-          <div class="placeholder-content">
-            <h3>🗺️ Tour Map</h3>
-            <p>Interactive map with route visualization will be displayed here</p>
-            <!-- @if (tour.elevationUp > 0 || tour.elevationDown > 0) {
-              <div class="elevation-chart">
-                <p class="chart-title">📈 Elevation Profile</p>
-                <div class="chart-placeholder">Height data visualization</div>
-              </div>
-            } -->
-          </div>
-        </div>
+        @if (tour()) {
+          <app-tour-map [tour]="tour()!" />
+        }
       </div>
 
       <!-- Tour Logs Section -->

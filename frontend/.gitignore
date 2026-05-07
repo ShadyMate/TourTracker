@@ -11,6 +11,12 @@
 npm-debug.log
 yarn-error.log
 
+# Environment Variables (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+public/env.json
+
 # IDEs and editors
 .idea/
 .project

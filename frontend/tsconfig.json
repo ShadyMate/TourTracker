@@ -13,7 +13,8 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "types": ["vite/client"]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
