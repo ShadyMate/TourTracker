@@ -57,10 +57,11 @@ import { TourService } from '../../services/tour.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ToastService } from '../../services/toast.service';
+import { TourMapComponent } from './tour-map.component';
 
 @Component({
   selector: 'app-tour-details',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TourMapComponent],
   templateUrl: './tour-details.component.html',
   styleUrls: ['./tour-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

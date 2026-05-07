@@ -5,6 +5,7 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { TourService } from '../../services/tour.service';
 import { Tour } from '../../models/tour.model';
+import { LocationMapComponent } from './location-map.component';
 
 /**
  * HomeComponent - ViewModel Layer
@@ -37,7 +38,7 @@ import { Tour } from '../../models/tour.model';
  */
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LocationMapComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush // Performance optimization: only update on signal changes
