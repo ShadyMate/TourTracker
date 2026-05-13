@@ -1,368 +1,180 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { Tour, TourLog } from '../models/tour.model';
-import { StorageService } from './storage.service';
+import { AuthService } from './auth.service';
+import { environment } from '../environments/environment';
+
+// Shape the backend sends/receives
+interface BackendTour {
+  id: number;
+  name: string;
+  description: string;
+  startLocation: string;
+  endLocation: string;
+  transportType: string;
+  distance: number | null;
+  estimatedTime: number | null; // minutes
+  selectedImage: string | null;
+  fromLat: number | null;
+  fromLng: number | null;
+  toLat: number | null;
+  toLng: number | null;
+  logs: BackendLog[];
+}
+
+interface BackendLog {
+  id: number;
+  tourId: number;
+  logDate: string;    // "YYYY-MM-DD"
+  startTime: string;
+  endTime: string;
+  totalTime: string;  // "H:mm"
+  actualDistance: number;
+  difficulty: number;
+  rating: number;
+  notes: string;
+}
 
 /**
- * TourService - ViewModel/Model Layer
- *
- * MVVM Role: Acts as the ViewModel/Model, managing all business logic for tours
- * - Applications state is stored in the 'tours' signal (reactive state management)
- * - All tour operations (CRUD) go through this service
- * - Validation occurs here to maintain data integrity
- * - Components delegate to this service, not manipulating data directly
- * - Persistence is handled through StorageService
+ * TourService - all tour and tour-log CRUD backed by the Spring Boot API.
+ * Keeps the same method signatures that components already use.
  */
 @Injectable({
   providedIn: 'root'
 })
 export class TourService {
-  private storage = inject(StorageService);
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
 
-  // ViewModel State: Signals are Angular's reactive primitives
-  // When tours change via .update(), all computed signals depending on tours() automatically recompute
-  private tours = signal<Tour[]>(this.loadInitialTours());
+  private readonly API = environment.backendUrl;
 
-  private loadInitialTours(): Tour[] {
-    const stored = this.storage.getTours();
-    if (stored.length > 0) {
-      return stored;
-    }
-    
-    // Default tours if storage is empty
-    return [
-      {
-        id: '1',
-        name: 'My favourite Tour',
-        description: 'A scenic hiking tour',
-        from: 'FH Technikum',
-        to: 'Kahlenberg',
-        distance: '6.6',
-        time: '1h 56m',
-        transportType: 'hiking',
-        selectedImage: 'img3',
-        childFriendly: true,
-        logs: []
-      },
-      {
-        id: '2',
-        name: 'Mountain Peak Adventure',
-        description: 'Challenge yourself with this mountain hike',
-        from: 'Vienna',
-        to: 'Mt. Everest Base',
-        distance: '8300',
-        time: '60 days',
-        transportType: 'hiking',
-        selectedImage: 'img2',
-        childFriendly: false,
-        logs: []
-      },
-      {
-        id: '3',
-        name: 'City Cycling Tour',
-        description: 'Explore the city on a bike',
-        from: 'City Center',
-        to: 'Suburbs',
-        distance: '25',
-        time: '2h 30m',
-        transportType: 'cycling',
-        selectedImage: 'img1',
-        childFriendly: true,
-        logs: []
-      }
-    ];
+  // ── Helper: get current user ID (throws if not logged in) ─────────────────
+
+  private requireUserId(): number {
+    const id = this.auth.getUserId();
+    if (id === null) throw new Error('Not logged in');
+    return id;
   }
 
-  /**
-   * Exposes read-only tours signal to components
-   * Components can subscribe to changes and automatically re-render via computed signals
-   */
-  getTours() {
-    return this.tours.asReadonly();
+  // ── Tour CRUD ──────────────────────────────────────────────────────────────
+
+  async getTours(): Promise<Tour[]> {
+    const userId = this.requireUserId();
+    const backend = await firstValueFrom(
+      this.http.get<BackendTour[]>(`${this.API}/tours/user/${userId}`)
+    );
+    return backend.map(this.toFrontend);
   }
 
-  /**
-   * Retrieves specific tour by ID
-   * Used when viewing/editing a single tour
-   */
-  getTourById(id: string): Tour | undefined {
-    return this.tours().find(tour => tour.id === id);
-  }
-
-  /**
-   * CRUD: CREATE - Adds new tour to collection
-   * - Generates unique ID
-   * - Uses immutable update pattern: [...tours, newTour]
-   * - Persists to localStorage via StorageService
-   * - Components auto-update via signal reactivity
-   */
-  addTour(tour: Omit<Tour, 'id'>): Tour {
-    const newTour: Tour = {
-      ...tour,
-      id: Math.random().toString(36).substr(2, 9)
-    };
-    this.tours.update(tours => {
-      const updated = [...tours, newTour];
-      this.storage.saveTours(updated);
-      return updated;
-    });
-    return newTour;
-  }
-
-  /**
-   * CRUD: UPDATE - Modifies existing tour
-   * - Only updates if tour ID found (returns false if not found)
-   * - Immutable update pattern preserves original array
-   * - All dependent computed signals automatically recompute
-   */
-  updateTour(id: string, updates: Partial<Tour>): boolean {
-    let found = false;
-    this.tours.update(tours => {
-      const updated = tours.map(tour => {
-        if (tour.id === id) {
-          found = true;
-          return { ...tour, ...updates, id };
-        }
-        return tour;
-      });
-      if (found) {
-        this.storage.saveTours(updated);
-      }
-      return updated;
-    });
-    return found;
-  }
-
-  /**
-   * CRUD: DELETE - Removes tour from collection
-   * - Filters out matching ID
-   * - Persists change to storage
-   * - UI automatically updates via signal reactivity
-   */
-  deleteTour(id: string): void {
-    this.tours.update(tours => {
-      const updated = tours.filter(tour => tour.id !== id);
-      this.storage.saveTours(updated);
-      return updated;
-    });
-  }
-
-  /**
-   * TOUR LOG CRUD: CREATE
-   * - Automatically calculates total duration from start/end times
-   * - Adds log to specific tour's logs array
-   * - Persists entire tour structure (logs are nested in tour)
-   */
-  addTourLog(tourId: string, log: Omit<TourLog, 'id' | 'tourId'>): TourLog | null {
-    const newLog: TourLog = {
-      ...log,
-      id: Date.now().toString(),
-      tourId
-    };
-
-    let success = false;
-    this.tours.update(tours => {
-      const updated = tours.map(tour => {
-        if (tour.id === tourId) {
-          success = true;
-          return { ...tour, logs: [...tour.logs, newLog] };
-        }
-        return tour;
-      });
-      if (success) {
-        this.storage.saveTours(updated);
-      }
-      return updated;
-    });
-
-    return success ? newLog : null;
-  }
-
-  /**
-   * TOUR LOG CRUD: UPDATE
-   * - Finds tour by tourId, then finds log by logId within that tour
-   * - Updates nested log object
-   * - Preserves log ID and tourId association
-   */
-  updateTourLog(tourId: string, logId: string, updates: Partial<TourLog>): boolean {
-    let success = false;
-    this.tours.update(tours => {
-      const updated = tours.map(tour => {
-        if (tour.id === tourId) {
-          const updatedLogs = tour.logs.map(log => {
-            if (log.id === logId) {
-              success = true;
-              return { ...log, ...updates, id: logId, tourId };
-            }
-            return log;
-          });
-          return { ...tour, logs: updatedLogs };
-        }
-        return tour;
-      });
-      if (success) {
-        this.storage.saveTours(updated);
-      }
-      return updated;
-    });
-    return success;
-  }
-
-  /**
-   * TOUR LOG CRUD: DELETE
-   * - Filters out log by ID from specific tour's logs array
-   * - Checks length change to confirm deletion occurred
-   */
-  deleteTourLog(tourId: string, logId: string): boolean {
-    let success = false;
-    this.tours.update(tours => {
-      const updated = tours.map(tour => {
-        if (tour.id === tourId) {
-          const updatedLogs = tour.logs.filter(log => log.id !== logId);
-          if (updatedLogs.length !== tour.logs.length) {
-            success = true;
-          }
-          return { ...tour, logs: updatedLogs };
-        }
-        return tour;
-      });
-      if (success) {
-        this.storage.saveTours(updated);
-      }
-      return updated;
-    });
-    return success;
-  }
-
-  // Business logic: Filtering
-  filterTours(tours: Tour[], query: string): Tour[] {
-    if (!query.trim()) {
-      return tours;
-    }
-
-    const lowerQuery = query.toLowerCase();
-    return tours.filter(tour => {
-      const basicMatch =
-        tour.name.toLowerCase().includes(lowerQuery) ||
-        tour.from.toLowerCase().includes(lowerQuery) ||
-        tour.to.toLowerCase().includes(lowerQuery) ||
-        tour.description.toLowerCase().includes(lowerQuery);
-
-      const logsMatch = tour.logs.some(log =>
-        log.notes.toLowerCase().includes(lowerQuery) ||
-        log.difficulty.toString().includes(lowerQuery)
+  async getTourById(id: string): Promise<Tour | null> {
+    try {
+      const backend = await firstValueFrom(
+        this.http.get<BackendTour>(`${this.API}/tours/${id}`)
       );
-
-      const popularityMatch =
-        lowerQuery.includes('popular') ||
-        lowerQuery.includes('log') ||
-        lowerQuery === this.getPopularity(tour).toString();
-
-      const childFriendlyMatch =
-        this.getChildFriendliness(tour).toString() === lowerQuery ||
-        (lowerQuery.includes('child') && this.getChildFriendliness(tour) >= 4) ||
-        (lowerQuery.includes('beginner') && this.getChildFriendliness(tour) >= 4) ||
-        (lowerQuery.includes('easy') && this.getChildFriendliness(tour) >= 3) ||
-        (lowerQuery.includes('hard') && this.getChildFriendliness(tour) <= 2) ||
-        (lowerQuery.includes('challenging') && this.getChildFriendliness(tour) <= 2);
-
-      return basicMatch || logsMatch || popularityMatch || childFriendlyMatch;
-    });
+      return this.toFrontend(backend);
+    } catch {
+      return null;
+    }
   }
 
-  /**
-   * CALCULATED PROPERTY: Popularity Score (1-10)
-   * Derived from: number of logs + average rating
-   * Used to rank/sort tours and display to users
-   * If no logs, default low score
-   */
+  async addTour(tour: Omit<Tour, 'id'>): Promise<Tour> {
+    const userId = this.requireUserId();
+    const payload = this.toBackend({ ...tour, id: '' });
+    const saved = await firstValueFrom(
+      this.http.post<BackendTour>(`${this.API}/tours?userId=${userId}`, payload)
+    );
+    return this.toFrontend(saved);
+  }
+
+  async updateTour(id: string, updates: Partial<Tour>): Promise<Tour> {
+    const current = await this.getTourById(id);
+    const merged: Tour = { ...(current ?? ({} as Tour)), ...updates, id };
+    const payload = this.toBackend(merged);
+    const saved = await firstValueFrom(
+      this.http.put<BackendTour>(`${this.API}/tours/${id}`, payload)
+    );
+    return this.toFrontend(saved);
+  }
+
+  async deleteTour(id: string): Promise<void> {
+    await firstValueFrom(this.http.delete(`${this.API}/tours/${id}`));
+  }
+
+  // ── Tour Log CRUD ──────────────────────────────────────────────────────────
+
+  async addTourLog(tourId: string, log: Omit<TourLog, 'id' | 'tourId'>): Promise<TourLog> {
+    const payload = this.logToBackend({ ...log, id: '', tourId });
+    const saved = await firstValueFrom(
+      this.http.post<BackendLog>(`${this.API}/tours/${tourId}/logs`, payload)
+    );
+    return this.logToFrontend(saved);
+  }
+
+  async updateTourLog(tourId: string, logId: string, updates: Partial<TourLog>): Promise<TourLog> {
+    const payload = this.logToBackend({ ...updates, id: logId, tourId } as TourLog);
+    const saved = await firstValueFrom(
+      this.http.put<BackendLog>(`${this.API}/tours/${tourId}/logs/${logId}`, payload)
+    );
+    return this.logToFrontend(saved);
+  }
+
+  async deleteTourLog(tourId: string, logId: string): Promise<void> {
+    await firstValueFrom(
+      this.http.delete(`${this.API}/tours/${tourId}/logs/${logId}`)
+    );
+  }
+
+  // ── Search (client-side over fetched tours) ────────────────────────────────
+
+  filterTours(tours: Tour[], query: string): Tour[] {
+    if (!query.trim()) return tours;
+    const q = query.toLowerCase();
+    return tours.filter(t =>
+      t.name.toLowerCase().includes(q) ||
+      t.from.toLowerCase().includes(q) ||
+      t.to.toLowerCase().includes(q) ||
+      t.description.toLowerCase().includes(q) ||
+      t.logs.some(l => l.notes.toLowerCase().includes(q))
+    );
+  }
+
+  // ── Computed properties (unchanged business logic) ─────────────────────────
+
   getPopularity(tour: Tour): number {
-    if (tour.logs.length === 0) return 1; // No data = low score
-
-    // Normalize logs count: assume max 20 logs = 10 points
+    if (tour.logs.length === 0) return 1;
     const logsScore = Math.min(tour.logs.length / 2, 10);
-
-    // Normalize rating: convert 1-5 scale to 0-10 scale
-    const avgRating = this.getAverageRating(tour);
-    const ratingScore = (avgRating / 5) * 10;
-
-    // Average both scores for final popularity
-    const popularity = (logsScore + ratingScore) / 2;
-
-    return Math.max(1, Math.min(10, popularity)); // Clamp to 1-10
+    const ratingScore = (this.getAverageRating(tour) / 5) * 10;
+    return Math.max(1, Math.min(10, (logsScore + ratingScore) / 2));
   }
 
-  /**
-   * CALCULATED PROPERTY: Average Rating (1-5)
-   * Computed by averaging all log ratings
-   * Displays tour quality based on user experiences
-   * If no logs, default to neutral 2.5
-   */
   getAverageRating(tour: Tour): number {
-    if (tour.logs.length === 0) return 2.5; // No data = neutral
-
-    const totalRating = tour.logs.reduce((sum, log) => sum + log.rating, 0);
-    return totalRating / tour.logs.length;
+    if (tour.logs.length === 0) return 2.5;
+    return tour.logs.reduce((s, l) => s + l.rating, 0) / tour.logs.length;
   }
 
-  /**
-   * STAR DISPLAY HELPER
-   * Converts decimal rating to full/half/empty star counts
-   * Returns: { full: 3, half: true, empty: 1 } for 3.5 stars
-   * Used for UI rendering of star ratings
-   */
   getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = (rating % 1) >= 0.5;
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-
-    return {
-      full: fullStars,
-      half: hasHalfStar,
-      empty: emptyStars
-    };
+    const full = Math.floor(rating);
+    const half = (rating % 1) >= 0.5;
+    return { full, half, empty: 5 - full - (half ? 1 : 0) };
   }
 
-  /**
-   * CALCULATED PROPERTY: Child-Friendliness Score (1-6)
-   * Derived from: average difficulty, average time, average distance
-   * Uses heuristics if no logs exist
-   * Used for filtering and recommendations
-   */
   getChildFriendliness(tour: Tour): number {
-    if (tour.logs.length === 0) return 3; // Default to neutral if no data
-
+    if (tour.logs.length === 0) return 3;
     let score = 0;
-    // Calculate averages from logs
-    const avgDifficulty = tour.logs.reduce((sum, log) => sum + log.difficulty, 0) / tour.logs.length;
-    const avgTimeMinutes = tour.logs.reduce((sum, log) => {
-      const [h, m] = log.totalTime.split(':').map(Number);
-      return sum + (h * 60 + m);
-    }, 0) / tour.logs.length;
-    const avgDistance = tour.logs.reduce((sum, log) => sum + log.actualDistance, 0) / tour.logs.length;
-
-    // Award points for easy/short characteristics
-    if (avgDifficulty < 5) score += 2; // Low difficulty = good for kids
-    if (avgTimeMinutes < 180) score += 2; // Less than 3 hours = manageable
-    if (avgDistance < 15) score += 2; // Less than 15km = reasonable distance
-
-    return Math.min(6, score); // Cap at 6
+    const n = tour.logs.length;
+    const avgDiff = tour.logs.reduce((s, l) => s + l.difficulty, 0) / n;
+    const avgMin = tour.logs.reduce((s, l) => {
+      const [h, m] = l.totalTime.split(':').map(Number);
+      return s + h * 60 + m;
+    }, 0) / n;
+    const avgDist = tour.logs.reduce((s, l) => s + l.actualDistance, 0) / n;
+    if (avgDiff < 5) score += 2;
+    if (avgMin < 180) score += 2;
+    if (avgDist < 15) score += 2;
+    return Math.min(6, score);
   }
 
-  /**
-   * CALCULATED PROPERTY: Child-Friendliness Emoji Display
-   * Visual representation of child-friendliness for UI
-   */
-  getChildFriendlinessEmoji(score: number): string {
-    if (score === 0) return '⚠️'; // Not suitable
-    if (score <= 2) return '🧗'; // Challenging
-    if (score <= 4) return '🚶'; // Moderate
-    return '👧'; // Very friendly
-  }
-
-  /**
-   * CALCULATED PROPERTY: Child-Friendliness Text Label
-   * Human-readable description for UI
-   */
   getChildFriendlinessLabel(score: number): string {
     if (score === 0) return 'Not suitable';
     if (score <= 2) return 'Challenging';
@@ -370,95 +182,140 @@ export class TourService {
     return 'Very friendly';
   }
 
-  /**
-   * CALCULATED PROPERTY: Average Actual Time
-   * Computed by averaging total time from all logs
-   * Provides estimate of actual time vs estimated time
-   * Used for tour planning
-   */
+  getChildFriendlinessEmoji(score: number): string {
+    if (score === 0) return '⚠️';
+    if (score <= 2) return '🧗';
+    if (score <= 4) return '🚶';
+    return '👧';
+  }
+
   getAverageActualTime(tour: Tour): string {
     if (tour.logs.length === 0) return 'N/A';
-
-    const totalMinutes = tour.logs.reduce((sum, log) => {
-      const [h, m] = log.totalTime.split(':').map(Number);
-      return sum + (h * 60 + m);
+    const total = tour.logs.reduce((s, l) => {
+      const [h, m] = l.totalTime.split(':').map(Number);
+      return s + h * 60 + m;
     }, 0);
-
-    const avgMinutes = Math.round(totalMinutes / tour.logs.length);
-    const hours = Math.floor(avgMinutes / 60);
-    const minutes = avgMinutes % 60;
-
-    return `${hours}:${minutes.toString().padStart(2, '0')}`;
+    const avg = Math.round(total / tour.logs.length);
+    return `${Math.floor(avg / 60)}:${String(avg % 60).padStart(2, '0')}`;
   }
 
-  /**
-   * UTILITY: Duration Calculation
-   * Converts start/end times to elapsed time
-   * Used when logging a tour activity
-   * Error handling: returns '0:00' if parsing fails
-   */
-  calculateDuration(startTime: string, endTime: string): string {
+  calculateDuration(start: string, end: string): string {
     try {
-      const [startH, startM] = startTime.split(':').map(Number);
-      const [endH, endM] = endTime.split(':').map(Number);
-      const startMin = startH * 60 + startM;
-      const endMin = endH * 60 + endM;
-      const duration = Math.max(0, endMin - startMin);
-      const hours = Math.floor(duration / 60);
-      const minutes = duration % 60;
-      return `${hours}:${String(minutes).padStart(2, '0')}`;
-    } catch {
-      return '0:00'; // Fail gracefully, don't crash
-    }
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = end.split(':').map(Number);
+      const d = Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+      return `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
+    } catch { return '0:00'; }
   }
 
-  /**
-   * INPUT VALIDATION: Tour Form
-   * Prevents invalid data from entering the system (no crashes on bad input)
-   * Returns error message if validation fails, null if valid
-   */
   validateTourForm(form: Partial<Tour>): string | null {
-    if (!form.name?.trim()) {
-      return 'Tour name is required'; // Prevents empty names, whitespace-only names
-    }
-    if (!form.from?.trim()) {
-      return 'Starting point is required';
-    }
-    if (!form.to?.trim()) {
-      return 'Destination is required';
-    }
-    return null; // All validations passed
+    if (!form.name?.trim()) return 'Tour name is required';
+    if (!form.from?.trim()) return 'Starting point is required';
+    if (!form.to?.trim()) return 'Destination is required';
+    return null;
   }
 
-  /**
-   * INPUT VALIDATION: Tour Log Form
-   * Ensures logs have valid data and logical time flow
-   * Prevents crashes from invalid calculations (negative durations, NaN difficulty)
-   */
   validateLogForm(log: Partial<TourLog>): string | null {
-    // Required fields must be present
     if (!log.date || !log.startTime || !log.endTime) {
       return 'Date, start time, and end time are required';
     }
-    // Distance must be positive for averaging
     if (log.actualDistance !== undefined && log.actualDistance <= 0) {
       return 'Actual distance must be greater than 0';
     }
-    // Difficulty must be in 1-10 range for consistent calculations
     if (log.difficulty !== undefined && (log.difficulty < 1 || log.difficulty > 10)) {
       return 'Difficulty must be between 1-10';
     }
+    const [sh, sm] = log.startTime.split(':').map(Number);
+    const [eh, em] = log.endTime.split(':').map(Number);
+    if (eh * 60 + em <= sh * 60 + sm) return 'End time must be after start time';
+    return null;
+  }
 
-    // Time logic: ensure end time comes after start time (no negative durations)
-    const [startH, startM] = log.startTime.split(':').map(Number);
-    const [endH, endM] = log.endTime.split(':').map(Number);
-    const startMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
+  // ── Mapping: frontend ↔ backend ────────────────────────────────────────────
 
-    if (endMinutes <= startMinutes) {
-      return 'End time must be after start time';
-    }
+  private toFrontend = (b: BackendTour): Tour => ({
+    id: b.id.toString(),
+    name: b.name ?? '',
+    description: b.description ?? '',
+    from: b.startLocation ?? '',
+    to: b.endLocation ?? '',
+    fromCoords: (b.fromLat != null && b.fromLng != null)
+      ? [b.fromLat, b.fromLng] : undefined,
+    toCoords: (b.toLat != null && b.toLng != null)
+      ? [b.toLat, b.toLng] : undefined,
+    transportType: (b.transportType ?? 'hiking') as Tour['transportType'],
+    distance: b.distance != null ? b.distance.toString() : '0',
+    time: b.estimatedTime != null ? this.minutesToTimeStr(b.estimatedTime) : '',
+    selectedImage: b.selectedImage ?? '',
+    childFriendly: false,
+    logs: (b.logs ?? []).map(this.logToFrontend)
+  });
 
-    return null; // All validations passed
+  private toBackend(t: Tour): Partial<BackendTour> {
+    return {
+      name: t.name,
+      description: t.description,
+      startLocation: t.from,
+      endLocation: t.to,
+      transportType: t.transportType,
+      distance: t.distance ? parseFloat(t.distance) : null,
+      estimatedTime: t.time ? this.timeStrToMinutes(t.time) : null,
+      selectedImage: t.selectedImage || null,
+      fromLat: t.fromCoords?.[0] ?? null,
+      fromLng: t.fromCoords?.[1] ?? null,
+      toLat: t.toCoords?.[0] ?? null,
+      toLng: t.toCoords?.[1] ?? null
+    };
+  }
+
+  private logToFrontend = (b: BackendLog): TourLog => ({
+    id: b.id.toString(),
+    tourId: b.tourId.toString(),
+    date: b.logDate ? new Date(b.logDate) : new Date(),
+    startTime: b.startTime ?? '',
+    endTime: b.endTime ?? '',
+    totalTime: b.totalTime ?? '0:00',
+    actualDistance: b.actualDistance ?? 0,
+    difficulty: b.difficulty ?? 5,
+    rating: b.rating ?? 2.5,
+    notes: b.notes ?? ''
+  });
+
+  private logToBackend(l: TourLog): Partial<BackendLog> {
+    const dateStr = l.date instanceof Date
+      ? l.date.toISOString().split('T')[0]
+      : String(l.date).split('T')[0];
+    return {
+      logDate: dateStr,
+      startTime: l.startTime,
+      endTime: l.endTime,
+      totalTime: l.totalTime,
+      actualDistance: l.actualDistance,
+      difficulty: l.difficulty,
+      rating: l.rating,
+      notes: l.notes
+    };
+  }
+
+  // ── Time string helpers ────────────────────────────────────────────────────
+  // Backend stores estimated time as total minutes (Long)
+
+  private timeStrToMinutes(time: string): number {
+    // Accept "1h 30m", "2h", "45m", "1:30"
+    const hm = time.match(/(\d+)h\s*(?:(\d+)m)?/);
+    if (hm) return parseInt(hm[1]) * 60 + (hm[2] ? parseInt(hm[2]) : 0);
+    const colon = time.match(/^(\d+):(\d+)$/);
+    if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
+    const mOnly = time.match(/^(\d+)m$/);
+    if (mOnly) return parseInt(mOnly[1]);
+    return 0;
+  }
+
+  private minutesToTimeStr(minutes: number): string {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return `${m}m`;
+    if (m === 0) return `${h}h`;
+    return `${h}h ${m}m`;
   }
 }

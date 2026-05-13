@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tours")
@@ -35,12 +37,22 @@ public class Tour {
 
     private Long estimatedTime;
 
+    private String selectedImage;
+
+    private Double fromLat;
+    private Double fromLng;
+    private Double toLat;
+    private Double toLng;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @OneToMany(mappedBy = "tour", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<TourLog> logs = new ArrayList<>();
 
     @PrePersist
     private void onCreate() {

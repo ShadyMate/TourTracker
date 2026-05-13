@@ -5,6 +5,8 @@ export interface Tour {
   description: string;
   from: string;
   to: string;
+  fromCoords?: [number, number]; // [lat, lng] from geocode autocomplete
+  toCoords?: [number, number];   // [lat, lng] from geocode autocomplete
   transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
   distance: string;
   time: string;

@@ -1,12 +1,10 @@
 <div class="auth-container">
   <div class="auth-card">
-    <!-- Header -->
     <div class="auth-header">
       <h1>TourTracker</h1>
       <p class="subtitle">{{ isLoginMode() ? 'Welcome Back' : 'Join Our Community' }}</p>
     </div>
 
-    <!-- Error Message -->
     @if (error()) {
       <div class="error-message">
         <span class="error-icon">⚠️</span>
@@ -14,56 +12,42 @@
       </div>
     }
 
-    <!-- Form -->
     <form (ngSubmit)="submit()" class="auth-form">
-      <!-- Register Only Fields -->
-      @if (!isLoginMode()) {
-        <div class="form-group">
-          <label for="firstName">First Name</label>
-          <input
-            type="text"
-            id="firstName"
-            [ngModel]="firstName()"
-            (ngModelChange)="onFirstNameChange($event)"
-            name="firstName"
-            placeholder="John"
-            required>
-        </div>
-
-        <div class="form-group">
-          <label for="lastName">Last Name</label>
-          <input
-            type="text"
-            id="lastName"
-            [ngModel]="lastName()"
-            (ngModelChange)="onLastNameChange($event)"
-            name="lastName"
-            placeholder="Doe"
-            required>
-        </div>
-      }
-
-      <!-- Email Field -->
+      <!-- Username -->
       <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="username">Username</label>
         <input
-          type="email"
-          id="email"
-          [ngModel]="email()"
-          (ngModelChange)="onEmailChange($event)"
-          name="email"
-          placeholder="your@email.com"
+          type="text"
+          id="username"
+          [ngModel]="username()"
+          (ngModelChange)="username.set($event)"
+          name="username"
+          placeholder="your_username"
           required>
       </div>
 
-      <!-- Password Field -->
+      <!-- Email (register only) -->
+      @if (!isLoginMode()) {
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input
+            type="email"
+            id="email"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            placeholder="your@email.com">
+        </div>
+      }
+
+      <!-- Password -->
       <div class="form-group">
         <label for="password">Password</label>
         <input
           type="password"
           id="password"
           [ngModel]="password()"
-          (ngModelChange)="onPasswordChange($event)"
+          (ngModelChange)="password.set($event)"
           name="password"
           placeholder="••••••••"
           required>
@@ -72,7 +56,6 @@
         }
       </div>
 
-      <!-- Submit Button -->
       <button type="submit" class="submit-btn" [disabled]="loading()">
         @if (loading()) {
           <span class="loading-spinner"></span>
@@ -83,7 +66,6 @@
       </button>
     </form>
 
-    <!-- Toggle Link -->
     <div class="auth-footer">
       <p>{{ isLoginMode() ? "Don't have an account?" : 'Already have an account?' }}</p>
       <button type="button" class="toggle-link" (click)="toggleMode()">

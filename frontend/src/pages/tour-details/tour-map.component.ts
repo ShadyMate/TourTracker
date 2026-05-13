@@ -2,6 +2,7 @@ import {
   Component,
   AfterViewInit,
   OnDestroy,
+  OnChanges,
   input,
   ChangeDetectionStrategy,
   inject,
@@ -138,63 +139,68 @@ import { MapService } from '../../services/map.service';
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class TourMapComponent implements AfterViewInit, OnDestroy {
+export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   private mapService = inject(MapService);
 
-  // Input: tour data
   tour = input.required<Tour>();
 
-  // State signals
   isLoading = signal(false);
   error = signal<string | null>(null);
   routeInfo = signal<{ distance: number; duration: number } | null>(null);
 
-  ngAfterViewInit(): void {
-    // Initialize map on view initialization (after DOM is rendered)
-    this.mapService.initMap('tour-map');
+  private mapInitialized = false;
 
-    // Wait a tick to ensure map is fully rendered, then load route
+  ngAfterViewInit(): void {
+    this.mapService.initMap('tour-map');
+    this.mapInitialized = true;
+
     setTimeout(() => {
       const tourData = this.tour();
-      if (tourData && tourData.from && tourData.to) {
+      if (tourData?.from && tourData?.to) {
         this.loadRoute(tourData);
       }
     }, 100);
   }
 
+  ngOnChanges(): void {
+    // Re-load route when tour input changes (e.g. after saving edits)
+    if (!this.mapInitialized) return;
+    const tourData = this.tour();
+    if (tourData?.from && tourData?.to) {
+      this.loadRoute(tourData);
+    }
+  }
+
   /**
-   * Load route from OpenRouteService and display on map
+   * Load route from OpenRouteService and display on map.
+   * Uses stored coordinates when available to skip geocoding.
    */
   private async loadRoute(tour: Tour): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
     this.routeInfo.set(null);
 
+    const profile = (tour.transportType as 'driving' | 'cycling' | 'walking' | 'hiking') || 'driving';
+
     try {
-      // Get route data from OpenRouteService
-      const route = await this.mapService.getRoute(
-        tour.from,
-        tour.to,
-        (tour.transportType as 'driving' | 'cycling' | 'walking' | 'hiking') || 'driving'
-      );
+      let route: { distance: number; duration: number; coordinates: [number, number][] };
 
-      // Display route on map
+      if (tour.fromCoords && tour.toCoords) {
+        // Fast path: coordinates already known from autocomplete selection
+        route = await this.mapService.getRouteByCoords(tour.fromCoords, tour.toCoords, profile);
+      } else {
+        // Fallback: geocode addresses on-the-fly
+        route = await this.mapService.getRoute(tour.from, tour.to, profile);
+      }
+
       this.mapService.displayRoute(route.coordinates, tour.from, tour.to);
-
-      // Store route info for display
-      this.routeInfo.set({
-        distance: route.distance,
-        duration: route.duration
-      });
+      this.routeInfo.set({ distance: route.distance, duration: route.duration });
     } catch (err) {
       console.error('Failed to load route:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load route. Please check the locations.';
-      
-      // Provide helpful error message for missing API key
+
       if (errorMessage.includes('API key')) {
-        this.error.set(
-          'API key not configured. Please add VITE_ORS_API_KEY to your .env file (get one at openrouteservice.org)'
-        );
+        this.error.set('API key not configured. Please add your ORS API key in Settings.');
       } else {
         this.error.set(errorMessage);
       }
@@ -203,24 +209,15 @@ export class TourMapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  /**
-   * Format duration from minutes to readable format (e.g., "1h 30m")
-   */
   formatDuration(minutes: number): string {
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
-
-    if (hours === 0) {
-      return `${mins}m`;
-    }
-    if (mins === 0) {
-      return `${hours}h`;
-    }
+    if (hours === 0) return `${mins}m`;
+    if (mins === 0) return `${hours}h`;
     return `${hours}h ${mins}m`;
   }
 
   ngOnDestroy(): void {
-    // Cleanup map on component destruction
     this.mapService.destroyMap();
   }
 }

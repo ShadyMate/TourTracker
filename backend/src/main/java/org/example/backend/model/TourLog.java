@@ -28,11 +28,22 @@ public class TourLog {
 
     private Integer difficulty;
 
+    @Column(name = "total_distance")
     private Double totalDistance;
 
+    @Column(name = "total_time")
     private Long totalTime;
 
-    private Integer rating;
+    private Double rating;
+
+    @Column(name = "start_time")
+    private String startTime;
+
+    @Column(name = "end_time")
+    private String endTime;
+
+    @Column(name = "total_time_str")
+    private String totalTimeStr;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

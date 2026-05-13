@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import org.example.backend.dto.LoginRequest;
 import org.example.backend.dto.UserDto;
 import org.example.backend.service.UserService;
 import org.slf4j.Logger;
@@ -21,6 +22,17 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
         logger.info("Initializing UserController");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
+        logger.info("POST /users/login - Login attempt for: {}", loginRequest.getUsername());
+        return userService.login(loginRequest.getUsername(), loginRequest.getPassword())
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    logger.warn("Login failed for: {}", loginRequest.getUsername());
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                });
     }
 
     @PostMapping("/register")

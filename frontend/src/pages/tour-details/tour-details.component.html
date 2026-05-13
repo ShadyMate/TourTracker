@@ -54,11 +54,21 @@
           <div class="form-row">
             <div class="form-group">
               <label>Starting Point</label>
-              <input type="text" [(ngModel)]="tourForm.from" name="startPoint" required>
+              <app-location-autocomplete
+                placeholder="e.g. Vienna, Austria"
+                [initialValue]="tourForm.from"
+                (locationSelected)="onFromLocationSelected($event)"
+                (textChange)="onFromTextChange($event)"
+              ></app-location-autocomplete>
             </div>
             <div class="form-group">
               <label>Destination</label>
-              <input type="text" [(ngModel)]="tourForm.to" name="endPoint" required>
+              <app-location-autocomplete
+                placeholder="e.g. Salzburg, Austria"
+                [initialValue]="tourForm.to"
+                (locationSelected)="onToLocationSelected($event)"
+                (textChange)="onToTextChange($event)"
+              ></app-location-autocomplete>
             </div>
           </div>
 

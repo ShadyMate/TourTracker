@@ -4,7 +4,7 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/tour_tracker}
-    username: ${DB_USERNAME:postgres}
+    username: ${DB_USERNAME:luisbohler}
     password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
@@ -15,7 +15,7 @@ spring:
   # JPA/Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     properties:
       hibernate:
@@ -46,6 +46,8 @@ logging:
 # Server Configuration
 server:
   port: 8080
+  servlet:
+    context-path: /api
 
 # API Documentation
 springdoc:

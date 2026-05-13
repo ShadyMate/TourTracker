@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import org.example.backend.dto.TourDto;
+import org.example.backend.dto.TourLogDto;
 import org.example.backend.service.TourService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import java.util.List;
 
 /**
  * Presentation Layer - TourController
- * Handles HTTP requests related to tours.
+ * Handles HTTP requests related to tours and their logs.
  */
 @RestController
 @RequestMapping("/tours")
@@ -25,77 +26,72 @@ public class TourController {
         logger.info("Initializing TourController");
     }
 
+    // ── Tour CRUD ──────────────────────────────────────────────────────────────
+
     @PostMapping
-    public ResponseEntity<TourDto> createTour(@RequestBody TourDto tourDto, 
-                                               @RequestParam Long userId) {
-        logger.info("POST /tours - Creating new tour for user ID: {}", userId);
-        try {
-            TourDto created = tourService.createTour(tourDto, userId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (Exception e) {
-            logger.error("Error creating tour for user ID: {}", userId, e);
-            throw e;
-        }
+    public ResponseEntity<TourDto> createTour(@RequestBody TourDto tourDto,
+                                              @RequestParam Long userId) {
+        logger.info("POST /tours - Creating tour for user ID: {}", userId);
+        TourDto created = tourService.createTour(tourDto, userId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<TourDto> getTourById(@PathVariable Long id) {
-        logger.info("GET /tours/{} - Retrieving tour", id);
-        try {
-            TourDto tour = tourService.getTourById(id);
-            return ResponseEntity.ok(tour);
-        } catch (Exception e) {
-            logger.error("Error retrieving tour with ID: {}", id, e);
-            throw e;
-        }
+        logger.info("GET /tours/{}", id);
+        return ResponseEntity.ok(tourService.getTourById(id));
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TourDto>> getUserTours(@PathVariable Long userId) {
-        logger.info("GET /tours/user/{} - Retrieving all tours for user", userId);
-        try {
-            List<TourDto> tours = tourService.getUserTours(userId);
-            return ResponseEntity.ok(tours);
-        } catch (Exception e) {
-            logger.error("Error retrieving tours for user ID: {}", userId, e);
-            throw e;
-        }
+        logger.info("GET /tours/user/{}", userId);
+        return ResponseEntity.ok(tourService.getUserTours(userId));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<TourDto>> searchTours(@RequestParam Long userId, 
-                                                      @RequestParam String searchTerm) {
-        logger.info("GET /tours/search - Searching tours for user ID: {} with term: {}", userId, searchTerm);
-        try {
-            List<TourDto> tours = tourService.searchTours(userId, searchTerm);
-            return ResponseEntity.ok(tours);
-        } catch (Exception e) {
-            logger.error("Error searching tours", e);
-            throw e;
-        }
+    public ResponseEntity<List<TourDto>> searchTours(@RequestParam Long userId,
+                                                     @RequestParam String searchTerm) {
+        logger.info("GET /tours/search - user: {} term: {}", userId, searchTerm);
+        return ResponseEntity.ok(tourService.searchTours(userId, searchTerm));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TourDto> updateTour(@PathVariable Long id, @RequestBody TourDto tourDto) {
-        logger.info("PUT /tours/{} - Updating tour", id);
-        try {
-            TourDto updated = tourService.updateTour(id, tourDto);
-            return ResponseEntity.ok(updated);
-        } catch (Exception e) {
-            logger.error("Error updating tour with ID: {}", id, e);
-            throw e;
-        }
+    public ResponseEntity<TourDto> updateTour(@PathVariable Long id,
+                                              @RequestBody TourDto tourDto) {
+        logger.info("PUT /tours/{}", id);
+        return ResponseEntity.ok(tourService.updateTour(id, tourDto));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTour(@PathVariable Long id) {
-        logger.info("DELETE /tours/{} - Deleting tour", id);
-        try {
-            tourService.deleteTour(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            logger.error("Error deleting tour with ID: {}", id, e);
-            throw e;
-        }
+        logger.info("DELETE /tours/{}", id);
+        tourService.deleteTour(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // ── Tour Log CRUD ──────────────────────────────────────────────────────────
+
+    @PostMapping("/{tourId}/logs")
+    public ResponseEntity<TourLogDto> addLog(@PathVariable Long tourId,
+                                             @RequestBody TourLogDto logDto) {
+        logger.info("POST /tours/{}/logs", tourId);
+        TourLogDto created = tourService.addTourLog(tourId, logDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PutMapping("/{tourId}/logs/{logId}")
+    public ResponseEntity<TourLogDto> updateLog(@PathVariable Long tourId,
+                                                @PathVariable Long logId,
+                                                @RequestBody TourLogDto logDto) {
+        logger.info("PUT /tours/{}/logs/{}", tourId, logId);
+        return ResponseEntity.ok(tourService.updateTourLog(tourId, logId, logDto));
+    }
+
+    @DeleteMapping("/{tourId}/logs/{logId}")
+    public ResponseEntity<Void> deleteLog(@PathVariable Long tourId,
+                                          @PathVariable Long logId) {
+        logger.info("DELETE /tours/{}/logs/{}", tourId, logId);
+        tourService.deleteTourLog(tourId, logId);
+        return ResponseEntity.noContent().build();
     }
 }

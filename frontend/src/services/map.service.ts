@@ -27,6 +27,7 @@ export class MapService {
 
   // OpenRouteService API URLs from environment
   private readonly ORS_GEOCODE_URL = environment.openRouteService.geocodeUrl;
+  private readonly ORS_AUTOCOMPLETE_URL = environment.openRouteService.autocompleteUrl;
   private readonly ORS_DIRECTIONS_URL = environment.openRouteService.directionsUrl;
 
   /**
@@ -127,6 +128,107 @@ export class MapService {
       console.error('Geocoding error:', error);
       throw error;
     }
+  }
+
+  /**
+   * Get autocomplete location suggestions from OpenRouteService
+   * Returns up to 5 suggestions with display label and [lat, lng] coordinates
+   */
+  async geocodeAutocomplete(text: string): Promise<Array<{ label: string; coords: [number, number] }>> {
+    if (!this.isApiKeyConfigured()) {
+      return [];
+    }
+    if (!text || text.trim().length < 2) {
+      return [];
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.http.get<any>(this.ORS_AUTOCOMPLETE_URL, {
+          params: {
+            text: text.trim(),
+            api_key: this.getApiKey(),
+            size: '5'
+          }
+        })
+      );
+
+      if (!response.features || response.features.length === 0) {
+        return [];
+      }
+
+      return response.features.map((feature: any) => {
+        const coords = feature.geometry.coordinates; // [lng, lat]
+        const props = feature.properties;
+        // Build human-readable label from available properties
+        const parts = [props.name, props.locality, props.region, props.country]
+          .filter(Boolean);
+        const label = parts.length > 0 ? parts.join(', ') : props.label || text;
+        return {
+          label,
+          coords: [coords[1], coords[0]] as [number, number] // [lat, lng]
+        };
+      });
+    } catch (error) {
+      console.error('Autocomplete error:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get route using pre-geocoded coordinates (skips geocoding step)
+   */
+  async getRouteByCoords(
+    fromCoords: [number, number],
+    toCoords: [number, number],
+    profile: 'driving' | 'cycling' | 'walking' | 'hiking' = 'driving'
+  ): Promise<{
+    distance: number;
+    duration: number;
+    coordinates: [number, number][];
+  }> {
+    const [fromLat, fromLng] = fromCoords;
+    const [toLat, toLng] = toCoords;
+    const orsProfile = this.mapProfileToORS(profile);
+    const directionsUrl = `${this.ORS_DIRECTIONS_URL}/${orsProfile}`;
+
+    const response = await firstValueFrom(
+      this.http.post<any>(
+        directionsUrl,
+        { coordinates: [[fromLng, fromLat], [toLng, toLat]] },
+        {
+          headers: {
+            'Authorization': this.getApiKey(),
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+    );
+
+    if (!response.routes || response.routes.length === 0) {
+      throw new Error('No route found');
+    }
+
+    const route = response.routes[0];
+    let coordinates: [number, number][] = [];
+
+    if (route.geometry) {
+      if (Array.isArray(route.geometry.coordinates)) {
+        coordinates = this.decodePolyline(route.geometry.coordinates);
+      } else if (Array.isArray(route.geometry)) {
+        coordinates = this.decodePolyline(route.geometry);
+      }
+    }
+
+    if (coordinates.length === 0) {
+      throw new Error('No valid coordinates found in route response');
+    }
+
+    return {
+      distance: route.summary.distance / 1000,
+      duration: route.summary.duration / 60,
+      coordinates
+    };
   }
 
   /**

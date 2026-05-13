@@ -45,6 +45,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public Optional<UserDto> login(String username, String password) {
+        logger.debug("Login attempt for username: {}", username);
+        return userRepository.findByUsername(username)
+                .filter(user -> user.getPassword().equals(password))
+                .map(this::mapToDto);
+    }
+
+    @Override
     public Optional<UserDto> getUserById(Long id) {
         logger.debug("Fetching user with ID: {}", id);
         return userRepository.findById(id).map(this::mapToDto);
