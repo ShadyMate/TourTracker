@@ -3,6 +3,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY . .
+ARG ORS_API_KEY
+RUN echo "VITE_ORS_API_KEY=${ORS_API_KEY}" > .env
 RUN npm run build
 
 FROM nginx:alpine

@@ -5,3 +5,6 @@ node_modules
 
 # Runtime log output
 logs/
+
+# Environment secrets — never commit API keys
+.env

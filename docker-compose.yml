@@ -26,7 +26,10 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        ORS_API_KEY: ${ORS_API_KEY}
     ports:
       - "4200:80"
     depends_on:

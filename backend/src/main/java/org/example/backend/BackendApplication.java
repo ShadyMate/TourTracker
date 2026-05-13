@@ -27,7 +27,15 @@ public class BackendApplication {
         try {
             SpringApplication app = new SpringApplication(BackendApplication.class);
             app.run(args);
-            logger.info("TourTracker Backend Application started successfully!");
+            logger.info("");
+            logger.info("╔══════════════════════════════════════════════════════╗");
+            logger.info("║          TourTracker started successfully!           ║");
+            logger.info("╠══════════════════════════════════════════════════════╣");
+            logger.info("║  Frontend  →  http://localhost:4200/                 ║");
+            logger.info("║  Backend   →  http://localhost:8080/api              ║");
+            logger.info("║  API Docs  →  http://localhost:8080/api/docs         ║");
+            logger.info("╚══════════════════════════════════════════════════════╝");
+            logger.info("");
         } catch (Exception e) {
             logger.error("Failed to start TourTracker Backend Application", e);
             System.exit(1);

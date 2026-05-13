@@ -30,35 +30,37 @@ import { MapService } from '../../services/map.service';
   imports: [CommonModule],
   template: `
     <div class="map-container">
+      <div id="tour-map" class="map-element"></div>
+
       @if (isLoading()) {
-        <div class="map-loading">
+        <div class="map-overlay map-loading">
           <div class="spinner"></div>
           <p>Loading route...</p>
         </div>
       } @else if (error()) {
-        <div class="map-error">
+        <div class="map-overlay map-error">
           <p>❌ {{ error() }}</p>
           <p class="error-hint">Make sure start and end locations are valid</p>
         </div>
-      } @else {
-        <div id="tour-map" class="map-element"></div>
-        @if (routeInfo()) {
-          <div class="route-info">
-            <div class="info-item">
-              <span class="label">Distance:</span>
-              <span class="value">{{ routeInfo()!.distance.toFixed(1) }} km</span>
-            </div>
-            <div class="info-item">
-              <span class="label">Duration:</span>
-              <span class="value">{{ formatDuration(routeInfo()!.duration) }}</span>
-            </div>
+      }
+
+      @if (routeInfo() && !isLoading() && !error()) {
+        <div class="route-info">
+          <div class="info-item">
+            <span class="label">Distance:</span>
+            <span class="value">{{ routeInfo()!.distance.toFixed(1) }} km</span>
           </div>
-        }
+          <div class="info-item">
+            <span class="label">Duration:</span>
+            <span class="value">{{ formatDuration(routeInfo()!.duration) }}</span>
+          </div>
+        </div>
       }
     </div>
   `,
   styles: [`
     .map-container {
+      position: relative;
       width: 100%;
       height: 100%;
       display: flex;
@@ -73,15 +75,17 @@ import { MapService } from '../../services/map.service';
       min-height: 400px;
     }
 
-    .map-loading,
-    .map-error {
-      flex: 1;
+    .map-overlay {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 16px;
       padding: 24px;
+      background-color: #f5f5f5;
+      z-index: 1000;
     }
 
     .map-loading {

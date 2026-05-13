@@ -176,7 +176,8 @@ export class MapService {
   }
 
   /**
-   * Get route using pre-geocoded coordinates (skips geocoding step)
+   * Get route using pre-geocoded coordinates (skips geocoding step).
+   * Uses the /geojson endpoint so geometry arrives as plain [lng,lat] arrays.
    */
   async getRouteByCoords(
     fromCoords: [number, number],
@@ -190,7 +191,7 @@ export class MapService {
     const [fromLat, fromLng] = fromCoords;
     const [toLat, toLng] = toCoords;
     const orsProfile = this.mapProfileToORS(profile);
-    const directionsUrl = `${this.ORS_DIRECTIONS_URL}/${orsProfile}`;
+    const directionsUrl = `${this.ORS_DIRECTIONS_URL}/${orsProfile}/geojson`;
 
     const response = await firstValueFrom(
       this.http.post<any>(
@@ -205,28 +206,23 @@ export class MapService {
       )
     );
 
-    if (!response.routes || response.routes.length === 0) {
+    if (!response.features || response.features.length === 0) {
       throw new Error('No route found');
     }
 
-    const route = response.routes[0];
-    let coordinates: [number, number][] = [];
+    const feature = response.features[0];
+    const rawCoords: number[][] = feature.geometry?.coordinates ?? [];
 
-    if (route.geometry) {
-      if (Array.isArray(route.geometry.coordinates)) {
-        coordinates = this.decodePolyline(route.geometry.coordinates);
-      } else if (Array.isArray(route.geometry)) {
-        coordinates = this.decodePolyline(route.geometry);
-      }
-    }
-
-    if (coordinates.length === 0) {
+    if (rawCoords.length === 0) {
       throw new Error('No valid coordinates found in route response');
     }
 
+    const coordinates: [number, number][] = rawCoords.map(c => [c[1], c[0]]);
+    const summary = feature.properties?.summary ?? {};
+
     return {
-      distance: route.summary.distance / 1000,
-      duration: route.summary.duration / 60,
+      distance: (summary.distance ?? 0) / 1000,
+      duration: (summary.duration ?? 0) / 60,
       coordinates
     };
   }
@@ -248,20 +244,13 @@ export class MapService {
       const [fromLat, fromLng] = await this.geocodeAddress(from);
       const [toLat, toLng] = await this.geocodeAddress(to);
 
-      // Determine ORS profile
       const orsProfile = this.mapProfileToORS(profile);
-      const directionsUrl = `${this.ORS_DIRECTIONS_URL}/${orsProfile}`;
+      const directionsUrl = `${this.ORS_DIRECTIONS_URL}/${orsProfile}/geojson`;
 
-      // Request route from OpenRouteService
       const response = await firstValueFrom(
         this.http.post<any>(
           directionsUrl,
-          {
-            coordinates: [
-              [fromLng, fromLat],
-              [toLng, toLat]
-            ]
-          },
+          { coordinates: [[fromLng, fromLat], [toLng, toLat]] },
           {
             headers: {
               'Authorization': this.getApiKey(),
@@ -271,44 +260,21 @@ export class MapService {
         )
       );
 
-      console.log('Full ORS response:', response);
-      console.log('Routes array:', response.routes);
+      if (response.features && response.features.length > 0) {
+        const feature = response.features[0];
+        const rawCoords: number[][] = feature.geometry?.coordinates ?? [];
 
-      if (response.routes && response.routes.length > 0) {
-        const route = response.routes[0];
-        
-        console.log('ORS Route response:', route);
-        console.log('Route geometry:', route.geometry);
-        
-        // Handle different geometry formats from ORS API
-        let coordinates: [number, number][] = [];
-        
-        if (route.geometry) {
-          if (Array.isArray(route.geometry.coordinates)) {
-            // GeoJSON format: coordinates is array of [lng, lat]
-            coordinates = this.decodePolyline(route.geometry.coordinates);
-          } else if (typeof route.geometry === 'string') {
-            // Encoded polyline format
-            coordinates = this.decodePolyline(route.geometry);
-          } else if (Array.isArray(route.geometry)) {
-            // Direct array format
-            coordinates = this.decodePolyline(route.geometry);
-          }
-        } else if (route.geometry_array) {
-          // Alternative key name
-          coordinates = this.decodePolyline(route.geometry_array);
-        }
-
-        console.log('Decoded coordinates:', coordinates);
-
-        if (coordinates.length === 0) {
+        if (rawCoords.length === 0) {
           throw new Error('No valid coordinates found in route response');
         }
 
+        const coordinates: [number, number][] = rawCoords.map((c: number[]) => [c[1], c[0]]);
+        const summary = feature.properties?.summary ?? {};
+
         return {
-          distance: route.summary.distance / 1000, // Convert to km
-          duration: route.summary.duration / 60, // Convert to minutes
-          coordinates: coordinates
+          distance: (summary.distance ?? 0) / 1000,
+          duration: (summary.duration ?? 0) / 60,
+          coordinates
         };
       }
 
