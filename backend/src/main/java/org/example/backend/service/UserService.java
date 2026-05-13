@@ -1,6 +1,5 @@
 package org.example.backend.service;
 
-import org.example.backend.model.User;
 import org.example.backend.dto.UserDto;
 import java.util.Optional;
 
