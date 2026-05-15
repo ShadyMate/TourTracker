@@ -48,6 +48,12 @@ server:
   servlet:
     context-path: /api
 
+# JWT Authentication
+app:
+  jwt:
+    secret: ${JWT_SECRET:dGhpcklzQVZlcnlMb25nU2VjcmV0S2V5Rm9yVG91clRyYWNrZXJKV1RBdXRoZW50aWNhdGlvbjIwMjQ=}
+    expiration-ms: 86400000  # 24 hours
+
 # API Documentation
 springdoc:
   swagger-ui:

@@ -48,6 +48,10 @@ export class HomeComponent implements OnInit {
   }
 
   addTour(): void {
+    if (!this.isLoggedIn()) {
+      this.router.navigate(['/login']);
+      return;
+    }
     this.router.navigate(['/tour', 'new']);
   }
 

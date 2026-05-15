@@ -5,16 +5,17 @@ import { User } from '../models/user.model';
 import { StorageService } from './storage.service';
 import { environment } from '../environments/environment';
 
-interface BackendUser {
+interface AuthResponse {
+  token: string;
   id: number;
   username: string;
   email: string;
 }
 
 /**
- * AuthService - handles login, register, and session state.
- * Persists the logged-in userId to localStorage so the session
- * survives page refreshes.
+ * AuthService - login, registration, and session state.
+ * On successful auth the backend returns a JWT which is stored in localStorage
+ * and attached to every subsequent request by the auth interceptor.
  */
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ export class AuthService {
   private storage = inject(StorageService);
 
   private readonly API = environment.backendUrl;
-  private readonly USER_ID_KEY = 'userId';
+  private readonly TOKEN_KEY = 'authToken';
   private readonly USER_KEY = 'currentUser';
 
   private currentUser = signal<User | null>(this.loadStoredUser());
@@ -43,30 +44,34 @@ export class AuthService {
     return this.isDarkMode.asReadonly();
   }
 
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  getUserId(): number | null {
+    const user = this.currentUser();
+    return user ? parseInt(user.id, 10) : null;
+  }
+
   async login(username: string, password: string): Promise<User> {
-    const backendUser = await firstValueFrom(
-      this.http.post<BackendUser>(`${this.API}/users/login`, { username, password })
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${this.API}/users/login`, { username, password })
     );
-    return this.applySession(backendUser);
+    return this.applySession(response);
   }
 
   async register(username: string, password: string, email: string): Promise<User> {
-    const backendUser = await firstValueFrom(
-      this.http.post<BackendUser>(`${this.API}/users/register`, { username, password, email })
+    const response = await firstValueFrom(
+      this.http.post<AuthResponse>(`${this.API}/users/register`, { username, password, email })
     );
-    return this.applySession(backendUser);
+    return this.applySession(response);
   }
 
   logout(): void {
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
-    localStorage.removeItem(this.USER_ID_KEY);
+    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
-  }
-
-  getUserId(): number | null {
-    const stored = localStorage.getItem(this.USER_ID_KEY);
-    return stored ? parseInt(stored, 10) : null;
   }
 
   toggleDarkMode(): void {
@@ -80,17 +85,17 @@ export class AuthService {
     this.storage.saveDarkModePreference(isDark);
   }
 
-  private applySession(backendUser: BackendUser): User {
+  private applySession(response: AuthResponse): User {
     const user: User = {
-      id: backendUser.id.toString(),
-      username: backendUser.username,
-      email: backendUser.email ?? '',
+      id: response.id.toString(),
+      username: response.username,
+      email: response.email ?? '',
       firstName: '',
       lastName: ''
     };
     this.currentUser.set(user);
     this.isAuthenticated.set(true);
-    localStorage.setItem(this.USER_ID_KEY, backendUser.id.toString());
+    localStorage.setItem(this.TOKEN_KEY, response.token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     return user;
   }

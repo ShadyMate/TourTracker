@@ -30,6 +30,10 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  goToHome(): void {
+    this.router.navigate(['/']);
+  }
+
   toggleMode(): void {
     this.isLoginMode.update(mode => !mode);
     this.resetForm();
@@ -64,7 +68,21 @@ export class LoginComponent implements OnInit {
       this.error.set('Password must be at least 6 characters');
       return false;
     }
+    if (!this.isLoginMode()) {
+      if (!this.email()) {
+        this.error.set('Email address is required');
+        return false;
+      }
+      if (!this.isValidEmail(this.email())) {
+        this.error.set('Please enter a valid email address');
+        return false;
+      }
+    }
     return true;
+  }
+
+  private isValidEmail(email: string): boolean {
+    return /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);
   }
 
   private resetForm(): void {

@@ -49,20 +49,11 @@ export class TourService {
 
   private readonly API = environment.backendUrl;
 
-  // ── Helper: get current user ID (throws if not logged in) ─────────────────
-
-  private requireUserId(): number {
-    const id = this.auth.getUserId();
-    if (id === null) throw new Error('Not logged in');
-    return id;
-  }
-
   // ── Tour CRUD ──────────────────────────────────────────────────────────────
 
   async getTours(): Promise<Tour[]> {
-    const userId = this.requireUserId();
     const backend = await firstValueFrom(
-      this.http.get<BackendTour[]>(`${this.API}/tours/user/${userId}`)
+      this.http.get<BackendTour[]>(`${this.API}/tours`)
     );
     return backend.map(this.toFrontend);
   }
@@ -79,10 +70,9 @@ export class TourService {
   }
 
   async addTour(tour: Omit<Tour, 'id'>): Promise<Tour> {
-    const userId = this.requireUserId();
     const payload = this.toBackend({ ...tour, id: '' });
     const saved = await firstValueFrom(
-      this.http.post<BackendTour>(`${this.API}/tours?userId=${userId}`, payload)
+      this.http.post<BackendTour>(`${this.API}/tours`, payload)
     );
     return this.toFrontend(saved);
   }

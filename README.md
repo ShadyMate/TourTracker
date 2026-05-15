@@ -7,7 +7,8 @@ A full-stack web application for planning and logging hiking, cycling, and walki
 | Layer | Technology |
 |---|---|
 | Frontend | Angular 17+ · TypeScript · Leaflet · SCSS |
-| Backend | Spring Boot 4 · Java 25 · JPA/Hibernate |
+| Backend | Spring Boot 4 · Java 25 · Spring Security · JPA/Hibernate |
+| Auth | JWT (JJWT 0.12) · BCrypt password hashing |
 | Database | PostgreSQL 16 |
 | Maps | OpenRouteService (geocoding + routing) · Leaflet |
 | Infrastructure | Docker · Docker Compose · Nginx |
@@ -32,13 +33,19 @@ cd TourTracker
 cp frontend/.env.example .env
 ```
 
-Open `.env` and replace the placeholder with your ORS API key:
+Open `.env` and fill in your values:
 
 ```env
 ORS_API_KEY=your_actual_api_key_here
+JWT_SECRET=your_base64_encoded_secret_at_least_32_bytes
 ```
 
-> `.env` is listed in `.gitignore` — your key will never be committed.
+A quick way to generate a strong JWT secret:
+```bash
+openssl rand -base64 48
+```
+
+> `.env` is listed in `.gitignore` — your secrets will never be committed.
 
 **3. Start the stack**
 
@@ -70,7 +77,7 @@ Once the backend logs the success banner, everything is ready:
 
 ## Features
 
-- **Authentication** — Register and log in; each user's tours are private
+- **Authentication** — Self-registration (email + username + password, all validated) and login with JWT; sessions are token-based (24 h expiry), passwords are BCrypt-hashed, and all tour data is strictly private to its creator. The home page is publicly visible; protected actions (Add Tour, tour details, settings) prompt unauthenticated users to log in
 - **Tour management** — Create, edit, and delete tours with name, description, transport type, and estimated distance/time
 - **Geocoding autocomplete** — Type a location and pick from live ORS suggestions; coordinates are stored so routes load instantly
 - **Interactive maps** — Leaflet renders the full route using ORS directions; supports hiking, cycling, walking, and driving profiles

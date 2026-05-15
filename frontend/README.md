@@ -32,13 +32,17 @@ The `npm run build` command runs `load-env.js` first, which reads `.env` and wri
 ```
 src/
 ├── app/
-│   ├── app.routes.ts               # Route definitions
-│   └── app.config.ts               # Angular providers
+│   ├── app.routes.ts               # Route definitions (auth-guarded routes)
+│   └── app.config.ts               # Angular providers (HttpClient + auth interceptor)
 ├── components/
 │   └── location-autocomplete/      # Reusable geocoding input with dropdown
 ├── environments/
 │   ├── environment.ts              # Dev config (backend + ORS URLs)
 │   └── environment.prod.ts         # Prod config (same URLs, production flag)
+├── guards/
+│   └── auth.guard.ts               # CanActivateFn — guards /tour/:id, /settings, /account; redirects to /login
+├── interceptors/
+│   └── auth.interceptor.ts         # HttpInterceptorFn — attaches Authorization: Bearer header
 ├── models/
 │   ├── tour.model.ts               # Tour and TourLog interfaces
 │   └── user.model.ts               # User interface
@@ -51,16 +55,37 @@ src/
 │   ├── account/                    # User account settings
 │   └── settings/                   # App preferences (dark mode, API key)
 └── services/
-    ├── auth.service.ts             # Login, register, session (localStorage)
+    ├── auth.service.ts             # Login, register, logout; stores JWT in localStorage
     ├── tour.service.ts             # Tour + log CRUD → Spring Boot REST API
     ├── map.service.ts              # Leaflet init, ORS geocoding, ORS routing
     ├── config.service.ts           # ORS API key read/write
     └── storage.service.ts          # localStorage helpers
 ```
 
+## Authentication
+
+Authentication is JWT-based. The full flow:
+
+1. User submits the login or register form on `/login`
+2. `AuthService` calls `POST /api/users/login` (or `/register`)
+3. The backend returns `{ token, id, username, email }` on success
+4. `AuthService` stores the JWT in `localStorage` under `authToken` and the user profile under `currentUser`, then sets the reactive `isAuthenticated` signal to `true`
+5. `authInterceptor` reads the token on every outgoing request and adds the header `Authorization: Bearer <token>` — except on the auth endpoints themselves
+6. `authGuard` protects `/tour/:id`, `/settings`, and `/account`; the home page (`/`) is publicly accessible. Unauthenticated users who click **Add Tour** on the home page are redirected to `/login` instead
+7. The login/register page includes a **← Back to Home** link so unauthenticated visitors can return to browse without signing in
+8. Logout clears both localStorage keys and resets the signal, redirecting to `/login`
+
 ## Key design decisions
 
 **Signals everywhere** — All component state uses Angular signals (`signal()`, `computed()`). `ChangeDetectionStrategy.OnPush` is set on every component; `markForCheck()` is called after async operations.
+
+**Functional interceptor and guard** — Both `authInterceptor` and `authGuard` are plain functions (Angular 17+ `HttpInterceptorFn` / `CanActivateFn`), registered in `app.config.ts` via `provideHttpClient(withInterceptors([authInterceptor]))`. No class-based interceptors or `CanActivate` classes needed.
+
+**JWT stored in localStorage** — The token is persisted so sessions survive page refresh. On startup, `AuthService` restores the user from `currentUser` in localStorage and marks the session as authenticated without requiring a new login.
+
+**No userId in tour API calls** — The backend resolves the current user from the JWT on every request. `TourService` never sends a `userId` parameter; the interceptor's Bearer token is the only credential needed.
+
+**Soft auth on home page** — The home route has no route guard so unauthenticated users can browse it freely. The `Add Tour` button is the only entry point to protected functionality; it checks `isLoggedIn()` and redirects to `/login` if the user has no active session. Tour detail, settings, and account routes remain fully guarded.
 
 **Map div stays in DOM** — The Leaflet map container (`#tour-map`) is always rendered; loading and error states are absolutely-positioned overlays. This prevents Leaflet losing its DOM reference when Angular conditionally removes and recreates the element.
 
