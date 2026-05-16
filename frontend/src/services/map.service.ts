@@ -252,10 +252,8 @@ export class MapService {
           directionsUrl,
           { coordinates: [[fromLng, fromLat], [toLng, toLat]] },
           {
-            headers: {
-              'Authorization': this.getApiKey(),
-              'Content-Type': 'application/json'
-            }
+            params: { api_key: this.getApiKey() },
+            headers: { 'Content-Type': 'application/json' }
           }
         )
       );

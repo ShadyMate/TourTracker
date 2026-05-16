@@ -391,11 +391,13 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   onFromLocationSelected(suggestion: LocationSuggestion): void {
     this.tourForm.from = suggestion.label;
     this.tourForm.fromCoords = suggestion.coords;
+    this.syncTourToMap();
   }
 
   onToLocationSelected(suggestion: LocationSuggestion): void {
     this.tourForm.to = suggestion.label;
     this.tourForm.toCoords = suggestion.coords;
+    this.syncTourToMap();
   }
 
   onFromTextChange(text: string): void {
@@ -406,6 +408,20 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   onToTextChange(text: string): void {
     this.tourForm.to = text;
     this.tourForm.toCoords = undefined;
+  }
+
+  private syncTourToMap(): void {
+    const current = this.tour();
+    if (!current) return;
+    this.tour.set({
+      ...current,
+      from: this.tourForm.from,
+      to: this.tourForm.to,
+      fromCoords: this.tourForm.fromCoords,
+      toCoords: this.tourForm.toCoords,
+      transportType: this.tourForm.transportType || 'hiking'
+    });
+    this.cdr.markForCheck();
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
