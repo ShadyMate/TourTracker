@@ -112,11 +112,11 @@ Environment variables with defaults (for local dev without Docker):
 | Variable | Default | Description |
 |---|---|---|
 | `DB_URL` | `jdbc:postgresql://localhost:5432/tour_tracker` | JDBC connection URL |
-| `DB_USERNAME` | `luisbohler` | Database user |
+| `DB_USERNAME` | `postgres` | Database user |
 | `DB_PASSWORD` | *(empty)* | Database password |
 | `JWT_SECRET` | built-in dev key | Base64-encoded HMAC-SHA256 signing key — **always override in production** |
 
-In Docker these are set by `docker-compose.yml` pointing to the `postgres` service.
+In Docker, these are injected by `docker-compose.yml` from the root `.env` file into the `backend` service. See the root `.env.example` for the full list of required variables.
 
 ## Logging
 

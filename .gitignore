@@ -8,3 +8,7 @@ logs/
 
 # Environment secrets — never commit API keys
 .env
+
+# Angular build output and cache
+dist/
+.angular/

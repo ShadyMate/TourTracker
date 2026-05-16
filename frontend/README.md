@@ -17,15 +17,15 @@ Angular 17+ single-page application served by Nginx inside Docker.
 # Install dependencies
 npm install
 
-# Create a local .env with your ORS API key
-cp .env.example .env
-# → edit .env and set VITE_ORS_API_KEY=your_key
+# Create the root .env (one level up) if you haven't already
+cp ../.env.example ../.env
+# → edit ../.env and set VITE_ORS_API_KEY, DB_*, and JWT_SECRET
 
 # Start dev server (hot reload on http://localhost:4200)
 npm start
 ```
 
-The `npm run build` command runs `load-env.js` first, which reads `.env` and writes `public/env.json` so the API key is available at runtime without baking it into TypeScript source.
+The `npm start` command runs `load-env.js` first, which reads the root `.env`, filters to `VITE_`-prefixed variables only, and writes `public/env.json` so the API key is available at runtime without baking it into TypeScript source. DB credentials are never written to `public/env.json`.
 
 ## Structure
 
@@ -95,11 +95,9 @@ Authentication is JWT-based. The full flow:
 
 ## API key configuration
 
-In Docker, the key is injected as a build argument (`ORS_API_KEY`) passed from `docker-compose.yml`, which reads it from the root `.env` file. The Dockerfile writes it into `frontend/.env` before running `npm run build`.
+All credentials live in a single **root `.env`** file (never committed). The flow differs by environment:
 
-For local development, create `frontend/.env`:
-```env
-VITE_ORS_API_KEY=your_key_here
-```
+- **Docker**: `docker-compose.yml` reads `VITE_ORS_API_KEY` from root `.env` and passes it as a build argument. The Dockerfile writes it into a temporary `.env` inside the container before running `npm run build`.
+- **Local dev**: `load-env.js` (run by `npm start` / `npm run build`) walks up from `frontend/scripts/` to find the root `.env`, then writes only `VITE_`-prefixed variables to `public/env.json`. The Angular app fetches this file at startup and stores the key in `localStorage`.
 
 Users can also enter or update the key at runtime via the **Settings** page, where it is persisted to `localStorage`.

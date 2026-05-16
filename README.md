@@ -30,19 +30,23 @@ cd TourTracker
 **2. Create your environment file**
 
 ```bash
-cp frontend/.env.example .env
+cp .env.example .env
 ```
 
 Open `.env` and fill in your values:
 
 ```env
-ORS_API_KEY=your_actual_api_key_here
-JWT_SECRET=your_base64_encoded_secret_at_least_32_bytes
-```
+# Database
+DB_NAME=tour_tracker
+DB_USERNAME=your_pg_user
+DB_PASSWORD=your_pg_password
+DB_URL=jdbc:postgresql://postgres:5432/tour_tracker
 
-A quick way to generate a strong JWT secret:
-```bash
-openssl rand -base64 48
+# JWT — generate with: openssl rand -base64 48
+JWT_SECRET=your_base64_encoded_secret_at_least_32_bytes
+
+# OpenRouteService — get a free key at https://openrouteservice.org/dev/#/signup
+VITE_ORS_API_KEY=your_ors_api_key_here
 ```
 
 > `.env` is listed in `.gitignore` — your secrets will never be committed.
