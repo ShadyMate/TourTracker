@@ -171,6 +171,7 @@ public class TourServiceImpl implements TourService {
         tour.setFromLng(dto.getFromLng());
         tour.setToLat(dto.getToLat());
         tour.setToLng(dto.getToLng());
+        tour.setRouteGeometry(dto.getRouteGeometry());
     }
 
     private void applyLogDtoToEntity(TourLogDto dto, TourLog log) {
@@ -195,6 +196,7 @@ public class TourServiceImpl implements TourService {
                 tour.getStartLocation(), tour.getEndLocation(), tour.getTransportType(),
                 tour.getDistance(), tour.getEstimatedTime(), tour.getSelectedImage(),
                 tour.getFromLat(), tour.getFromLng(), tour.getToLat(), tour.getToLng(),
+                tour.getRouteGeometry(),
                 logs);
     }
 

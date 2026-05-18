@@ -26,5 +26,6 @@ public class TourDto {
     private Double fromLng;
     private Double toLat;
     private Double toLng;
+    private String routeGeometry;
     private List<TourLogDto> logs;
 }

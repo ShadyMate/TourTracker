@@ -195,7 +195,8 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       toCoords: this.tourForm.toCoords,
       distance: this.tourForm.distance,
       time: this.tourForm.time,
-      transportType: this.tourForm.transportType
+      transportType: this.tourForm.transportType,
+      routeGeometry: currentTour.routeGeometry
     };
 
     try {
@@ -410,6 +411,18 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.tourForm.toCoords = undefined;
   }
 
+  onRouteLoaded(event: { coordinates: [number, number][]; distance: number; duration: number }): void {
+    const current = this.tour();
+    if (!current) return;
+    const h = Math.floor(event.duration / 60);
+    const m = Math.round(event.duration % 60);
+    const timeStr = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
+    this.tourForm.distance = event.distance.toFixed(1);
+    this.tourForm.time = timeStr;
+    this.tour.set({ ...current, routeGeometry: event.coordinates, distance: this.tourForm.distance, time: timeStr });
+    this.cdr.markForCheck();
+  }
+
   private syncTourToMap(): void {
     const current = this.tour();
     if (!current) return;
@@ -419,7 +432,8 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       to: this.tourForm.to,
       fromCoords: this.tourForm.fromCoords,
       toCoords: this.tourForm.toCoords,
-      transportType: this.tourForm.transportType || 'hiking'
+      transportType: this.tourForm.transportType || 'hiking',
+      routeGeometry: undefined  // locations changed — force ORS re-fetch
     });
     this.cdr.markForCheck();
   }

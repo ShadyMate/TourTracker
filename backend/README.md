@@ -61,6 +61,7 @@ Flyway migrations live in `src/main/resources/db/migration/`:
 |---|---|---|
 | V1 | `V1__init.sql` | Creates `users`, `tours`, `tour_logs` tables |
 | V2 | `V2__add_tour_extras.sql` | Adds coordinate columns, time strings, widens difficulty/rating |
+| V3 | `V3__add_route_geometry.sql` | Adds `route_geometry TEXT` column to `tours` for cached ORS polyline data |
 
 Flyway is configured explicitly in `FlywayConfig.java` (Spring Boot 4's autoconfiguration order caused it not to run before JPA initialization, so a manual `@Bean` is used instead).
 

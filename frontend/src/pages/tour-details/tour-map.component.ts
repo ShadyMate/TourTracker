@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnChanges,
   input,
+  output,
   ChangeDetectionStrategy,
   inject,
   signal
@@ -147,12 +148,14 @@ export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
   private mapService = inject(MapService);
 
   tour = input.required<Tour>();
+  routeLoaded = output<{ coordinates: [number, number][]; distance: number; duration: number }>();
 
   isLoading = signal(false);
   error = signal<string | null>(null);
   routeInfo = signal<{ distance: number; duration: number } | null>(null);
 
   private mapInitialized = false;
+  private lastRouteKey = '';
 
   ngAfterViewInit(): void {
     this.mapService.initMap('tour-map');
@@ -161,28 +164,44 @@ export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
     setTimeout(() => {
       const tourData = this.tour();
       if (tourData?.from && tourData?.to) {
+        this.lastRouteKey = this.getRouteKey(tourData);
         this.loadRoute(tourData);
       }
     }, 100);
   }
 
   ngOnChanges(): void {
-    // Re-load route when tour input changes (e.g. after saving edits)
     if (!this.mapInitialized) return;
     const tourData = this.tour();
-    if (tourData?.from && tourData?.to) {
-      this.loadRoute(tourData);
-    }
+    if (!tourData?.from || !tourData?.to) return;
+    const key = this.getRouteKey(tourData);
+    // Skip if same route key — avoids redundant re-renders after routeGeometry is set
+    if (key === this.lastRouteKey) return;
+    this.lastRouteKey = key;
+    this.loadRoute(tourData);
   }
 
-  /**
-   * Load route from OpenRouteService and display on map.
-   * Uses stored coordinates when available to skip geocoding.
-   */
+  private getRouteKey(tour: Tour): string {
+    const from = tour.fromCoords?.join(',') ?? tour.from;
+    const to = tour.toCoords?.join(',') ?? tour.to;
+    return `${from}|${to}|${tour.transportType}`;
+  }
+
   private async loadRoute(tour: Tour): Promise<void> {
     this.isLoading.set(true);
     this.error.set(null);
     this.routeInfo.set(null);
+
+    // Use saved geometry when available — no external API call needed
+    if (tour.routeGeometry && tour.routeGeometry.length > 0) {
+      this.mapService.displayRoute(tour.routeGeometry, tour.from, tour.to);
+      this.routeInfo.set({
+        distance: parseFloat(tour.distance || '0') || 0,
+        duration: this.parseTimeToMinutes(tour.time || '')
+      });
+      this.isLoading.set(false);
+      return;
+    }
 
     const profile = (tour.transportType as 'driving' | 'cycling' | 'walking' | 'hiking') || 'driving';
 
@@ -190,15 +209,14 @@ export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
       let route: { distance: number; duration: number; coordinates: [number, number][] };
 
       if (tour.fromCoords && tour.toCoords) {
-        // Fast path: coordinates already known from autocomplete selection
         route = await this.mapService.getRouteByCoords(tour.fromCoords, tour.toCoords, profile);
       } else {
-        // Fallback: geocode addresses on-the-fly
         route = await this.mapService.getRoute(tour.from, tour.to, profile);
       }
 
       this.mapService.displayRoute(route.coordinates, tour.from, tour.to);
       this.routeInfo.set({ distance: route.distance, duration: route.duration });
+      this.routeLoaded.emit({ coordinates: route.coordinates, distance: route.distance, duration: route.duration });
     } catch (err) {
       console.error('Failed to load route:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load route. Please check the locations.';
@@ -211,6 +229,16 @@ export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  private parseTimeToMinutes(time: string): number {
+    const hm = time.match(/(\d+)h\s*(?:(\d+)m)?/);
+    if (hm) return parseInt(hm[1]) * 60 + (hm[2] ? parseInt(hm[2]) : 0);
+    const mOnly = time.match(/^(\d+)m$/);
+    if (mOnly) return parseInt(mOnly[1]);
+    const colon = time.match(/^(\d+):(\d+)$/);
+    if (colon) return parseInt(colon[1]) * 60 + parseInt(colon[2]);
+    return 0;
   }
 
   formatDuration(minutes: number): string {

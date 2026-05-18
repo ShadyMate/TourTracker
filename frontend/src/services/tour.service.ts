@@ -20,6 +20,7 @@ interface BackendTour {
   fromLng: number | null;
   toLat: number | null;
   toLng: number | null;
+  routeGeometry: string | null;
   logs: BackendLog[];
 }
 
@@ -233,6 +234,7 @@ export class TourService {
       ? [b.fromLat, b.fromLng] : undefined,
     toCoords: (b.toLat != null && b.toLng != null)
       ? [b.toLat, b.toLng] : undefined,
+    routeGeometry: b.routeGeometry ? JSON.parse(b.routeGeometry) : undefined,
     transportType: (b.transportType ?? 'hiking') as Tour['transportType'],
     distance: b.distance != null ? b.distance.toString() : '0',
     time: b.estimatedTime != null ? this.minutesToTimeStr(b.estimatedTime) : '',
@@ -254,7 +256,8 @@ export class TourService {
       fromLat: t.fromCoords?.[0] ?? null,
       fromLng: t.fromCoords?.[1] ?? null,
       toLat: t.toCoords?.[0] ?? null,
-      toLng: t.toCoords?.[1] ?? null
+      toLng: t.toCoords?.[1] ?? null,
+      routeGeometry: t.routeGeometry ? JSON.stringify(t.routeGeometry) : null
     };
   }
 

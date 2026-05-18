@@ -44,6 +44,9 @@ public class Tour {
     private Double toLat;
     private Double toLng;
 
+    @Column(columnDefinition = "TEXT")
+    private String routeGeometry;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

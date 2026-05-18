@@ -91,6 +91,8 @@ Authentication is JWT-based. The full flow:
 
 **Coordinates stored at selection time** — When a user picks a location from the autocomplete dropdown, `[lat, lng]` coordinates are saved alongside the label. On the tour detail view, `getRouteByCoords()` is called directly, skipping a second geocoding round-trip.
 
+**Route geometry cached in the backend** — After ORS returns a route, `tour-map.component` emits a `routeLoaded` event with the full coordinate array. `tour-details.component` stores this as `routeGeometry` on the tour and includes it when saving. On subsequent opens, the saved geometry is rendered directly by Leaflet — no ORS call is made. Changing either location clears the cached geometry and triggers a fresh ORS fetch.
+
 **ORS `/geojson` endpoint** — Both `getRoute()` and `getRouteByCoords()` POST to `/v2/directions/{profile}/geojson`. This returns coordinates as plain `[lng, lat]` arrays instead of encoded polylines, so no decoder is needed.
 
 ## API key configuration

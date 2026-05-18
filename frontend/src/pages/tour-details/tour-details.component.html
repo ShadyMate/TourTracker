@@ -248,7 +248,7 @@
       <!-- Interactive Map Component -->
       <div class="map-section">
         @if (tour()) {
-          <app-tour-map [tour]="tour()!" />
+          <app-tour-map [tour]="tour()!" (routeLoaded)="onRouteLoaded($event)" />
         }
       </div>
 

@@ -7,6 +7,7 @@ export interface Tour {
   to: string;
   fromCoords?: [number, number]; // [lat, lng] from geocode autocomplete
   toCoords?: [number, number];   // [lat, lng] from geocode autocomplete
+  routeGeometry?: [number, number][]; // saved ORS route coordinates — avoids re-fetching on load
   transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
   distance: string;
   time: string;
