@@ -46,7 +46,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     to: string;
     fromCoords?: [number, number];
     toCoords?: [number, number];
-    transportType: 'hiking' | 'cycling' | 'running' | 'walking' | '';
+    transportType: 'hiking' | 'cycling' | 'walking' | '';
     distance: string;
     time: string;
   } = {
@@ -80,7 +80,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     notes: ''
   };
 
-  transportTypes = ['hiking', 'cycling', 'running', 'walking'];
+  transportTypes = ['hiking', 'cycling', 'walking'];
 
   private getCurrentIsoDate(): string {
     return new Date().toISOString().split('T')[0];
@@ -409,6 +409,10 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   onToTextChange(text: string): void {
     this.tourForm.to = text;
     this.tourForm.toCoords = undefined;
+  }
+
+  onTransportTypeChange(): void {
+    this.syncTourToMap();
   }
 
   onRouteLoaded(event: { coordinates: [number, number][]; distance: number; duration: number }): void {

@@ -203,7 +203,7 @@ export class TourMapComponent implements AfterViewInit, OnChanges, OnDestroy {
       return;
     }
 
-    const profile = (tour.transportType as 'driving' | 'cycling' | 'walking' | 'hiking') || 'driving';
+    const profile = tour.transportType || 'hiking';
 
     try {
       let route: { distance: number; duration: number; coordinates: [number, number][] };

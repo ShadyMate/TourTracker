@@ -90,7 +90,7 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/tours` | Create a tour — all fields validated |
+| `POST` | `/tours` | Create a tour — all fields validated; `transportType` must be one of `hiking`, `cycling`, `walking`, `driving` |
 | `GET` | `/tours` | List all tours owned by the current user |
 | `GET` | `/tours/{id}` | Get a tour by ID (ownership enforced) |
 | `GET` | `/tours/search?searchTerm={q}` | Full-text search across name, description, start/end location, and log notes (case-insensitive) |

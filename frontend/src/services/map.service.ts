@@ -182,7 +182,7 @@ export class MapService {
   async getRouteByCoords(
     fromCoords: [number, number],
     toCoords: [number, number],
-    profile: 'driving' | 'cycling' | 'walking' | 'hiking' = 'driving'
+    profile: string = 'hiking'
   ): Promise<{
     distance: number;
     duration: number;
@@ -233,7 +233,7 @@ export class MapService {
   async getRoute(
     from: string,
     to: string,
-    profile: 'driving' | 'cycling' | 'walking' | 'hiking' = 'driving'
+    profile: string = 'hiking'
   ): Promise<{
     distance: number;
     duration: number;
@@ -350,19 +350,14 @@ export class MapService {
     });
   }
 
-  /**
-   * Map tour transport type to OpenRouteService profile
-   */
-  private mapProfileToORS(
-    profile: 'driving' | 'cycling' | 'walking' | 'hiking'
-  ): string {
+  private mapProfileToORS(profile: string): string {
     const profileMap: Record<string, string> = {
-      driving: 'driving-car',
-      cycling: 'cycling-regular',
-      walking: 'foot-walking',
-      hiking: 'foot-hiking'
+      driving:  'driving-car',
+      cycling:  'cycling-regular',
+      walking:  'foot-walking',
+      hiking:   'foot-hiking'
     };
-    return profileMap[profile] || 'driving-car';
+    return profileMap[profile] ?? 'foot-hiking';
   }
 
   /**

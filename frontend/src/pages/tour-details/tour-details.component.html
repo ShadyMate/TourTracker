@@ -86,7 +86,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Transport Type</label>
-              <select [(ngModel)]="tourForm.transportType" name="transportType">
+              <select [(ngModel)]="tourForm.transportType" name="transportType" (ngModelChange)="onTransportTypeChange()">
                 @for (type of transportTypes; track type) {
                   <option [value]="type">
                     {{ type | titlecase }}

@@ -95,6 +95,8 @@ Authentication is JWT-based. The full flow:
 
 **ORS `/geojson` endpoint** — Both `getRoute()` and `getRouteByCoords()` POST to `/v2/directions/{profile}/geojson`. This returns coordinates as plain `[lng, lat]` arrays instead of encoded polylines, so no decoder is needed.
 
+**Transport type drives the ORS profile** — The selected transport type is mapped to the correct ORS directions profile (`hiking→foot-hiking`, `cycling→cycling-regular`, `walking→foot-walking`, `driving→driving-car`). Changing the transport type in the edit form immediately clears the cached route geometry and re-fetches the route via `(ngModelChange)→syncTourToMap()`, so distance and estimated time always reflect the chosen mode of travel. Supported types: `hiking`, `cycling`, `walking`, `driving`.
+
 ## API key configuration
 
 All credentials live in a single **root `.env`** file (never committed). The flow differs by environment:

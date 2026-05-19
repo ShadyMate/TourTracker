@@ -34,8 +34,8 @@ public class TourDto {
 
     @NotBlank(message = "Transport type is required")
     @Pattern(
-        regexp = "^(hiking|cycling|walking|running|driving)$",
-        message = "Transport type must be one of: hiking, cycling, walking, running, driving"
+        regexp = "^(hiking|cycling|walking|driving)$",
+        message = "Transport type must be one of: hiking, cycling, walking, driving"
     )
     private String transportType;
 
