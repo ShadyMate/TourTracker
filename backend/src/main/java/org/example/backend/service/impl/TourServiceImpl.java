@@ -10,6 +10,7 @@ import org.example.backend.model.User;
 import org.example.backend.repository.TourLogRepository;
 import org.example.backend.repository.TourRepository;
 import org.example.backend.repository.UserRepository;
+import org.example.backend.service.ImageStorageService;
 import org.example.backend.service.TourService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,16 @@ public class TourServiceImpl implements TourService {
     private final TourRepository tourRepository;
     private final TourLogRepository tourLogRepository;
     private final UserRepository userRepository;
+    private final ImageStorageService imageStorageService;
 
     public TourServiceImpl(TourRepository tourRepository,
                            TourLogRepository tourLogRepository,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                           ImageStorageService imageStorageService) {
         this.tourRepository = tourRepository;
         this.tourLogRepository = tourLogRepository;
         this.userRepository = userRepository;
+        this.imageStorageService = imageStorageService;
         logger.info("Initializing TourService");
     }
 
@@ -100,8 +104,35 @@ public class TourServiceImpl implements TourService {
         Tour tour = tourRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
         requireOwnership(tour, userId);
+        // Delete associated map image from filesystem before removing the DB record
+        if (tour.getMapImagePath() != null) {
+            imageStorageService.delete(tour.getMapImagePath());
+        }
         tourRepository.deleteById(id);
         logger.info("Tour {} deleted by user {}", id, userId);
+    }
+
+    // ── Image management ───────────────────────────────────────────────────────
+
+    @Override
+    @Transactional
+    public TourDto setMapImage(Long tourId, String filename, Long userId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
+        requireOwnership(tour, userId);
+        tour.setMapImagePath(filename);
+        Tour saved = tourRepository.save(tour);
+        logger.info("Map image set for tour {}: {}", tourId, filename);
+        return mapToDto(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String getMapImagePath(Long tourId, Long userId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
+        requireOwnership(tour, userId);
+        return tour.getMapImagePath();
     }
 
     // ── Tour Log operations ────────────────────────────────────────────────────
@@ -172,6 +203,7 @@ public class TourServiceImpl implements TourService {
         tour.setToLat(dto.getToLat());
         tour.setToLng(dto.getToLng());
         tour.setRouteGeometry(dto.getRouteGeometry());
+        // mapImagePath is intentionally excluded — managed only via setMapImage()
     }
 
     private void applyLogDtoToEntity(TourLogDto dto, TourLog log) {
@@ -196,7 +228,7 @@ public class TourServiceImpl implements TourService {
                 tour.getStartLocation(), tour.getEndLocation(), tour.getTransportType(),
                 tour.getDistance(), tour.getEstimatedTime(), tour.getSelectedImage(),
                 tour.getFromLat(), tour.getFromLng(), tour.getToLat(), tour.getToLng(),
-                tour.getRouteGeometry(),
+                tour.getRouteGeometry(), tour.getMapImagePath(),
                 logs);
     }
 

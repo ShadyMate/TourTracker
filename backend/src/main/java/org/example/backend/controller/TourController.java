@@ -1,8 +1,10 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
 import org.example.backend.dto.TourDto;
 import org.example.backend.dto.TourLogDto;
 import org.example.backend.model.UserPrincipal;
+import org.example.backend.service.ImageStorageService;
 import org.example.backend.service.TourService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,16 +26,18 @@ import java.util.List;
 public class TourController {
     private static final Logger logger = LoggerFactory.getLogger(TourController.class);
     private final TourService tourService;
+    private final ImageStorageService imageStorageService;
 
-    public TourController(TourService tourService) {
+    public TourController(TourService tourService, ImageStorageService imageStorageService) {
         this.tourService = tourService;
+        this.imageStorageService = imageStorageService;
         logger.info("Initializing TourController");
     }
 
     // ── Tour CRUD ──────────────────────────────────────────────────────────────
 
     @PostMapping
-    public ResponseEntity<TourDto> createTour(@RequestBody TourDto tourDto, Authentication auth) {
+    public ResponseEntity<TourDto> createTour(@Valid @RequestBody TourDto tourDto, Authentication auth) {
         Long userId = userId(auth);
         logger.info("POST /tours - user {}", userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(tourService.createTour(tourDto, userId));
@@ -60,7 +65,7 @@ public class TourController {
 
     @PutMapping("/{id}")
     public ResponseEntity<TourDto> updateTour(@PathVariable Long id,
-                                              @RequestBody TourDto tourDto,
+                                              @Valid @RequestBody TourDto tourDto,
                                               Authentication auth) {
         logger.info("PUT /tours/{}", id);
         return ResponseEntity.ok(tourService.updateTour(id, tourDto, userId(auth)));
@@ -73,11 +78,34 @@ public class TourController {
         return ResponseEntity.noContent().build();
     }
 
+    // ── Map image upload ───────────────────────────────────────────────────────
+
+    /**
+     * Upload a map image for a tour (multipart/form-data, field name "file").
+     * The previous image is deleted from the filesystem before the new one is stored.
+     * Returns the updated tour with the new mapImagePath populated.
+     */
+    @PostMapping("/{id}/map-image")
+    public ResponseEntity<TourDto> uploadMapImage(@PathVariable Long id,
+                                                  @RequestParam MultipartFile file,
+                                                  Authentication auth) {
+        Long userId = userId(auth);
+        logger.info("POST /tours/{}/map-image - user {}", id, userId);
+
+        String existing = tourService.getMapImagePath(id, userId);
+        if (existing != null) {
+            imageStorageService.delete(existing);
+        }
+
+        String filename = imageStorageService.store(file);
+        return ResponseEntity.ok(tourService.setMapImage(id, filename, userId));
+    }
+
     // ── Tour Log CRUD ──────────────────────────────────────────────────────────
 
     @PostMapping("/{tourId}/logs")
     public ResponseEntity<TourLogDto> addLog(@PathVariable Long tourId,
-                                             @RequestBody TourLogDto logDto,
+                                             @Valid @RequestBody TourLogDto logDto,
                                              Authentication auth) {
         logger.info("POST /tours/{}/logs", tourId);
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -87,7 +115,7 @@ public class TourController {
     @PutMapping("/{tourId}/logs/{logId}")
     public ResponseEntity<TourLogDto> updateLog(@PathVariable Long tourId,
                                                 @PathVariable Long logId,
-                                                @RequestBody TourLogDto logDto,
+                                                @Valid @RequestBody TourLogDto logDto,
                                                 Authentication auth) {
         logger.info("PUT /tours/{}/logs/{}", tourId, logId);
         return ResponseEntity.ok(tourService.updateTourLog(tourId, logId, logDto, userId(auth)));

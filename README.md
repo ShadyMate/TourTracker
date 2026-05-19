@@ -82,7 +82,8 @@ Once the backend logs the success banner, everything is ready:
 ## Features
 
 - **Authentication** — Self-registration (email + username + password, all validated) and login with JWT; sessions are token-based (24 h expiry), passwords are BCrypt-hashed, and all tour data is strictly private to its creator. The home page is publicly visible; protected actions (Add Tour, tour details, settings) prompt unauthenticated users to log in
-- **Tour management** — Create, edit, and delete tours with name, description, transport type, and estimated distance/time
+- **Tour management** — Create, edit, and delete tours with name, description, transport type, and estimated distance/time; all fields are validated server-side with descriptive error messages
+- **Map image upload** — Attach a map image to any tour via `POST /tours/{id}/map-image`; images are stored on the server filesystem and only the filename is kept in the database; the old image is cleaned up automatically on replacement or tour deletion
 - **Geocoding autocomplete** — Type a location and pick from live ORS suggestions; coordinates are stored so routes load instantly
 - **Interactive maps** — Leaflet renders the full route using ORS directions; supports hiking, cycling, walking, and driving profiles. Route geometry is saved to the database on first load, so opening a saved tour never calls the external API again
 - **Tour logs** — Record completed trips with date, start/end time, actual distance, difficulty (1–10), rating, and notes

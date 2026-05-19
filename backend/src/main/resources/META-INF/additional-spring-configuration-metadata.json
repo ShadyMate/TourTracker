@@ -9,6 +9,18 @@
       "name": "app.jwt.expiration-ms",
       "type": "java.lang.Long",
       "description": "JWT token validity in milliseconds (default: 86400000 = 24 hours)."
+    },
+    {
+      "name": "app.storage.image-dir",
+      "type": "java.lang.String",
+      "description": "Filesystem directory where uploaded tour map images are stored. Supports absolute and relative paths.",
+      "defaultValue": "./tour-images"
+    },
+    {
+      "name": "app.storage.max-file-size-bytes",
+      "type": "java.lang.Long",
+      "description": "Maximum accepted image file size in bytes (default: 10485760 = 10 MB).",
+      "defaultValue": 10485760
     }
   ]
 }

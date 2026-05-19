@@ -9,6 +9,7 @@ Spring Boot 4 REST API with JWT-based authentication, PostgreSQL, and Flyway mig
 - **JJWT 0.12.6** — JWT generation and validation (HMAC-SHA256)
 - **BCrypt** — password hashing via Spring Security's `BCryptPasswordEncoder`
 - **Spring Data JPA** + Hibernate (`ddl-auto: none` — Flyway owns the schema)
+- **Bean Validation (Hibernate Validator)** — server-side input validation on all tour and log fields
 - **Flyway** for database migrations (explicit `@Bean`, not autoconfiguration)
 - **PostgreSQL 16** as the database
 - **Lombok** to reduce boilerplate
@@ -40,7 +41,7 @@ service/         Business layer — interfaces + impl/ with business logic
 repository/      Data access layer — Spring Data JPA repositories
 model/           JPA entities (User, Tour, TourLog) + UserPrincipal record
 dto/             Data transfer objects (AuthResponse, UserDto, TourDto, TourLogDto, LoginRequest)
-config/          Spring configuration beans (CorsConfig, FlywayConfig, SecurityConfig)
+config/          Spring configuration beans (CorsConfig, FlywayConfig, SecurityConfig, StorageProperties)
 security/        JWT utilities (JwtUtils, JwtAuthFilter)
 exception/       GlobalExceptionHandler + custom exceptions
 ```
@@ -62,6 +63,7 @@ Flyway migrations live in `src/main/resources/db/migration/`:
 | V1 | `V1__init.sql` | Creates `users`, `tours`, `tour_logs` tables |
 | V2 | `V2__add_tour_extras.sql` | Adds coordinate columns, time strings, widens difficulty/rating |
 | V3 | `V3__add_route_geometry.sql` | Adds `route_geometry TEXT` column to `tours` for cached ORS polyline data |
+| V4 | `V4__add_map_image_path.sql` | Adds `map_image_path VARCHAR(512)` column to `tours` for filesystem image path |
 
 Flyway is configured explicitly in `FlywayConfig.java` (Spring Boot 4's autoconfiguration order caused it not to run before JPA initialization, so a manual `@Bean` is used instead).
 
@@ -89,12 +91,19 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/tours` | Create a tour |
+| `POST` | `/tours` | Create a tour — all fields validated |
 | `GET` | `/tours` | List all tours owned by the current user |
 | `GET` | `/tours/{id}` | Get a tour by ID (ownership enforced) |
 | `GET` | `/tours/search?searchTerm={q}` | Full-text search within the current user's tours |
-| `PUT` | `/tours/{id}` | Update tour (ownership enforced) |
-| `DELETE` | `/tours/{id}` | Delete tour (ownership enforced) |
+| `PUT` | `/tours/{id}` | Update tour — all fields validated (ownership enforced) |
+| `DELETE` | `/tours/{id}` | Delete tour; also removes associated map image from filesystem |
+| `POST` | `/tours/{id}/map-image` | Upload a map image (`multipart/form-data`, field: `file`); replaces existing image; returns updated tour |
+
+### Images (public — no token required)
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/images/{filename}` | Serve a stored tour map image with correct `Content-Type` |
 
 ### Tour Logs (requires valid JWT — ownership enforced via parent tour)
 
@@ -116,6 +125,7 @@ Environment variables with defaults (for local dev without Docker):
 | `DB_USERNAME` | `postgres` | Database user |
 | `DB_PASSWORD` | *(empty)* | Database password |
 | `JWT_SECRET` | built-in dev key | Base64-encoded HMAC-SHA256 signing key — **always override in production** |
+| `IMAGE_DIR` | `./tour-images` | Filesystem directory where uploaded tour map images are stored |
 
 In Docker, these are injected by `docker-compose.yml` from the root `.env` file into the `backend` service. See the root `.env.example` for the full list of required variables.
 
