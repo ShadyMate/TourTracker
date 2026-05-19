@@ -103,6 +103,12 @@ public class TourController {
 
     // ── Tour Log CRUD ──────────────────────────────────────────────────────────
 
+    @GetMapping("/{tourId}/logs")
+    public ResponseEntity<List<TourLogDto>> getLogs(@PathVariable Long tourId, Authentication auth) {
+        logger.info("GET /tours/{}/logs", tourId);
+        return ResponseEntity.ok(tourService.getLogsForTour(tourId, userId(auth)));
+    }
+
     @PostMapping("/{tourId}/logs")
     public ResponseEntity<TourLogDto> addLog(@PathVariable Long tourId,
                                              @Valid @RequestBody TourLogDto logDto,

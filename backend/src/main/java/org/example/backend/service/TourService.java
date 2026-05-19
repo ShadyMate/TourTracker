@@ -17,6 +17,7 @@ public interface TourService {
     TourDto updateTour(Long id, TourDto tourDto, Long userId);
     void deleteTour(Long id, Long userId);
 
+    List<TourLogDto> getLogsForTour(Long tourId, Long userId);
     TourLogDto addTourLog(Long tourId, TourLogDto logDto, Long userId);
     TourLogDto updateTourLog(Long tourId, Long logId, TourLogDto logDto, Long userId);
     void deleteTourLog(Long tourId, Long logId, Long userId);

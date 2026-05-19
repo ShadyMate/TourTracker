@@ -16,6 +16,14 @@ import java.util.List;
 public interface TourRepository extends JpaRepository<Tour, Long> {
     List<Tour> findByUserId(Long userId);
     
-    @Query("SELECT t FROM Tour t WHERE t.user.id = :userId AND t.name LIKE %:search%")
-    List<Tour> searchToursByName(@Param("userId") Long userId, @Param("search") String search);
+    @Query("""
+            SELECT DISTINCT t FROM Tour t LEFT JOIN t.logs l
+            WHERE t.user.id = :userId AND (
+                LOWER(t.name)          LIKE LOWER(CONCAT('%', :search, '%')) OR
+                LOWER(t.description)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                LOWER(t.startLocation) LIKE LOWER(CONCAT('%', :search, '%')) OR
+                LOWER(t.endLocation)   LIKE LOWER(CONCAT('%', :search, '%')) OR
+                LOWER(l.notes)         LIKE LOWER(CONCAT('%', :search, '%'))
+            )""")
+    List<Tour> searchTours(@Param("userId") Long userId, @Param("search") String search);
 }

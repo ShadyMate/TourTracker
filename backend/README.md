@@ -93,7 +93,7 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 | `POST` | `/tours` | Create a tour — all fields validated |
 | `GET` | `/tours` | List all tours owned by the current user |
 | `GET` | `/tours/{id}` | Get a tour by ID (ownership enforced) |
-| `GET` | `/tours/search?searchTerm={q}` | Full-text search within the current user's tours |
+| `GET` | `/tours/search?searchTerm={q}` | Full-text search across name, description, start/end location, and log notes (case-insensitive) |
 | `PUT` | `/tours/{id}` | Update tour — all fields validated (ownership enforced) |
 | `DELETE` | `/tours/{id}` | Delete tour; also removes associated map image from filesystem |
 | `POST` | `/tours/{id}/map-image` | Upload a map image (`multipart/form-data`, field: `file`); replaces existing image; returns updated tour |
@@ -108,8 +108,9 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/tours/{tourId}/logs` | Add a log entry |
-| `PUT` | `/tours/{tourId}/logs/{logId}` | Update a log entry |
+| `GET` | `/tours/{tourId}/logs` | List all log entries for a tour |
+| `POST` | `/tours/{tourId}/logs` | Add a log entry — all fields validated |
+| `PUT` | `/tours/{tourId}/logs/{logId}` | Update a log entry — all fields validated |
 | `DELETE` | `/tours/{tourId}/logs/{logId}` | Delete a log entry |
 
 Interactive documentation: **http://localhost:8080/api/docs**

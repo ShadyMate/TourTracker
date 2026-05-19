@@ -83,7 +83,7 @@ public class TourServiceImpl implements TourService {
     @Override
     @Transactional(readOnly = true)
     public List<TourDto> searchTours(Long userId, String searchTerm) {
-        return tourRepository.searchToursByName(userId, searchTerm).stream()
+        return tourRepository.searchTours(userId, searchTerm).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -136,6 +136,17 @@ public class TourServiceImpl implements TourService {
     }
 
     // ── Tour Log operations ────────────────────────────────────────────────────
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TourLogDto> getLogsForTour(Long tourId, Long userId) {
+        Tour tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
+        requireOwnership(tour, userId);
+        return tourLogRepository.findByTourId(tourId).stream()
+                .map(this::mapLogToDto)
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
