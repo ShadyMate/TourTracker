@@ -6,13 +6,11 @@ import org.example.backend.dto.UserDto;
 import java.util.Optional;
 
 /**
- * Business Layer - UserService Interface
+ * Business Layer - AuthService
+ * Responsible for credential validation, user registration, and JWT issuance.
+ * Keeps authentication logic separate from generic user CRUD (UserService).
  */
-public interface UserService {
+public interface AuthService {
     AuthResponse register(UserDto userDto);
     Optional<AuthResponse> login(String username, String password);
-    Optional<UserDto> getUserById(Long id);
-    Optional<UserDto> getUserByUsername(String username);
-    boolean existsByUsername(String username);
-    void deleteUser(Long id);
 }

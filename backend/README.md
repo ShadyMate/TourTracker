@@ -36,11 +36,17 @@ The application starts on port `8080` with context path `/api`.
 
 ```
 controller/      Presentation layer — HTTP endpoints, request/response mapping
+  AuthController   POST /auth/login, /auth/register (public)
+  TourController   full tour + log CRUD (authenticated)
+  ImageController  GET /images/{filename} (public)
 service/         Business layer — interfaces + impl/ with business logic
+  AuthService      login, register, JWT issuance, password hashing
+  TourService      tour + tour-log CRUD, image path management
+  ImageStorageService  filesystem write/delete/resolve
   impl/
 repository/      Data access layer — Spring Data JPA repositories
 model/           JPA entities (User, Tour, TourLog) + UserPrincipal record
-dto/             Data transfer objects (AuthResponse, UserDto, TourDto, TourLogDto, LoginRequest)
+dto/             Data transfer objects (AuthResponse, LoginRequest, UserDto, TourDto, TourLogDto)
 config/          Spring configuration beans (CorsConfig, FlywayConfig, SecurityConfig, StorageProperties)
 security/        JWT utilities (JwtUtils, JwtAuthFilter)
 exception/       GlobalExceptionHandler + custom exceptions
@@ -48,7 +54,7 @@ exception/       GlobalExceptionHandler + custom exceptions
 
 ## Authentication flow
 
-1. Client calls `POST /api/users/register` or `POST /api/users/login`
+1. Client calls `POST /api/auth/register` or `POST /api/auth/login`
 2. On success, the server returns an `AuthResponse` containing a signed JWT valid for 24 hours
 3. Client stores the token and attaches it as `Authorization: Bearer <token>` on every subsequent request
 4. `JwtAuthFilter` validates the token, extracts `userId` + `username` from the JWT claims, and stores a `UserPrincipal` in the Spring Security context — **no database round-trip per request**
@@ -77,15 +83,8 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/users/register` | Register a new user; validates email format and unique username; returns `{ token, id, username, email }` |
-| `POST` | `/users/login` | Authenticate; returns `{ token, id, username, email }` or 401 |
-
-### Users (requires valid JWT)
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/users/{id}` | Get user by ID |
-| `DELETE` | `/users/{id}` | Delete user |
+| `POST` | `/auth/register` | Register a new user; validates email format and unique username; returns `{ token, id, username, email }` |
+| `POST` | `/auth/login` | Authenticate; returns `{ token, id, username, email }` or 401 |
 
 ### Tours (requires valid JWT — scoped to the authenticated user)
 

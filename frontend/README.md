@@ -67,7 +67,7 @@ src/
 Authentication is JWT-based. The full flow:
 
 1. User submits the login or register form on `/login`
-2. `AuthService` calls `POST /api/users/login` (or `/register`)
+2. `AuthService` calls `POST /api/auth/login` (or `/api/auth/register`)
 3. The backend returns `{ token, id, username, email }` on success
 4. `AuthService` stores the JWT in `localStorage` under `authToken` and the user profile under `currentUser`, then sets the reactive `isAuthenticated` signal to `true`
 5. `authInterceptor` reads the token on every outgoing request and adds the header `Authorization: Bearer <token>` — except on the auth endpoints themselves

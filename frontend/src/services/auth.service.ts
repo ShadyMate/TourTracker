@@ -55,14 +55,14 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/users/login`, { username, password })
+      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password })
     );
     return this.applySession(response);
   }
 
   async register(username: string, password: string, email: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/users/register`, { username, password, email })
+      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email })
     );
     return this.applySession(response);
   }
