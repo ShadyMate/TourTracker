@@ -46,7 +46,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     to: string;
     fromCoords?: [number, number];
     toCoords?: [number, number];
-    transportType: 'hiking' | 'cycling' | 'walking' | '';
+    transportType: 'hiking' | 'cycling' | 'walking' | 'driving' | '';
     distance: string;
     time: string;
   } = {
@@ -80,7 +80,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     notes: ''
   };
 
-  transportTypes = ['hiking', 'cycling', 'walking'];
+  transportTypes = ['hiking', 'cycling', 'walking', 'driving'];
 
   private getCurrentIsoDate(): string {
     return new Date().toISOString().split('T')[0];
