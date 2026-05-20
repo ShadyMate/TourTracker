@@ -92,7 +92,6 @@ export class MapService {
     // Initialize layers for markers and routes
     this.markersLayer = L.featureGroup().addTo(this.map);
 
-    console.log('✅ Map initialized successfully');
     return this.map;
   }
 
@@ -311,8 +310,6 @@ export class MapService {
           this.routeLayer = null;
         }
 
-        console.log('Adding route with coordinates:', coordinates);
-
         // Add route polyline
         const polylineCoords = coordinates.map(coord => [coord[0], coord[1]] as L.LatLngExpression);
         this.routeLayer = L.polyline(polylineCoords, {
@@ -341,8 +338,6 @@ export class MapService {
         // Fit map to route bounds
         const bounds = L.latLngBounds(polylineCoords);
         this.map!.fitBounds(bounds, { padding: [50, 50] });
-        
-        console.log('✅ Route displayed successfully');
       } catch (error) {
         console.error('Error displaying route:', error);
         throw error;
@@ -376,19 +371,6 @@ export class MapService {
       iconAnchor: [16, 32],
       popupAnchor: [0, -32]
     });
-  }
-
-  /**
-   * Decode polyline coordinates (if ORS returns encoded polyline)
-   */
-  private decodePolyline(
-    coordinates: number[][] | string
-  ): [number, number][] {
-    // ORS returns coordinates as array, not encoded polyline
-    if (Array.isArray(coordinates) && coordinates.length > 0) {
-      return coordinates.map(coord => [coord[1], coord[0]] as [number, number]);
-    }
-    return [];
   }
 
   /**

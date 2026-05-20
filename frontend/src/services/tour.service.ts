@@ -78,10 +78,8 @@ export class TourService {
     return this.toFrontend(saved);
   }
 
-  async updateTour(id: string, updates: Partial<Tour>): Promise<Tour> {
-    const current = await this.getTourById(id);
-    const merged: Tour = { ...(current ?? ({} as Tour)), ...updates, id };
-    const payload = this.toBackend(merged);
+  async updateTour(id: string, tour: Tour): Promise<Tour> {
+    const payload = this.toBackend(tour);
     const saved = await firstValueFrom(
       this.http.put<BackendTour>(`${this.API}/tours/${id}`, payload)
     );

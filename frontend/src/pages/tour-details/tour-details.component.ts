@@ -210,7 +210,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         this.tourId.set(newTour.id);
         this.isNewTour.set(false);
       } else {
-        const updated = await this.tourService.updateTour(currentTour.id, updates);
+        const updated = await this.tourService.updateTour(currentTour.id, { ...currentTour, ...updates });
         this.tour.set(updated);
       }
 

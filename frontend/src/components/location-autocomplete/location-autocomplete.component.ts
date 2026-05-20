@@ -174,8 +174,6 @@ export class LocationAutocompleteComponent implements OnInit, OnDestroy {
   private input$ = new Subject<string>();
   private destroy$ = new Subject<void>();
   private _lastSelected = '';
-  // Prevent re-triggering autocomplete after programmatic selection
-  private _skipNextInput = false;
 
   ngOnInit(): void {
     this.input$
@@ -207,10 +205,6 @@ export class LocationAutocompleteComponent implements OnInit, OnDestroy {
     this.inputValue = value;
     this.textChange.emit(value);
 
-    if (this._skipNextInput) {
-      this._skipNextInput = false;
-      return;
-    }
     this.input$.next(value);
   }
 
