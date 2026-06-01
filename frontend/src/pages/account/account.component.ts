@@ -35,8 +35,8 @@ export class AccountComponent implements OnInit {
     this.isLoading.set(false);
   }
 
-  logout(): void {
-    this.authService.logout();
+  async logout(): Promise<void> {
+    await this.authService.logout();
     this.router.navigate(['/login']);
   }
 

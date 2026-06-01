@@ -60,10 +60,18 @@ export class AuthService {
     return this.applySession(response);
   }
 
-  logout(): void {
-    this.currentUser.set(null);
-    this.isAuthenticated.set(false);
-    localStorage.removeItem(this.USER_KEY);
+  async logout(): Promise<void> {
+    try {
+      await firstValueFrom(
+        this.http.post<void>(`${this.API}/auth/logout`, {}, { withCredentials: true })
+      );
+    } catch {
+      // Proceed with local cleanup even if the backend call fails
+    } finally {
+      this.currentUser.set(null);
+      this.isAuthenticated.set(false);
+      localStorage.removeItem(this.USER_KEY);
+    }
   }
 
   toggleDarkMode(): void {

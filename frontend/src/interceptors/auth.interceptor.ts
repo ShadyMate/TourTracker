@@ -1,7 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, from, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../environments/environment';
 
@@ -19,8 +19,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(outgoing).pipe(
     catchError((err: HttpErrorResponse) => {
       if (err.status === 401 && isBackendRequest) {
-        authService.logout();
-        router.navigate(['/login']);
+        return from(authService.logout()).pipe(
+          switchMap(() => {
+            router.navigate(['/login']);
+            return throwError(() => err);
+          })
+        );
       }
       return throwError(() => err);
     })
