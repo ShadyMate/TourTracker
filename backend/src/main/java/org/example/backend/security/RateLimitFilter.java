@@ -13,9 +13,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Component
 public class RateLimitFilter extends OncePerRequestFilter {
@@ -23,6 +28,14 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private static final int REQUESTS_PER_MINUTE = 10;
 
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
+    private final Set<String> trustedProxies;
+
+    public RateLimitFilter(@Value("${app.rate-limit.trusted-proxies:}") String trustedProxiesConfig) {
+        this.trustedProxies = Arrays.stream(trustedProxiesConfig.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toSet());
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -60,10 +73,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (StringUtils.hasText(forwarded)) {
-            return forwarded.split(",")[0].trim();
+        String remoteAddr = request.getRemoteAddr();
+        // Only trust X-Forwarded-For when the immediate TCP peer is a known proxy;
+        // otherwise a client can spoof any IP to bypass rate limiting.
+        if (!trustedProxies.isEmpty() && trustedProxies.contains(remoteAddr)) {
+            String forwarded = request.getHeader("X-Forwarded-For");
+            if (StringUtils.hasText(forwarded)) {
+                return forwarded.split(",")[0].trim();
+            }
         }
-        return request.getRemoteAddr();
+        return remoteAddr;
     }
 }

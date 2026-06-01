@@ -60,6 +60,8 @@ app:
     secure: ${COOKIE_SECURE:false}  # set true in production (HTTPS)
   cors:
     allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200}
+  rate-limit:
+    trusted-proxies: ${TRUSTED_PROXY_IPS:}  # comma-separated IPs of trusted reverse proxies
   storage:
     image-dir: ${IMAGE_DIR:./tour-images}
 
