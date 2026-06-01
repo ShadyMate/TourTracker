@@ -1,7 +1,9 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import org.example.backend.dto.TourDto;
+import org.springframework.validation.annotation.Validated;
 import org.example.backend.dto.TourLogDto;
 import org.example.backend.model.UserPrincipal;
 import org.example.backend.service.ImageStorageService;
@@ -21,6 +23,7 @@ import java.util.List;
  * All endpoints are protected; userId is always derived from the validated JWT principal
  * so clients cannot impersonate another user by supplying a different ID.
  */
+@Validated
 @RestController
 @RequestMapping("/tours")
 public class TourController {
@@ -57,7 +60,7 @@ public class TourController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<TourDto>> searchTours(@RequestParam String searchTerm, Authentication auth) {
+    public ResponseEntity<List<TourDto>> searchTours(@RequestParam @Size(max = 200) String searchTerm, Authentication auth) {
         Long userId = userId(auth);
         logger.info("GET /tours/search - user {} term '{}'", userId, searchTerm);
         return ResponseEntity.ok(tourService.searchTours(userId, searchTerm));
