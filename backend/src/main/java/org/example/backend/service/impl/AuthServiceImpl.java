@@ -102,7 +102,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse refreshTokens(String refreshToken) {
         org.example.backend.model.RefreshToken rotated = refreshTokenService.rotateRefreshToken(refreshToken);
-        return toAuthResponse(rotated.getUser());
+        AuthResponse response = toAuthResponse(rotated.getUser());
+        response.setRefreshToken(rotated.getToken()); // carry rotated token to controller
+        return response;
     }
 
     @Override
@@ -114,6 +116,6 @@ public class AuthServiceImpl implements AuthService {
 
     private AuthResponse toAuthResponse(User user) {
         String token = jwtUtils.generateToken(new UserPrincipal(user.getId(), user.getUsername()));
-        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail());
+        return new AuthResponse(token, null, user.getId(), user.getUsername(), user.getEmail());
     }
 }

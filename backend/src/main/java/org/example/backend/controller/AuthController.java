@@ -51,16 +51,22 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
                                               HttpServletResponse response) {
         logger.info("POST /auth/login - attempt for: {}", request.getUsername());
-        return authService.login(request.getUsername(), request.getPassword())
-                .map(auth -> {
-                    setAuthCookie(response, auth.getToken());
-                    setRefreshCookie(response, refreshTokenService.createRefreshToken(auth.getId()).getToken());
-                    return ResponseEntity.ok(auth);
-                })
-                .orElseGet(() -> {
-                    logger.warn("Login failed for: {}", request.getUsername());
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                });
+        try {
+            return authService.login(request.getUsername(), request.getPassword())
+                    .map(auth -> {
+                        setAuthCookie(response, auth.getToken());
+                        setRefreshCookie(response, refreshTokenService.createRefreshToken(auth.getId()).getToken());
+                        return ResponseEntity.ok(auth);
+                    })
+                    .orElseGet(() -> {
+                        logger.warn("Login failed for: {}", request.getUsername());
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                    });
+        } catch (BusinessRuleException e) {
+            // Account is locked — return 429 without leaking the lockedUntil timestamp
+            logger.warn("Login blocked for '{}': {}", request.getUsername(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        }
     }
 
     @PostMapping("/register")
@@ -83,7 +89,8 @@ public class AuthController {
         try {
             AuthResponse auth = authService.refreshTokens(rawToken);
             setAuthCookie(response, auth.getToken());
-            setRefreshCookie(response, refreshTokenService.createRefreshToken(auth.getId()).getToken());
+            // Use the already-rotated token — do NOT call createRefreshToken again
+            setRefreshCookie(response, auth.getRefreshToken());
             logger.info("POST /auth/refresh - session renewed for user {}", auth.getUsername());
             return ResponseEntity.ok(auth);
         } catch (BusinessRuleException e) {
@@ -108,9 +115,12 @@ public class AuthController {
             try {
                 long userId = jwtUtils.getPrincipalFromToken(token).id();
                 refreshTokenService.revokeAllForUser(userId);
-            } catch (Exception ignored) {}
-            authService.logout(token);
-            logger.info("POST /auth/logout - session terminated");
+                authService.logout(token);
+                logger.info("POST /auth/logout - session terminated");
+            } catch (Exception e) {
+                // Token may be expired/malformed — still clear cookies so the client is logged out
+                logger.warn("POST /auth/logout - token processing failed (clearing cookies anyway): {}", e.getMessage());
+            }
         }
         clearAuthCookie(response);
         clearRefreshCookie(response);

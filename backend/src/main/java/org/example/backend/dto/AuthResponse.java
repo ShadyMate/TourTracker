@@ -14,7 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AuthResponse {
     @JsonIgnore
-    private String token;  // used by controller to set cookie; never serialized
+    private String token;         // access token — set as HttpOnly cookie, never serialized
+    @JsonIgnore
+    private String refreshToken;  // only populated on /auth/refresh; never serialized
     private Long id;
     private String username;
     private String email;
