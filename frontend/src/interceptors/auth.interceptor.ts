@@ -10,14 +10,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const isBackendRequest = req.url.startsWith(environment.backendUrl);
+  const isAuthEndpoint = req.url.includes('/auth/');
 
-  // Attach credentials so the browser sends the HttpOnly accessToken cookie
   const outgoing = isBackendRequest
     ? req.clone({ withCredentials: true })
     : req;
 
   return next(outgoing).pipe(
     catchError((err: HttpErrorResponse) => {
+      if (err.status === 401 && isBackendRequest && !isAuthEndpoint) {
+        // Access token expired — try refresh, then retry the original request once
+        return from(authService.refresh()).pipe(
+          switchMap(() => next(req.clone({ withCredentials: true }))),
+          catchError(() =>
+            from(authService.logout()).pipe(
+              switchMap(() => {
+                router.navigate(['/login']);
+                return throwError(() => err);
+              })
+            )
+          )
+        );
+      }
       if (err.status === 401 && isBackendRequest) {
         return from(authService.logout()).pipe(
           switchMap(() => {

@@ -8,6 +8,7 @@ import org.example.backend.model.UserPrincipal;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.security.JwtUtils;
 import org.example.backend.service.AuthService;
+import org.example.backend.service.RefreshTokenService;
 import org.example.backend.service.TokenBlacklistService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,15 +33,18 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
     private final TokenBlacklistService tokenBlacklistService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            JwtUtils jwtUtils,
-                           TokenBlacklistService tokenBlacklistService) {
+                           TokenBlacklistService tokenBlacklistService,
+                           RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -93,6 +97,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return Optional.of(toAuthResponse(user));
+    }
+
+    @Override
+    public AuthResponse refreshTokens(String refreshToken) {
+        org.example.backend.model.RefreshToken rotated = refreshTokenService.rotateRefreshToken(refreshToken);
+        return toAuthResponse(rotated.getUser());
     }
 
     @Override

@@ -60,6 +60,12 @@ export class AuthService {
     return this.applySession(response);
   }
 
+  async refresh(): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${this.API}/auth/refresh`, {}, { withCredentials: true })
+    );
+  }
+
   async logout(): Promise<void> {
     try {
       await firstValueFrom(
