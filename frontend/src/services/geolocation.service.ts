@@ -16,6 +16,7 @@ const VIENNA_FALLBACK: UserLocation = { lat: 48.2082, lng: 16.3738 };
 export class GeolocationService {
   private readonly _status = signal<GeolocationStatus>('idle');
   private readonly _location = signal<UserLocation | null>(null);
+  private requestInFlight: Promise<UserLocation | null> | null = null;
 
   readonly status = this._status.asReadonly();
   readonly location = this._location.asReadonly();
@@ -30,7 +31,11 @@ export class GeolocationService {
    * cached value immediately if location was already obtained.
    */
   async requestLocation(): Promise<UserLocation | null> {
-    if (this._status() === 'granted' && this._location()) {
+    if (this.requestInFlight) {
+      return this.requestInFlight;
+    }
+
+    if (this._status() !== 'idle') {
       return this._location();
     }
 
@@ -41,7 +46,7 @@ export class GeolocationService {
 
     this._status.set('requesting');
 
-    return new Promise<UserLocation | null>(resolve => {
+    this.requestInFlight = new Promise<UserLocation | null>(resolve => {
       navigator.geolocation.getCurrentPosition(
         position => {
           const loc: UserLocation = {
@@ -53,12 +58,16 @@ export class GeolocationService {
           this._status.set('granted');
           resolve(loc);
         },
-        () => {
-          this._status.set('denied');
+        error => {
+          this._status.set(error.code === error.PERMISSION_DENIED ? 'denied' : 'unavailable');
           resolve(null);
         },
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
       );
+    }).finally(() => {
+      this.requestInFlight = null;
     });
+
+    return this.requestInFlight;
   }
 }

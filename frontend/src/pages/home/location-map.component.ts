@@ -25,6 +25,18 @@ import { GeolocationService, UserLocation } from '../../services/geolocation.ser
       border-radius: 8px;
       overflow: hidden;
     }
+
+    @keyframes tt-pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.45);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+      }
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -76,8 +88,8 @@ export class LocationMapComponent implements AfterViewInit, OnDestroy {
     if (userLoc) {
       L.marker([userLoc.lat, userLoc.lng], { icon: this.buildUserIcon() })
         .bindPopup('Your location')
-        .openPopup()
-        .addTo(this.map);
+        .addTo(this.map)
+        .openPopup();
     } else {
       L.marker([fallback.lat, fallback.lng], { icon: this.buildDefaultIcon() })
         .bindPopup('Vienna, Austria')
@@ -109,7 +121,7 @@ export class LocationMapComponent implements AfterViewInit, OnDestroy {
         background: #3B82F6;
         border: 3px solid white;
         border-radius: 50%;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.4);
+        animation: tt-pulse 2s ease-out infinite;
       "></div>`,
       iconSize: [18, 18],
       iconAnchor: [9, 9],
