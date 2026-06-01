@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.example.backend.dto.AuthResponse;
 import org.example.backend.dto.LoginRequest;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,5 +46,16 @@ public class AuthController {
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserDto userDto) {
         logger.info("POST /auth/register - registering: {}", userDto.getUsername());
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(userDto));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
+            authService.logout(token);
+            logger.info("POST /auth/logout - token revoked");
+        }
+        return ResponseEntity.noContent().build();
     }
 }

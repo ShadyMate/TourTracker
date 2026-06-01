@@ -8,6 +8,7 @@ import org.example.backend.model.UserPrincipal;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.security.JwtUtils;
 import org.example.backend.service.AuthService;
+import org.example.backend.service.TokenBlacklistService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,13 +30,16 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final TokenBlacklistService tokenBlacklistService;
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
-                           JwtUtils jwtUtils) {
+                           JwtUtils jwtUtils,
+                           TokenBlacklistService tokenBlacklistService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtils = jwtUtils;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -62,6 +66,13 @@ public class AuthServiceImpl implements AuthService {
         return userRepository.findByUsername(username)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .map(this::toAuthResponse);
+    }
+
+    @Override
+    public void logout(String token) {
+        String jti = jwtUtils.getJtiFromToken(token);
+        tokenBlacklistService.blacklist(jti, jwtUtils.getExpirationFromToken(token));
+        logger.info("Token revoked: jti={}", jti);
     }
 
     private AuthResponse toAuthResponse(User user) {
