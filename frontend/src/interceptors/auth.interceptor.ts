@@ -8,12 +8,12 @@ import { environment } from '../environments/environment';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const token = authService.getToken();
 
   const isBackendRequest = req.url.startsWith(environment.backendUrl);
 
-  const outgoing = (token && isBackendRequest)
-    ? req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
+  // Attach credentials so the browser sends the HttpOnly accessToken cookie
+  const outgoing = isBackendRequest
+    ? req.clone({ withCredentials: true })
     : req;
 
   return next(outgoing).pipe(

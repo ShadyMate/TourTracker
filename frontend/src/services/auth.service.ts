@@ -6,7 +6,6 @@ import { StorageService } from './storage.service';
 import { environment } from '../environments/environment';
 
 interface AuthResponse {
-  token: string;
   id: number;
   username: string;
   email: string;
@@ -14,8 +13,7 @@ interface AuthResponse {
 
 /**
  * AuthService - login, registration, and session state.
- * On successful auth the backend returns a JWT which is stored in localStorage
- * and attached to every subsequent request by the auth interceptor.
+ * Token is stored as an HttpOnly cookie set by the backend — never touched here.
  */
 @Injectable({
   providedIn: 'root'
@@ -25,7 +23,6 @@ export class AuthService {
   private storage = inject(StorageService);
 
   private readonly API = environment.backendUrl;
-  private readonly TOKEN_KEY = 'authToken';
   private readonly USER_KEY = 'currentUser';
 
   private currentUser = signal<User | null>(this.loadStoredUser());
@@ -44,10 +41,6 @@ export class AuthService {
     return this.isDarkMode.asReadonly();
   }
 
-  getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
-
   getUserId(): number | null {
     const user = this.currentUser();
     return user ? parseInt(user.id, 10) : null;
@@ -55,14 +48,14 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password })
+      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }, { withCredentials: true })
     );
     return this.applySession(response);
   }
 
   async register(username: string, password: string, email: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email })
+      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }, { withCredentials: true })
     );
     return this.applySession(response);
   }
@@ -70,7 +63,6 @@ export class AuthService {
   logout(): void {
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
-    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
   }
 
@@ -95,7 +87,6 @@ export class AuthService {
     };
     this.currentUser.set(user);
     this.isAuthenticated.set(true);
-    localStorage.setItem(this.TOKEN_KEY, response.token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     return user;
   }
