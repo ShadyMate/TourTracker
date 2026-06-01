@@ -32,7 +32,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           )
         );
       }
-      if (err.status === 401 && isBackendRequest) {
+      if (err.status === 401 && isBackendRequest && !isAuthEndpoint) {
         return from(authService.logout()).pipe(
           switchMap(() => {
             router.navigate(['/login']);

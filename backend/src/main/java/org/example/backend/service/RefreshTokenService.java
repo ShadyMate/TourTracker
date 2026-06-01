@@ -44,20 +44,24 @@ public class RefreshTokenService {
 
     @Transactional
     public RefreshToken rotateRefreshToken(String rawToken) {
+        // Atomic consume: sets revoked=true only if the token is valid and unexpired.
+        // Zero affected rows means the token was already revoked, expired, or never existed —
+        // which closes the race window where two concurrent requests both see revoked=false.
+        int consumed = refreshTokenRepository.consumeIfValid(rawToken, LocalDateTime.now());
+        if (consumed == 0) {
+            // Distinguish replay (token exists but revoked) from invalid/expired
+            refreshTokenRepository.findByToken(rawToken).ifPresent(t -> {
+                if (t.isRevoked()) {
+                    // Replay attack — revoke all sessions for this user as a precaution
+                    refreshTokenRepository.revokeAllByUserId(t.getUser().getId());
+                    logger.warn("Refresh token replay detected for user {}", t.getUser().getId());
+                }
+            });
+            throw new BusinessRuleException("Invalid, expired, or already-used refresh token");
+        }
+
         RefreshToken existing = refreshTokenRepository.findByToken(rawToken)
                 .orElseThrow(() -> new BusinessRuleException("Invalid refresh token"));
-
-        if (existing.isRevoked()) {
-            // Possible token replay — revoke all tokens for this user as a precaution
-            refreshTokenRepository.revokeAllByUserId(existing.getUser().getId());
-            throw new BusinessRuleException("Refresh token already used");
-        }
-        if (existing.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BusinessRuleException("Refresh token expired");
-        }
-
-        existing.setRevoked(true);
-        refreshTokenRepository.save(existing);
 
         RefreshToken newToken = new RefreshToken();
         newToken.setToken(UUID.randomUUID().toString());

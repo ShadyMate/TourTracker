@@ -28,6 +28,7 @@ export class AuthService {
   private currentUser = signal<User | null>(this.loadStoredUser());
   private isAuthenticated = signal(this.currentUser() !== null);
   private isDarkMode = signal<boolean>(this.storage.getDarkModePreference());
+  private refreshInFlight: Promise<void> | null = null;
 
   getCurrentUser() {
     return this.currentUser.asReadonly();
@@ -60,10 +61,16 @@ export class AuthService {
     return this.applySession(response);
   }
 
-  async refresh(): Promise<void> {
-    await firstValueFrom(
-      this.http.post<void>(`${this.API}/auth/refresh`, {}, { withCredentials: true })
-    );
+  refresh(): Promise<void> {
+    // Coalesce concurrent calls — only one /auth/refresh is ever in-flight at a time.
+    // Without this, multiple simultaneous 401s would each trigger a refresh, and the
+    // second call would present an already-rotated token, triggering replay detection.
+    if (!this.refreshInFlight) {
+      this.refreshInFlight = firstValueFrom(
+        this.http.post<void>(`${this.API}/auth/refresh`, {}, { withCredentials: true })
+      ).finally(() => { this.refreshInFlight = null; });
+    }
+    return this.refreshInFlight;
   }
 
   async logout(): Promise<void> {

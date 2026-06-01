@@ -6,5 +6,4 @@ CREATE TABLE refresh_tokens (
     revoked    BOOLEAN      NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP    NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+-- UNIQUE on token already creates an implicit index; no additional index needed
