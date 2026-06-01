@@ -2,6 +2,7 @@ package org.example.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.backend.security.JwtAuthFilter;
+import org.example.backend.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,9 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -42,6 +45,7 @@ public class SecurityConfig {
                 .authenticationEntryPoint((req, res, e) ->
                     res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
             )
+            .addFilterBefore(rateLimitFilter, JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

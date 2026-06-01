@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -63,9 +64,35 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public Optional<AuthResponse> login(String username, String password) {
-        return userRepository.findByUsername(username)
-                .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .map(this::toAuthResponse);
+        Optional<User> optUser = userRepository.findByUsername(username);
+        if (optUser.isEmpty()) {
+            return Optional.empty();
+        }
+        User user = optUser.get();
+
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+            throw new BusinessRuleException("Account locked until " + user.getLockedUntil());
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            user.setFailedAttempts(user.getFailedAttempts() + 1);
+            if (user.getFailedAttempts() >= 5) {
+                user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
+                logger.warn("Account locked for user '{}' after {} failed attempts",
+                        username, user.getFailedAttempts());
+            }
+            userRepository.save(user);
+            return Optional.empty();
+        }
+
+        // Reset lockout state on successful login
+        if (user.getFailedAttempts() > 0 || user.getLockedUntil() != null) {
+            user.setFailedAttempts(0);
+            user.setLockedUntil(null);
+            userRepository.save(user);
+        }
+
+        return Optional.of(toAuthResponse(user));
     }
 
     @Override
