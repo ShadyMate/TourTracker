@@ -73,7 +73,6 @@ export class MapService {
       container.style.height = '400px';
     }
 
-    // Create map instance (center on Vienna by default)
     this.map = L.map(containerId, {
       center: center,
       zoom: 10,
