@@ -56,6 +56,10 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: 86400000  # 24 hours
+  cookie:
+    secure: ${COOKIE_SECURE:false}  # set true in production (HTTPS)
+  cors:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200}
   storage:
     image-dir: ${IMAGE_DIR:./tour-images}
 

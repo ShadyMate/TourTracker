@@ -54,6 +54,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private String extractBearerToken(HttpServletRequest request) {
+        // Cookie takes priority; Authorization header kept for backward compatibility
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie c : request.getCookies()) {
+                if ("accessToken".equals(c.getName())) {
+                    return c.getValue();
+                }
+            }
+        }
         String header = request.getHeader("Authorization");
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             return header.substring(7);
