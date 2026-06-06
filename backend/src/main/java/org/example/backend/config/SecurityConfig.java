@@ -2,7 +2,6 @@ package org.example.backend.config;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.backend.security.JwtAuthFilter;
-import org.example.backend.security.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -20,23 +19,19 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-    private final RateLimitFilter rateLimitFilter;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RateLimitFilter rateLimitFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
-        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF disabled: auth cookie uses SameSite=Strict which prevents cross-site
-            // request forgery for same-origin SPAs without requiring a CSRF token.
             .csrf(AbstractHttpConfigurer::disable)
             .cors(Customizer.withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/login", "/auth/register", "/auth/refresh").permitAll()
+                .requestMatchers("/auth/login", "/auth/register").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/docs/**", "/api-docs/**").permitAll()
                 .requestMatchers("/images/**").permitAll()
                 .anyRequest().authenticated()
@@ -45,7 +40,6 @@ public class SecurityConfig {
                 .authenticationEntryPoint((req, res, e) ->
                     res.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized"))
             )
-            .addFilterBefore(rateLimitFilter, JwtAuthFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

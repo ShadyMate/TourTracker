@@ -1,4 +1,11 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -8,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [CommonModule],
   templateUrl: './account.component.html',
   styleUrls: ['./account.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountComponent implements OnInit {
   private authService = inject(AuthService);
@@ -35,8 +42,8 @@ export class AccountComponent implements OnInit {
     this.isLoading.set(false);
   }
 
-  async logout(): Promise<void> {
-    await this.authService.logout();
+  logout(): void {
+    this.authService.logout();
     this.router.navigate(['/login']);
   }
 
@@ -48,4 +55,3 @@ export class AccountComponent implements OnInit {
     this.router.navigate(['/settings']);
   }
 }
-

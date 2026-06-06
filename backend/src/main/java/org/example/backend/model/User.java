@@ -27,12 +27,6 @@ public class User {
     @Column(name = "created_at")
     private java.time.LocalDateTime createdAt;
 
-    @Column(name = "failed_attempts", nullable = false)
-    private int failedAttempts = 0;
-
-    @Column(name = "locked_until")
-    private java.time.LocalDateTime lockedUntil;
-
     @PrePersist
     private void onCreate() {
         if (createdAt == null) {
