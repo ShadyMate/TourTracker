@@ -18,7 +18,7 @@ interface AuthResponse {
  * and attached to every subsequent request by the auth interceptor.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
@@ -55,14 +55,14 @@ export class AuthService {
 
   async login(username: string, password: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password })
+      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }),
     );
     return this.applySession(response);
   }
 
   async register(username: string, password: string, email: string): Promise<User> {
     const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email })
+      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }),
     );
     return this.applySession(response);
   }
@@ -91,7 +91,7 @@ export class AuthService {
       username: response.username,
       email: response.email ?? '',
       firstName: '',
-      lastName: ''
+      lastName: '',
     };
     this.currentUser.set(user);
     this.isAuthenticated.set(true);

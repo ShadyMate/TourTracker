@@ -3,7 +3,7 @@ import {
   AfterViewInit,
   OnDestroy,
   ChangeDetectionStrategy,
-  inject
+  inject,
 } from '@angular/core';
 import * as L from 'leaflet';
 import { GeolocationService, UserLocation } from '../../services/geolocation.service';
@@ -11,48 +11,49 @@ import { GeolocationService, UserLocation } from '../../services/geolocation.ser
 @Component({
   selector: 'app-location-map',
   template: `<div id="home-map" class="map-container"></div>`,
-  styles: [`
-    :host {
-      display: flex;
-      flex: 1;
-      width: 100%;
-      height: 100%;
-    }
+  styles: [
+    `
+      :host {
+        display: flex;
+        flex: 1;
+        width: 100%;
+        height: 100%;
+      }
 
-    .map-container {
-      width: 100%;
-      height: 100%;
-      border-radius: 8px;
-      overflow: hidden;
-    }
+      .map-container {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        overflow: hidden;
+      }
 
-    @keyframes tt-pulse {
-      0% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.45);
+      @keyframes tt-pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.45);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+        }
       }
-      70% {
-        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-      }
-      100% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-      }
-    }
-  `],
-  changeDetection: ChangeDetectionStrategy.OnPush
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LocationMapComponent implements AfterViewInit, OnDestroy {
   private readonly geolocationService = inject(GeolocationService);
   private map: L.Map | null = null;
 
   ngAfterViewInit(): void {
-    setTimeout(() => this.initializeMap(), 100);
+    setTimeout(() => this.initializeMap(), 300);
   }
 
   private async initializeMap(): Promise<void> {
     try {
       const container = document.getElementById('home-map');
       if (!container) {
-        console.error('Map container not found');
         return;
       }
 
@@ -69,7 +70,7 @@ export class LocationMapComponent implements AfterViewInit, OnDestroy {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
-        minZoom: 2
+        minZoom: 2,
       }).addTo(this.map);
 
       this.addLocationMarker(userLoc);
@@ -109,7 +110,7 @@ export class LocationMapComponent implements AfterViewInit, OnDestroy {
       shadowSize: [41, 41],
       iconAnchor: [12, 41],
       shadowAnchor: [12, 41],
-      popupAnchor: [1, -34]
+      popupAnchor: [1, -34],
     });
   }
 
@@ -125,7 +126,7 @@ export class LocationMapComponent implements AfterViewInit, OnDestroy {
       "></div>`,
       iconSize: [18, 18],
       iconAnchor: [9, 9],
-      popupAnchor: [0, -12]
+      popupAnchor: [0, -12],
     });
   }
 

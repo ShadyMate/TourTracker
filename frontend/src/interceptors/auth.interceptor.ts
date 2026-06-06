@@ -12,9 +12,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isBackendRequest = req.url.startsWith(environment.backendUrl);
 
-  const outgoing = (token && isBackendRequest)
-    ? req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
-    : req;
+  const outgoing =
+    token && isBackendRequest
+      ? req.clone({ headers: req.headers.set('Authorization', `Bearer ${token}`) })
+      : req;
 
   return next(outgoing).pipe(
     catchError((err: HttpErrorResponse) => {
@@ -23,6 +24,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/login']);
       }
       return throwError(() => err);
-    })
+    }),
   );
 };
