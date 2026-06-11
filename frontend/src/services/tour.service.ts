@@ -178,6 +178,15 @@ export class TourService {
     return '👧';
   }
 
+  getAverageActualDistance(tour: Tour): string {
+    if (tour.logs.length == 0) return 'N/A';
+    const total = tour.logs.reduce((sum, curr) => {
+      return sum + curr.actualDistance;
+    }, 0);
+    const avg = total / tour.logs.length;
+    return `${avg.toFixed(1)}km`;
+  }
+
   getAverageActualTime(tour: Tour): string {
     if (tour.logs.length === 0) return 'N/A';
     const total = tour.logs.reduce((s, l) => {
@@ -185,7 +194,29 @@ export class TourService {
       return s + h * 60 + m;
     }, 0);
     const avg = Math.round(total / tour.logs.length);
-    return `${Math.floor(avg / 60)}:${String(avg % 60).padStart(2, '0')}`;
+    return `${Math.floor(avg / 60)}h ${String(avg % 60).padStart(2, '0')}m`;
+  }
+
+  isActualDistanceHigher(tour: Tour): boolean {
+    if (tour.logs.length === 0) return false;
+    const calculated = parseFloat(tour.distance) || 0;
+    const actual = tour.logs.reduce((sum, curr) => sum + curr.actualDistance, 0) / tour.logs.length;
+    return actual > calculated;
+  }
+
+  isActualTimeHigher(tour: Tour): boolean {
+    if (tour.logs.length === 0) return false;
+    
+    const match = tour.time.match(/(\d+)h\s*(\d+)m/);
+    if (!match) return false;
+    const calculated = parseInt(match[1]) * 60 + parseInt(match[2]);
+    
+    const actual = tour.logs.reduce((sum, log) => {
+      const [lh, lm] = log.totalTime.split(':').map(Number);
+      return sum + lh * 60 + lm;
+    }, 0) / tour.logs.length;
+    
+    return actual > calculated;
   }
 
   calculateDuration(start: string, end: string): string {

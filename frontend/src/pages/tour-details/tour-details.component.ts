@@ -58,7 +58,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     fromCoords: undefined,
     toCoords: undefined,
     transportType: 'hiking',
-    distance: '0',
+    distance: '',
     time: ''
   };
 
@@ -125,7 +125,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       description: '',
       from: '',
       to: '',
-      distance: '0',
+      distance: '',
       time: '',
       transportType: 'hiking',
       childFriendly: false,
@@ -449,7 +449,10 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   // ── Computed display helpers ──────────────────────────────────────────────
 
   getAverageRating(tour: Tour): number { return this.tourService.getAverageRating(tour); }
+  getAverageActualDistance(tour: Tour): string { return this.tourService.getAverageActualDistance(tour); }
   getAverageActualTime(tour: Tour): string { return this.tourService.getAverageActualTime(tour); }
+  isActualDistanceHigher(tour: Tour): boolean { return this.tourService.isActualDistanceHigher(tour); }
+  isActualTimeHigher(tour: Tour): boolean { return this.tourService.isActualTimeHigher(tour); }
   getRatingStars(rating: number) { return this.tourService.getRatingStars(rating); }
   setRating(stars: number): void { this.newLog.rating = stars; }
 

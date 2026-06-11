@@ -74,12 +74,14 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Distance (km)</label>
-              <input type="number" [(ngModel)]="tourForm.distance" name="distance">
+              <label>Calculated Distance (km)</label>
+              <span class="stat-value">{{ tourForm.distance || 'Set route to calculate' }}</span>
+              <!-- <input type="number" [(ngModel)]="tourForm.distance" name="distance"> -->
             </div>
             <div class="form-group">
-              <label>Estimated Time</label>
-              <input type="text" [(ngModel)]="tourForm.time" name="estimatedTime" placeholder="e.g., 2h 30m">
+              <label>Calculated Time</label>
+               <span class="stat-value">{{ tourForm.time || 'Set route to calculate' }}</span>
+              <!-- <input type="text" [(ngModel)]="tourForm.time" name="estimatedTime" placeholder="e.g., 2h 30m"> -->
             </div>
           </div>
 
@@ -157,17 +159,45 @@
             <h4>📊 Stats</h4>
             <div class="stats-grid">
               <div class="stat">
-                <span class="stat-label">Distance</span>
+                <span class="stat-label">Calculated Distance</span>
                 <span class="stat-value">{{ tour()!.distance }}km</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Est. Time</span>
+                <span class="stat-label">Calculated Time</span>
                 <span class="stat-value">{{ tour()!.time }}</span>
               </div>
-              <div class="stat">
-                <span class="stat-label">Avg. Actual</span>
-                <span class="stat-value">{{ getAverageActualTime(tour()!) }}</span>
-              </div>
+              
+              <!-- Only display average actual distance and time if there is tour logs -->
+              @if (tour()!.logs.length > 0) {
+                <div class="stat">
+                  <span class="stat-label">Avg. Actual Distance</span>
+                  <span class="stat-value">
+                    {{ getAverageActualDistance(tour()!) }}
+
+                    @if (isActualDistanceHigher(tour()!)) {
+                      <span style="color: red">▲</span>
+                    } @else {
+                      <span style="color: green">▼</span>
+                    }
+
+                  </span>
+                </div>
+
+                <div class="stat">
+                  <span class="stat-label">Avg. Actual Time</span>
+                  <span class="stat-value">
+                    {{ getAverageActualTime(tour()!) }}
+
+                    @if (isActualTimeHigher(tour()!)) {
+                      <span style="color: red">▲</span>
+                    } @else {
+                      <span style="color: green">▼</span>
+                    }
+
+                  </span>
+                </div>
+              }
+
               <div class="stat">
                 <span class="stat-label">Logs</span>
                 <span class="stat-value">{{ tour()!.logs.length }}</span>
