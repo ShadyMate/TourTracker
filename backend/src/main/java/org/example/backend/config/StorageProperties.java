@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.storage")
 @Data
 public class StorageProperties {
-    /** Absolute or relative path where tour map images are written. */
+    /** Absolute or relative path where tour images are written. */
     private String imageDir = "./tour-images";
 
     /** Maximum accepted image file size in bytes (default 10 MB). */

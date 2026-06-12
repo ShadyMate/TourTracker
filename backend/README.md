@@ -95,14 +95,14 @@ All routes are prefixed with `/api` (Spring `server.servlet.context-path`).
 | `GET` | `/tours/{id}` | Get a tour by ID (ownership enforced) |
 | `GET` | `/tours/search?searchTerm={q}` | Full-text search across name, description, start/end location, and log notes (case-insensitive) |
 | `PUT` | `/tours/{id}` | Update tour — all fields validated (ownership enforced) |
-| `DELETE` | `/tours/{id}` | Delete tour; also removes associated map image from filesystem |
-| `POST` | `/tours/{id}/map-image` | Upload a map image (`multipart/form-data`, field: `file`); replaces existing image; returns updated tour |
+| `DELETE` | `/tours/{id}` | Delete tour; also removes associated image from filesystem |
+| `POST` | `/tours/{id}/image` | Upload an image (`multipart/form-data`, field: `file`); replaces existing image; returns updated tour |
 
 ### Images (public — no token required)
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/images/{filename}` | Serve a stored tour map image with correct `Content-Type` |
+| `GET` | `/images/{filename}` | Serve a stored tour image with correct `Content-Type` |
 
 ### Tour Logs (requires valid JWT — ownership enforced via parent tour)
 
@@ -125,7 +125,7 @@ Environment variables with defaults (for local dev without Docker):
 | `DB_USERNAME` | `postgres` | Database user |
 | `DB_PASSWORD` | *(empty)* | Database password |
 | `JWT_SECRET` | built-in dev key | Base64-encoded HMAC-SHA256 signing key — **always override in production** |
-| `IMAGE_DIR` | `./tour-images` | Filesystem directory where uploaded tour map images are stored |
+| `IMAGE_DIR` | `./tour-images` | Filesystem directory where uploaded tour images are stored |
 
 In Docker, these are injected by `docker-compose.yml` from the root `.env` file into the `backend` service. See the root `.env.example` for the full list of required variables.
 

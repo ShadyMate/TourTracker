@@ -22,9 +22,9 @@ public interface TourService {
     TourLogDto updateTourLog(Long tourId, Long logId, TourLogDto logDto, Long userId);
     void deleteTourLog(Long tourId, Long logId, Long userId);
 
-    /** Persist the filename of a newly uploaded map image and return the updated tour. */
-    TourDto setMapImage(Long tourId, String filename, Long userId);
+    /** Persist the filename of a newly uploaded image and return the updated tour. */
+    TourDto setImage(Long tourId, String filename, Long userId);
 
-    /** Return the current mapImagePath for a tour, or null if none is set. */
-    String getMapImagePath(Long tourId, Long userId);
+    /** Return the current imagePath for a tour, or null if none is set. */
+    String getImagePath(Long tourId, Long userId);
 }

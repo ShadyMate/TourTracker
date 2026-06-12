@@ -18,7 +18,7 @@ import java.nio.file.Path;
 
 /**
  * Presentation Layer - ImageController
- * Serves stored tour map images from the filesystem.
+ * Serves stored tour images from the filesystem.
  * Authentication is not required so Angular can load images in <img> tags
  * without attaching Bearer tokens — files are identified by UUID names only.
  */
