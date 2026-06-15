@@ -47,10 +47,17 @@ class TourMetricsCalculatorTest {
     }
 
     @Test
-    void popularityClampsToOne() {
+    void popularityBlendsLowRatingSingleLog() {
         // 1 log -> logsScore=0.5; avgRating 1.0 -> ratingScore=2.0; (0.5+2.0)/2=1.25
         var logs = List.of(log(3, 5.0, "1:00", 1.0));
         assertThat(calc.popularity(logs)).isEqualTo(1.25, within(1e-9));
+    }
+
+    @Test
+    void popularityClampsToOne() {
+        // 1 log, rating 0.5 -> blended 0.75 -> clamped up to floor 1.0
+        var logs = List.of(log(3, 5.0, "1:00", 0.5));
+        assertThat(calc.popularity(logs)).isEqualTo(1.0, within(1e-9));
     }
 
     @Test
