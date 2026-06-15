@@ -87,9 +87,36 @@ public class TourServiceImpl implements TourService {
     @Override
     @Transactional(readOnly = true)
     public List<TourDto> searchTours(Long userId, String searchTerm) {
-        return tourRepository.searchTours(userId, searchTerm).stream()
+        List<TourDto> all = tourRepository.findByUserId(userId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+        if (searchTerm == null || searchTerm.isBlank()) {
+            return all;
+        }
+        String q = searchTerm.toLowerCase();
+        return all.stream()
+                .filter(t -> matchesSearch(t, q))
+                .collect(Collectors.toList());
+    }
+
+    /** True if any searchable text on the tour — including computed values — contains q. */
+    private boolean matchesSearch(TourDto t, String q) {
+        if (contains(t.getName(), q)) return true;
+        if (contains(t.getDescription(), q)) return true;
+        if (contains(t.getStartLocation(), q)) return true;
+        if (contains(t.getEndLocation(), q)) return true;
+        if (contains(t.getChildFriendlinessLabel(), q)) return true;
+        if (t.getPopularity() != null && String.valueOf(t.getPopularity()).contains(q)) return true;
+        if (t.getLogs() != null) {
+            for (TourLogDto l : t.getLogs()) {
+                if (contains(l.getNotes(), q)) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean contains(String value, String lowerQuery) {
+        return value != null && value.toLowerCase().contains(lowerQuery);
     }
 
     @Override
@@ -254,8 +281,9 @@ public class TourServiceImpl implements TourService {
 
     private TourLogDto mapLogToDto(TourLog log) {
         String dateStr = log.getLogDate() != null ? log.getLogDate().format(DATE_FMT) : null;
+        Long tourId = log.getTour() != null ? log.getTour().getId() : null;
         return new TourLogDto(
-                log.getId(), log.getTour().getId(), dateStr,
+                log.getId(), tourId, dateStr,
                 log.getStartTime(), log.getEndTime(), log.getTotalTimeStr(),
                 log.getTotalDistance(), log.getDifficulty(), log.getRating(), log.getNotes());
     }
