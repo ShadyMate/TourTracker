@@ -281,9 +281,8 @@ public class TourServiceImpl implements TourService {
 
     private TourLogDto mapLogToDto(TourLog log) {
         String dateStr = log.getLogDate() != null ? log.getLogDate().format(DATE_FMT) : null;
-        Long tourId = log.getTour() != null ? log.getTour().getId() : null;
         return new TourLogDto(
-                log.getId(), tourId, dateStr,
+                log.getId(), log.getTour().getId(), dateStr,
                 log.getStartTime(), log.getEndTime(), log.getTotalTimeStr(),
                 log.getTotalDistance(), log.getDifficulty(), log.getRating(), log.getNotes());
     }

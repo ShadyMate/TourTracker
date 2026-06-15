@@ -35,6 +35,9 @@ class TourServiceSearchTest {
         t.setTransportType("hiking");
         t.setUser(user);
         t.setLogs(logs);
+        for (TourLog l : logs) {
+            l.setTour(t);
+        }
         return t;
     }
 
