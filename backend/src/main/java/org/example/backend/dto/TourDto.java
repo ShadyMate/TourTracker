@@ -53,4 +53,9 @@ public class TourDto {
     private String routeGeometry;
     private String mapImagePath;
     private List<TourLogDto> logs;
+
+    // ── Computed, read-only output fields (never read from client input) ──
+    private Double popularity;
+    private Integer childFriendliness;
+    private String childFriendlinessLabel;
 }
