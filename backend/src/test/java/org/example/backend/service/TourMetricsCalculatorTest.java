@@ -52,4 +52,54 @@ class TourMetricsCalculatorTest {
         var logs = List.of(log(3, 5.0, "1:00", 1.0));
         assertThat(calc.popularity(logs)).isEqualTo(1.25, within(1e-9));
     }
+
+    @Test
+    void childFriendlinessIsThreeWhenNoLogs() {
+        assertThat(calc.childFriendliness(List.of())).isEqualTo(3);
+    }
+
+    @Test
+    void childFriendlinessFullWhenEasyShortShort() {
+        // diff 4 (<5 +2), 60 min (<180 +2), 10 km (<15 +2) => 6
+        var logs = List.of(log(4, 10.0, "1:00", 4.0));
+        assertThat(calc.childFriendliness(logs)).isEqualTo(6);
+    }
+
+    @Test
+    void childFriendlinessZeroWhenHardLongFar() {
+        // diff 6, 240 min, 20 km => 0
+        var logs = List.of(log(6, 20.0, "4:00", 4.0));
+        assertThat(calc.childFriendliness(logs)).isEqualTo(0);
+    }
+
+    @Test
+    void childFriendlinessBoundariesAreExclusive() {
+        // exactly diff 5, time 180 (3:00), dist 15 => none qualify => 0
+        var logs = List.of(log(5, 15.0, "3:00", 4.0));
+        assertThat(calc.childFriendliness(logs)).isEqualTo(0);
+    }
+
+    @Test
+    void childFriendlinessTimePartialCredit() {
+        // diff 5 (no), 179 min (2:59 <180 +2), 20 km (no) => 2
+        var logs = List.of(log(5, 20.0, "2:59", 4.0));
+        assertThat(calc.childFriendliness(logs)).isEqualTo(2);
+    }
+
+    @Test
+    void childFriendlinessToleratesNullTime() {
+        // null time => 0 min for that log => avg 0 (<180 +2); diff 4 (+2); dist 10 (+2) => 6
+        var logs = List.of(log(4, 10.0, null, 4.0));
+        assertThat(calc.childFriendliness(logs)).isEqualTo(6);
+    }
+
+    @Test
+    void labelThresholds() {
+        assertThat(calc.childFriendlinessLabel(0)).isEqualTo("Not suitable");
+        assertThat(calc.childFriendlinessLabel(2)).isEqualTo("Challenging");
+        assertThat(calc.childFriendlinessLabel(3)).isEqualTo("Moderate");
+        assertThat(calc.childFriendlinessLabel(4)).isEqualTo("Moderate");
+        assertThat(calc.childFriendlinessLabel(5)).isEqualTo("Very friendly");
+        assertThat(calc.childFriendlinessLabel(6)).isEqualTo("Very friendly");
+    }
 }
