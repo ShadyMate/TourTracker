@@ -51,6 +51,6 @@ public class TourDto {
     private Double toLat;
     private Double toLng;
     private String routeGeometry;
-    private String mapImagePath;
+    private String imagePath;
     private List<TourLogDto> logs;
 }
