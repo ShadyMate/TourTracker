@@ -11,6 +11,7 @@ import org.example.backend.repository.TourLogRepository;
 import org.example.backend.repository.TourRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.service.ImageStorageService;
+import org.example.backend.service.TourMetricsCalculator;
 import org.example.backend.service.TourService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +36,18 @@ public class TourServiceImpl implements TourService {
     private final TourLogRepository tourLogRepository;
     private final UserRepository userRepository;
     private final ImageStorageService imageStorageService;
+    private final TourMetricsCalculator metricsCalculator;
 
     public TourServiceImpl(TourRepository tourRepository,
                            TourLogRepository tourLogRepository,
                            UserRepository userRepository,
-                           ImageStorageService imageStorageService) {
+                           ImageStorageService imageStorageService,
+                           TourMetricsCalculator metricsCalculator) {
         this.tourRepository = tourRepository;
         this.tourLogRepository = tourLogRepository;
         this.userRepository = userRepository;
         this.imageStorageService = imageStorageService;
+        this.metricsCalculator = metricsCalculator;
         logger.info("Initializing TourService");
     }
 
@@ -83,9 +87,36 @@ public class TourServiceImpl implements TourService {
     @Override
     @Transactional(readOnly = true)
     public List<TourDto> searchTours(Long userId, String searchTerm) {
-        return tourRepository.searchTours(userId, searchTerm).stream()
+        List<TourDto> all = tourRepository.findByUserId(userId).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+        if (searchTerm == null || searchTerm.isBlank()) {
+            return all;
+        }
+        String q = searchTerm.toLowerCase();
+        return all.stream()
+                .filter(t -> matchesSearch(t, q))
+                .collect(Collectors.toList());
+    }
+
+    /** True if any searchable text on the tour — including computed values — contains q. */
+    private boolean matchesSearch(TourDto t, String q) {
+        if (contains(t.getName(), q)) return true;
+        if (contains(t.getDescription(), q)) return true;
+        if (contains(t.getStartLocation(), q)) return true;
+        if (contains(t.getEndLocation(), q)) return true;
+        if (contains(t.getChildFriendlinessLabel(), q)) return true;
+        if (t.getPopularity() != null && String.valueOf(t.getPopularity()).contains(q)) return true;
+        if (t.getLogs() != null) {
+            for (TourLogDto l : t.getLogs()) {
+                if (contains(l.getNotes(), q)) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean contains(String value, String lowerQuery) {
+        return value != null && value.toLowerCase().contains(lowerQuery);
     }
 
     @Override
@@ -234,13 +265,18 @@ public class TourServiceImpl implements TourService {
         List<TourLogDto> logs = tour.getLogs().stream()
                 .map(this::mapLogToDto)
                 .collect(Collectors.toList());
-        return new TourDto(
+        TourDto dto = new TourDto(
                 tour.getId(), tour.getName(), tour.getDescription(),
                 tour.getStartLocation(), tour.getEndLocation(), tour.getTransportType(),
                 tour.getDistance(), tour.getEstimatedTime(), tour.getSelectedImage(),
                 tour.getFromLat(), tour.getFromLng(), tour.getToLat(), tour.getToLng(),
                 tour.getRouteGeometry(), tour.getMapImagePath(),
-                logs);
+                logs, null, null, null);
+        int childScore = metricsCalculator.childFriendliness(tour.getLogs());
+        dto.setPopularity(metricsCalculator.popularity(tour.getLogs()));
+        dto.setChildFriendliness(childScore);
+        dto.setChildFriendlinessLabel(metricsCalculator.childFriendlinessLabel(childScore));
+        return dto;
     }
 
     private TourLogDto mapLogToDto(TourLog log) {
