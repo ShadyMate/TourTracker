@@ -33,6 +33,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   saveMessage = signal('');
   errorMessage = signal('');
   editingLogId = signal<string | null>(null);
+  pendingImageFile: File | null = null;
 
   private destroy$ = new Subject<void>();
   private saveMessageTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -214,6 +215,15 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         this.tour.set(updated);
       }
 
+      // For uploading an image
+      if (this.pendingImageFile) {
+        const tourId = this.tour()!.id;
+        const updated = await this.tourService.uploadImage(tourId, this.pendingImageFile);
+        this.tour.set(updated);
+        console.log('tour after image upload:', this.tour());
+        this.pendingImageFile = null;
+      }
+
       this.isEditing.set(false);
       this.toastService.show('Tour saved successfully!', false);
       this.saveMessageTimeout = setTimeout(() => {
@@ -246,8 +256,18 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Choose image
   selectImage(img: string): void {
     this.tourForm.selectedImage = img;
+  }
+
+  // Upload image
+  onImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.pendingImageFile = input.files[0];
+      this.tourForm.selectedImage = '';
+    }
   }
 
   async addLog(): Promise<void> {

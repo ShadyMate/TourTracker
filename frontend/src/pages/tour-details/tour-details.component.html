@@ -38,14 +38,22 @@
             >
           </div>
 
+          <!-- Choose image -->
           <div class="form-group">
-            <label>Select image</label>
+            <label>Image (Upload or Choose template)</label>
+            <span class="label">Upload your own image:</span>
+            <input type="file" accept="image/*" (change)="onImageFileSelected($event)">
+          </div>
+
+          <!-- Upload image -->
+          <div class="form-group">
+            <span class="label">Or choose a template:</span>
 
             <img src="/img1.jpg" alt="Bicycle" (click)="selectImage('img1')" [class.selected]="tourForm.selectedImage === 'img1'">
             <img src="/img2.jpg" alt="Großglockner" (click)="selectImage('img2')" [class.selected]="tourForm.selectedImage === 'img2'">
             <img src="/img3.jpg" alt="Hiking" (click)="selectImage('img3')" [class.selected]="tourForm.selectedImage === 'img3'">
           </div>
-
+          
           <div class="form-group">
             <label>Description</label>
             <textarea [(ngModel)]="tourForm.description" name="description" placeholder="Tour description" rows="3"></textarea>
@@ -133,10 +141,11 @@
           <div class="info-header">
             <div>
               <h3>{{ tour()!.name }}</h3>
-              @if (tour()!.selectedImage) {
-                <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="test" width="100%">
-              }
-              @else {
+              @if (tour()!.imagePath) {
+                <img [src]="'http://localhost:8080/api/images/' + tour()!.imagePath" alt="Tour image" width="100%">
+              } @else if (tour()!.selectedImage) {
+                <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="Tour image" width="100%">
+              } @else {
                 <i>No image selected</i><br><br>
               }
               <p class="info-text">{{ tour()!.description }}</p>

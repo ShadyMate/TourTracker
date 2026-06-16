@@ -16,6 +16,7 @@ interface BackendTour {
   distance: number | null;
   estimatedTime: number | null; // minutes
   selectedImage: string | null;
+  imagePath: string | null;
   fromLat: number | null;
   fromLng: number | null;
   toLat: number | null;
@@ -88,6 +89,17 @@ export class TourService {
 
   async deleteTour(id: string): Promise<void> {
     await firstValueFrom(this.http.delete(`${this.API}/tours/${id}`));
+  }
+
+  // ── Tour Image Upload ──────────────────────────────────────────────────────
+
+  async uploadImage(tourId: string, file: File): Promise<Tour> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const saved = await firstValueFrom(
+      this.http.post<BackendTour>(`${this.API}/tours/${tourId}/image`, formData)
+    );
+    return this.toFrontend(saved);
   }
 
   // ── Tour Log CRUD ──────────────────────────────────────────────────────────
@@ -268,6 +280,7 @@ export class TourService {
     distance: b.distance != null ? b.distance.toString() : '0',
     time: b.estimatedTime != null ? this.minutesToTimeStr(b.estimatedTime) : '',
     selectedImage: b.selectedImage ?? '',
+    imagePath: b.imagePath ?? undefined,
     childFriendly: false,
     logs: (b.logs ?? []).map(this.logToFrontend)
   });
@@ -282,6 +295,7 @@ export class TourService {
       distance: t.distance ? parseFloat(t.distance) : null,
       estimatedTime: t.time ? this.timeStrToMinutes(t.time) : null,
       selectedImage: t.selectedImage || null,
+      imagePath: t.imagePath || null,
       fromLat: t.fromCoords?.[0] ?? null,
       fromLng: t.fromCoords?.[1] ?? null,
       toLat: t.toCoords?.[0] ?? null,
