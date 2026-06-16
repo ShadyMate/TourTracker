@@ -28,10 +28,10 @@ interface BackendTour {
 interface BackendLog {
   id: number;
   tourId: number;
-  logDate: string;    // "YYYY-MM-DD"
+  logDate: string; // "YYYY-MM-DD"
   startTime: string;
   endTime: string;
-  totalTime: string;  // "H:mm"
+  totalTime: string; // "H:mm"
   actualDistance: number;
   difficulty: number;
   rating: number;
@@ -43,7 +43,7 @@ interface BackendLog {
  * Keeps the same method signatures that components already use.
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TourService {
   private http = inject(HttpClient);
@@ -54,17 +54,13 @@ export class TourService {
   // ── Tour CRUD ──────────────────────────────────────────────────────────────
 
   async getTours(): Promise<Tour[]> {
-    const backend = await firstValueFrom(
-      this.http.get<BackendTour[]>(`${this.API}/tours`)
-    );
+    const backend = await firstValueFrom(this.http.get<BackendTour[]>(`${this.API}/tours`));
     return backend.map(this.toFrontend);
   }
 
   async getTourById(id: string): Promise<Tour | null> {
     try {
-      const backend = await firstValueFrom(
-        this.http.get<BackendTour>(`${this.API}/tours/${id}`)
-      );
+      const backend = await firstValueFrom(this.http.get<BackendTour>(`${this.API}/tours/${id}`));
       return this.toFrontend(backend);
     } catch {
       return null;
@@ -73,16 +69,14 @@ export class TourService {
 
   async addTour(tour: Omit<Tour, 'id'>): Promise<Tour> {
     const payload = this.toBackend({ ...tour, id: '' });
-    const saved = await firstValueFrom(
-      this.http.post<BackendTour>(`${this.API}/tours`, payload)
-    );
+    const saved = await firstValueFrom(this.http.post<BackendTour>(`${this.API}/tours`, payload));
     return this.toFrontend(saved);
   }
 
   async updateTour(id: string, tour: Tour): Promise<Tour> {
     const payload = this.toBackend(tour);
     const saved = await firstValueFrom(
-      this.http.put<BackendTour>(`${this.API}/tours/${id}`, payload)
+      this.http.put<BackendTour>(`${this.API}/tours/${id}`, payload),
     );
     return this.toFrontend(saved);
   }
@@ -97,7 +91,14 @@ export class TourService {
     const formData = new FormData();
     formData.append('file', file);
     const saved = await firstValueFrom(
-      this.http.post<BackendTour>(`${this.API}/tours/${tourId}/image`, formData)
+      this.http.post<BackendTour>(`${this.API}/tours/${tourId}/image`, formData),
+    );
+    return this.toFrontend(saved);
+  }
+
+  async clearImage(tourId: string): Promise<Tour> {
+    const saved = await firstValueFrom(
+      this.http.delete<BackendTour>(`${this.API}/tours/${tourId}/image`),
     );
     return this.toFrontend(saved);
   }
@@ -107,7 +108,7 @@ export class TourService {
   async addTourLog(tourId: string, log: Omit<TourLog, 'id' | 'tourId'>): Promise<TourLog> {
     const payload = this.logToBackend({ ...log, id: '', tourId });
     const saved = await firstValueFrom(
-      this.http.post<BackendLog>(`${this.API}/tours/${tourId}/logs`, payload)
+      this.http.post<BackendLog>(`${this.API}/tours/${tourId}/logs`, payload),
     );
     return this.logToFrontend(saved);
   }
@@ -115,15 +116,13 @@ export class TourService {
   async updateTourLog(tourId: string, logId: string, updates: Partial<TourLog>): Promise<TourLog> {
     const payload = this.logToBackend({ ...updates, id: logId, tourId } as TourLog);
     const saved = await firstValueFrom(
-      this.http.put<BackendLog>(`${this.API}/tours/${tourId}/logs/${logId}`, payload)
+      this.http.put<BackendLog>(`${this.API}/tours/${tourId}/logs/${logId}`, payload),
     );
     return this.logToFrontend(saved);
   }
 
   async deleteTourLog(tourId: string, logId: string): Promise<void> {
-    await firstValueFrom(
-      this.http.delete(`${this.API}/tours/${tourId}/logs/${logId}`)
-    );
+    await firstValueFrom(this.http.delete(`${this.API}/tours/${tourId}/logs/${logId}`));
   }
 
   // ── Search (client-side over fetched tours) ────────────────────────────────
@@ -131,12 +130,13 @@ export class TourService {
   filterTours(tours: Tour[], query: string): Tour[] {
     if (!query.trim()) return tours;
     const q = query.toLowerCase();
-    return tours.filter(t =>
-      t.name.toLowerCase().includes(q) ||
-      t.from.toLowerCase().includes(q) ||
-      t.to.toLowerCase().includes(q) ||
-      t.description.toLowerCase().includes(q) ||
-      t.logs.some(l => l.notes.toLowerCase().includes(q))
+    return tours.filter(
+      (t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.from.toLowerCase().includes(q) ||
+        t.to.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q) ||
+        t.logs.some((l) => l.notes.toLowerCase().includes(q)),
     );
   }
 
@@ -156,7 +156,7 @@ export class TourService {
 
   getRatingStars(rating: number): { full: number; half: boolean; empty: number } {
     const full = Math.floor(rating);
-    const half = (rating % 1) >= 0.5;
+    const half = rating % 1 >= 0.5;
     return { full, half, empty: 5 - full - (half ? 1 : 0) };
   }
 
@@ -165,10 +165,11 @@ export class TourService {
     let score = 0;
     const n = tour.logs.length;
     const avgDiff = tour.logs.reduce((s, l) => s + l.difficulty, 0) / n;
-    const avgMin = tour.logs.reduce((s, l) => {
-      const [h, m] = l.totalTime.split(':').map(Number);
-      return s + h * 60 + m;
-    }, 0) / n;
+    const avgMin =
+      tour.logs.reduce((s, l) => {
+        const [h, m] = l.totalTime.split(':').map(Number);
+        return s + h * 60 + m;
+      }, 0) / n;
     const avgDist = tour.logs.reduce((s, l) => s + l.actualDistance, 0) / n;
     if (avgDiff < 5) score += 2;
     if (avgMin < 180) score += 2;
@@ -191,7 +192,7 @@ export class TourService {
   }
 
   getAverageActualDistance(tour: Tour): string {
-    if (tour.logs.length == 0) return 'N/A';
+    if (tour.logs.length === 0) return 'N/A';
     const total = tour.logs.reduce((sum, curr) => {
       return sum + curr.actualDistance;
     }, 0);
@@ -218,16 +219,13 @@ export class TourService {
 
   isActualTimeHigher(tour: Tour): boolean {
     if (tour.logs.length === 0) return false;
-    
-    const match = tour.time.match(/(\d+)h\s*(\d+)m/);
-    if (!match) return false;
-    const calculated = parseInt(match[1]) * 60 + parseInt(match[2]);
-    
-    const actual = tour.logs.reduce((sum, log) => {
-      const [lh, lm] = log.totalTime.split(':').map(Number);
-      return sum + lh * 60 + lm;
-    }, 0) / tour.logs.length;
-    
+    // Reuse the shared parser so all estimate formats ("2h", "45m", "1h 30m") are handled.
+    const calculated = this.timeStrToMinutes(tour.time);
+    const actual =
+      tour.logs.reduce((sum, log) => {
+        const [lh, lm] = log.totalTime.split(':').map(Number);
+        return sum + lh * 60 + lm;
+      }, 0) / tour.logs.length;
     return actual > calculated;
   }
 
@@ -235,9 +233,11 @@ export class TourService {
     try {
       const [sh, sm] = start.split(':').map(Number);
       const [eh, em] = end.split(':').map(Number);
-      const d = Math.max(0, (eh * 60 + em) - (sh * 60 + sm));
+      const d = Math.max(0, eh * 60 + em - (sh * 60 + sm));
       return `${Math.floor(d / 60)}:${String(d % 60).padStart(2, '0')}`;
-    } catch { return '0:00'; }
+    } catch {
+      return '0:00';
+    }
   }
 
   validateTourForm(form: Partial<Tour>): string | null {
@@ -271,10 +271,8 @@ export class TourService {
     description: b.description ?? '',
     from: b.startLocation ?? '',
     to: b.endLocation ?? '',
-    fromCoords: (b.fromLat != null && b.fromLng != null)
-      ? [b.fromLat, b.fromLng] : undefined,
-    toCoords: (b.toLat != null && b.toLng != null)
-      ? [b.toLat, b.toLng] : undefined,
+    fromCoords: b.fromLat != null && b.fromLng != null ? [b.fromLat, b.fromLng] : undefined,
+    toCoords: b.toLat != null && b.toLng != null ? [b.toLat, b.toLng] : undefined,
     routeGeometry: b.routeGeometry ? JSON.parse(b.routeGeometry) : undefined,
     transportType: (b.transportType ?? 'hiking') as Tour['transportType'],
     distance: b.distance != null ? b.distance.toString() : '0',
@@ -282,7 +280,7 @@ export class TourService {
     selectedImage: b.selectedImage ?? '',
     imagePath: b.imagePath ?? undefined,
     childFriendly: false,
-    logs: (b.logs ?? []).map(this.logToFrontend)
+    logs: (b.logs ?? []).map(this.logToFrontend),
   });
 
   private toBackend(t: Tour): Partial<BackendTour> {
@@ -300,7 +298,7 @@ export class TourService {
       fromLng: t.fromCoords?.[1] ?? null,
       toLat: t.toCoords?.[0] ?? null,
       toLng: t.toCoords?.[1] ?? null,
-      routeGeometry: t.routeGeometry ? JSON.stringify(t.routeGeometry) : null
+      routeGeometry: t.routeGeometry ? JSON.stringify(t.routeGeometry) : null,
     };
   }
 
@@ -314,13 +312,12 @@ export class TourService {
     actualDistance: b.actualDistance ?? 0,
     difficulty: b.difficulty ?? 5,
     rating: b.rating ?? 2.5,
-    notes: b.notes ?? ''
+    notes: b.notes ?? '',
   });
 
   private logToBackend(l: TourLog): Partial<BackendLog> {
-    const dateStr = l.date instanceof Date
-      ? l.date.toISOString().split('T')[0]
-      : String(l.date).split('T')[0];
+    const dateStr =
+      l.date instanceof Date ? l.date.toISOString().split('T')[0] : String(l.date).split('T')[0];
     return {
       logDate: dateStr,
       startTime: l.startTime,
@@ -329,7 +326,7 @@ export class TourService {
       actualDistance: l.actualDistance,
       difficulty: l.difficulty,
       rating: l.rating,
-      notes: l.notes
+      notes: l.notes,
     };
   }
 

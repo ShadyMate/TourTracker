@@ -38,14 +38,14 @@
             >
           </div>
 
-          <!-- Choose image -->
+          <!-- Upload image -->
           <div class="form-group">
             <label>Image (Upload or Choose template)</label>
             <span class="label">Upload your own image:</span>
             <input type="file" accept="image/*" (change)="onImageFileSelected($event)">
           </div>
 
-          <!-- Upload image -->
+          <!-- Choose template image -->
           <div class="form-group">
             <span class="label">Or choose a template:</span>
 
@@ -84,12 +84,10 @@
             <div class="form-group">
               <label>Calculated Distance (km)</label>
               <span class="stat-value">{{ tourForm.distance || 'Set route to calculate' }}</span>
-              <!-- <input type="number" [(ngModel)]="tourForm.distance" name="distance"> -->
             </div>
             <div class="form-group">
               <label>Calculated Time</label>
-               <span class="stat-value">{{ tourForm.time || 'Set route to calculate' }}</span>
-              <!-- <input type="text" [(ngModel)]="tourForm.time" name="estimatedTime" placeholder="e.g., 2h 30m"> -->
+              <span class="stat-value">{{ tourForm.time || 'Set route to calculate' }}</span>
             </div>
           </div>
 
@@ -142,7 +140,7 @@
             <div>
               <h3>{{ tour()!.name }}</h3>
               @if (tour()!.imagePath) {
-                <img [src]="'http://localhost:8080/api/images/' + tour()!.imagePath" alt="Tour image" width="100%">
+                <img [src]="imageBaseUrl + tour()!.imagePath" alt="Tour image" width="100%">
               } @else if (tour()!.selectedImage) {
                 <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="Tour image" width="100%">
               } @else {

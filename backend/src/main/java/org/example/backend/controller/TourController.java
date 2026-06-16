@@ -104,6 +104,23 @@ public class TourController {
         return ResponseEntity.ok(tourService.setImage(id, filename, userId));
     }
 
+    /**
+     * Clear a tour's uploaded image (e.g. when the user switches back to a preset).
+     * Deletes the stored file from the filesystem and nulls out the imagePath.
+     * Returns the updated tour.
+     */
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<TourDto> clearImage(@PathVariable Long id, Authentication auth) {
+        Long userId = userId(auth);
+        logger.info("DELETE /tours/{}/image - user {}", id, userId);
+
+        String existing = tourService.getImagePath(id, userId);
+        if (existing != null) {
+            imageStorageService.delete(existing);
+        }
+        return ResponseEntity.ok(tourService.setImage(id, null, userId));
+    }
+
     // ── Tour Log CRUD ──────────────────────────────────────────────────────────
 
     @GetMapping("/{tourId}/logs")
