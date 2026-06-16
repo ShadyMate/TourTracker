@@ -47,8 +47,8 @@ public class Tour {
     @Column(columnDefinition = "TEXT")
     private String routeGeometry;
 
-    @Column(name = "map_image_path", length = 512)
-    private String mapImagePath;
+    @Column(name = "image_path", length = 512)
+    private String imagePath;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

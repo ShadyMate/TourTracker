@@ -38,14 +38,22 @@
             >
           </div>
 
+          <!-- Upload image -->
           <div class="form-group">
-            <label>Select image</label>
+            <label>Image (Upload or Choose template)</label>
+            <span class="label">Upload your own image:</span>
+            <input type="file" accept="image/*" (change)="onImageFileSelected($event)">
+          </div>
+
+          <!-- Choose template image -->
+          <div class="form-group">
+            <span class="label">Or choose a template:</span>
 
             <img src="/img1.jpg" alt="Bicycle" (click)="selectImage('img1')" [class.selected]="tourForm.selectedImage === 'img1'">
             <img src="/img2.jpg" alt="Großglockner" (click)="selectImage('img2')" [class.selected]="tourForm.selectedImage === 'img2'">
             <img src="/img3.jpg" alt="Hiking" (click)="selectImage('img3')" [class.selected]="tourForm.selectedImage === 'img3'">
           </div>
-
+          
           <div class="form-group">
             <label>Description</label>
             <textarea [(ngModel)]="tourForm.description" name="description" placeholder="Tour description" rows="3"></textarea>
@@ -74,12 +82,12 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Distance (km)</label>
-              <input type="number" [(ngModel)]="tourForm.distance" name="distance">
+              <label>Calculated Distance (km)</label>
+              <span class="stat-value">{{ tourForm.distance || 'Set route to calculate' }}</span>
             </div>
             <div class="form-group">
-              <label>Estimated Time</label>
-              <input type="text" [(ngModel)]="tourForm.time" name="estimatedTime" placeholder="e.g., 2h 30m">
+              <label>Calculated Time</label>
+              <span class="stat-value">{{ tourForm.time || 'Set route to calculate' }}</span>
             </div>
           </div>
 
@@ -131,10 +139,11 @@
           <div class="info-header">
             <div>
               <h3>{{ tour()!.name }}</h3>
-              @if (tour()!.selectedImage) {
-                <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="test" width="100%">
-              }
-              @else {
+              @if (tour()!.imagePath) {
+                <img [src]="imageBaseUrl + tour()!.imagePath" alt="Tour image" width="100%">
+              } @else if (tour()!.selectedImage) {
+                <img [src]="'/' + tour()!.selectedImage + '.jpg'" alt="Tour image" width="100%">
+              } @else {
                 <i>No image selected</i><br><br>
               }
               <p class="info-text">{{ tour()!.description }}</p>
@@ -157,17 +166,45 @@
             <h4>📊 Stats</h4>
             <div class="stats-grid">
               <div class="stat">
-                <span class="stat-label">Distance</span>
+                <span class="stat-label">Calculated Distance</span>
                 <span class="stat-value">{{ tour()!.distance }}km</span>
               </div>
               <div class="stat">
-                <span class="stat-label">Est. Time</span>
+                <span class="stat-label">Calculated Time</span>
                 <span class="stat-value">{{ tour()!.time }}</span>
               </div>
-              <div class="stat">
-                <span class="stat-label">Avg. Actual</span>
-                <span class="stat-value">{{ getAverageActualTime(tour()!) }}</span>
-              </div>
+              
+              <!-- Only display average actual distance and time if there is tour logs -->
+              @if (tour()!.logs.length > 0) {
+                <div class="stat">
+                  <span class="stat-label">Avg. Actual Distance</span>
+                  <span class="stat-value">
+                    {{ getAverageActualDistance(tour()!) }}
+
+                    @if (isActualDistanceHigher(tour()!)) {
+                      <span style="color: red">▲</span>
+                    } @else {
+                      <span style="color: green">▼</span>
+                    }
+
+                  </span>
+                </div>
+
+                <div class="stat">
+                  <span class="stat-label">Avg. Actual Time</span>
+                  <span class="stat-value">
+                    {{ getAverageActualTime(tour()!) }}
+
+                    @if (isActualTimeHigher(tour()!)) {
+                      <span style="color: red">▲</span>
+                    } @else {
+                      <span style="color: green">▼</span>
+                    }
+
+                  </span>
+                </div>
+              }
+
               <div class="stat">
                 <span class="stat-label">Logs</span>
                 <span class="stat-value">{{ tour()!.logs.length }}</span>

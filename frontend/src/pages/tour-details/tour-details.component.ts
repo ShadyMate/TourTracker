@@ -1,4 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,14 +16,18 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ToastService } from '../../services/toast.service';
 import { TourMapComponent } from './tour-map.component';
-import { LocationAutocompleteComponent, LocationSuggestion } from '../../components/location-autocomplete/location-autocomplete.component';
+import {
+  LocationAutocompleteComponent,
+  LocationSuggestion,
+} from '../../components/location-autocomplete/location-autocomplete.component';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-tour-details',
   imports: [CommonModule, FormsModule, TourMapComponent, LocationAutocompleteComponent],
   templateUrl: './tour-details.component.html',
   styleUrls: ['./tour-details.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TourDetailsComponent implements OnInit, OnDestroy {
   private tourService = inject(TourService);
@@ -33,6 +45,10 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   saveMessage = signal('');
   errorMessage = signal('');
   editingLogId = signal<string | null>(null);
+  pendingImageFile: File | null = null;
+
+  /** Base URL for serving stored tour images (e.g. http://localhost:8080/api/images/). */
+  readonly imageBaseUrl = `${environment.backendUrl}/images/`;
 
   private destroy$ = new Subject<void>();
   private saveMessageTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -58,8 +74,8 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     fromCoords: undefined,
     toCoords: undefined,
     transportType: 'hiking',
-    distance: '0',
-    time: ''
+    distance: '',
+    time: '',
   };
 
   newLog: {
@@ -77,7 +93,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     actualDistance: 0,
     difficulty: 5,
     rating: 2.5,
-    notes: ''
+    notes: '',
   };
 
   transportTypes = ['hiking', 'cycling', 'walking', 'driving'];
@@ -89,25 +105,21 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.newLog.date = this.getCurrentIsoDate();
 
-    this.activatedRoute.params
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        this.tourId.set(params['id']);
+    this.activatedRoute.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+      this.tourId.set(params['id']);
 
-        if (this.tourId() === 'new') {
-          this.isNewTour.set(true);
-          this.isEditing.set(true);
-          this.initializeNewTour();
-        } else {
-          this.loadTour();
-          this.activatedRoute.queryParams
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(q => {
-              this.isEditing.set(q['edit'] === 'true');
-              this.cdr.markForCheck();
-            });
-        }
-      });
+      if (this.tourId() === 'new') {
+        this.isNewTour.set(true);
+        this.isEditing.set(true);
+        this.initializeNewTour();
+      } else {
+        this.loadTour();
+        this.activatedRoute.queryParams.pipe(takeUntil(this.destroy$)).subscribe((q) => {
+          this.isEditing.set(q['edit'] === 'true');
+          this.cdr.markForCheck();
+        });
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -125,11 +137,11 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       description: '',
       from: '',
       to: '',
-      distance: '0',
+      distance: '',
       time: '',
       transportType: 'hiking',
       childFriendly: false,
-      logs: []
+      logs: [],
     });
     this.populateFormFromTour();
     this.cdr.markForCheck();
@@ -167,7 +179,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       toCoords: t.toCoords,
       distance: t.distance,
       time: t.time,
-      transportType: t.transportType
+      transportType: t.transportType,
     };
   }
 
@@ -196,7 +208,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       distance: this.tourForm.distance,
       time: this.tourForm.time,
       transportType: this.tourForm.transportType,
-      routeGeometry: currentTour.routeGeometry
+      routeGeometry: currentTour.routeGeometry,
     };
 
     try {
@@ -204,13 +216,29 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         const newTour = await this.tourService.addTour({
           ...currentTour,
           ...updates,
-          logs: []
+          logs: [],
         });
         this.tour.set(newTour);
         this.tourId.set(newTour.id);
         this.isNewTour.set(false);
       } else {
-        const updated = await this.tourService.updateTour(currentTour.id, { ...currentTour, ...updates });
+        const updated = await this.tourService.updateTour(currentTour.id, {
+          ...currentTour,
+          ...updates,
+        });
+        this.tour.set(updated);
+      }
+
+      // Image handling: upload a new custom image, or clear an existing one
+      // when the user switched back to a preset template.
+      const tourId = this.tour()!.id;
+      if (this.pendingImageFile) {
+        const updated = await this.tourService.uploadImage(tourId, this.pendingImageFile);
+        this.tour.set(updated);
+        this.pendingImageFile = null;
+      } else if (this.tourForm.selectedImage && this.tour()!.imagePath) {
+        // A preset was chosen but a custom image is still stored — clear it.
+        const updated = await this.tourService.clearImage(tourId);
         this.tour.set(updated);
       }
 
@@ -246,14 +274,24 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Choose image
   selectImage(img: string): void {
     this.tourForm.selectedImage = img;
+  }
+
+  // Upload image
+  onImageFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      this.pendingImageFile = input.files[0];
+      this.tourForm.selectedImage = '';
+    }
   }
 
   async addLog(): Promise<void> {
     const validationError = this.tourService.validateLogForm({
       ...this.newLog,
-      date: new Date(this.newLog.date)
+      date: new Date(this.newLog.date),
     });
     if (validationError) {
       this.toastService.show(validationError, true);
@@ -261,9 +299,15 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     }
 
     const currentTour = this.tour();
-    if (!currentTour) { this.toastService.show('Tour not found', true); return; }
+    if (!currentTour) {
+      this.toastService.show('Tour not found', true);
+      return;
+    }
 
-    const totalTime = this.tourService.calculateDuration(this.newLog.startTime, this.newLog.endTime);
+    const totalTime = this.tourService.calculateDuration(
+      this.newLog.startTime,
+      this.newLog.endTime,
+    );
 
     try {
       await this.tourService.addTourLog(currentTour.id, {
@@ -274,7 +318,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         difficulty: this.newLog.difficulty,
         totalTime,
         rating: this.newLog.rating,
-        notes: this.newLog.notes
+        notes: this.newLog.notes,
       });
       // Reload tour to get updated logs from backend
       const updated = await this.tourService.getTourById(currentTour.id);
@@ -307,7 +351,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   }
 
   editLog(logId: string): void {
-    const logToEdit = this.tour()?.logs.find(l => l.id === logId);
+    const logToEdit = this.tour()?.logs.find((l) => l.id === logId);
     if (!logToEdit) return;
 
     let dateStr = '';
@@ -324,7 +368,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       actualDistance: logToEdit.actualDistance,
       difficulty: logToEdit.difficulty,
       rating: logToEdit.rating,
-      notes: logToEdit.notes
+      notes: logToEdit.notes,
     };
     this.editingLogId.set(logId);
     this.showLogForm.set(true);
@@ -333,7 +377,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
   async saveLogEdit(): Promise<void> {
     const validationError = this.tourService.validateLogForm({
       ...this.newLog,
-      date: new Date(this.newLog.date)
+      date: new Date(this.newLog.date),
     });
     if (validationError) {
       this.toastService.show(validationError, true);
@@ -342,9 +386,15 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
 
     const currentTour = this.tour();
     const logId = this.editingLogId();
-    if (!currentTour || !logId) { this.toastService.show('Tour or log not found', true); return; }
+    if (!currentTour || !logId) {
+      this.toastService.show('Tour or log not found', true);
+      return;
+    }
 
-    const totalTime = this.tourService.calculateDuration(this.newLog.startTime, this.newLog.endTime);
+    const totalTime = this.tourService.calculateDuration(
+      this.newLog.startTime,
+      this.newLog.endTime,
+    );
 
     try {
       await this.tourService.updateTourLog(currentTour.id, logId, {
@@ -355,7 +405,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
         difficulty: this.newLog.difficulty,
         totalTime,
         rating: this.newLog.rating,
-        notes: this.newLog.notes
+        notes: this.newLog.notes,
       });
       const updated = await this.tourService.getTourById(currentTour.id);
       this.tour.set(updated);
@@ -381,7 +431,7 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       actualDistance: 0,
       difficulty: 5,
       rating: 2.5,
-      notes: ''
+      notes: '',
     };
     this.showLogForm.set(false);
     this.errorMessage.set('');
@@ -415,7 +465,11 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     this.syncTourToMap();
   }
 
-  onRouteLoaded(event: { coordinates: [number, number][]; distance: number; duration: number }): void {
+  onRouteLoaded(event: {
+    coordinates: [number, number][];
+    distance: number;
+    duration: number;
+  }): void {
     const current = this.tour();
     if (!current) return;
     const h = Math.floor(event.duration / 60);
@@ -423,7 +477,12 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
     const timeStr = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h ${m}m`;
     this.tourForm.distance = event.distance.toFixed(1);
     this.tourForm.time = timeStr;
-    this.tour.set({ ...current, routeGeometry: event.coordinates, distance: this.tourForm.distance, time: timeStr });
+    this.tour.set({
+      ...current,
+      routeGeometry: event.coordinates,
+      distance: this.tourForm.distance,
+      time: timeStr,
+    });
     this.cdr.markForCheck();
   }
 
@@ -437,29 +496,56 @@ export class TourDetailsComponent implements OnInit, OnDestroy {
       fromCoords: this.tourForm.fromCoords,
       toCoords: this.tourForm.toCoords,
       transportType: this.tourForm.transportType || 'hiking',
-      routeGeometry: undefined  // locations changed — force ORS re-fetch
+      routeGeometry: undefined, // locations changed — force ORS re-fetch
     });
     this.cdr.markForCheck();
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
 
-  goBack(): void { this.router.navigate(['/']); }
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
 
   // ── Computed display helpers ──────────────────────────────────────────────
 
-  getAverageRating(tour: Tour): number { return this.tourService.getAverageRating(tour); }
-  getAverageActualTime(tour: Tour): string { return this.tourService.getAverageActualTime(tour); }
-  getRatingStars(rating: number) { return this.tourService.getRatingStars(rating); }
-  setRating(stars: number): void { this.newLog.rating = stars; }
+  getAverageRating(tour: Tour): number {
+    return this.tourService.getAverageRating(tour);
+  }
+  getAverageActualDistance(tour: Tour): string {
+    return this.tourService.getAverageActualDistance(tour);
+  }
+  getAverageActualTime(tour: Tour): string {
+    return this.tourService.getAverageActualTime(tour);
+  }
+  isActualDistanceHigher(tour: Tour): boolean {
+    return this.tourService.isActualDistanceHigher(tour);
+  }
+  isActualTimeHigher(tour: Tour): boolean {
+    return this.tourService.isActualTimeHigher(tour);
+  }
+  getRatingStars(rating: number) {
+    return this.tourService.getRatingStars(rating);
+  }
+  setRating(stars: number): void {
+    this.newLog.rating = stars;
+  }
 
   formatDate(date: Date): string {
     return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric', month: '2-digit', day: '2-digit'
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     });
   }
 
-  getPopularity(tour: Tour): number { return this.tourService.getPopularity(tour); }
-  getChildFriendliness(tour: Tour): number { return this.tourService.getChildFriendliness(tour); }
-  getChildFriendlinessLabel(score: number): string { return this.tourService.getChildFriendlinessLabel(score); }
+  getPopularity(tour: Tour): number {
+    return this.tourService.getPopularity(tour);
+  }
+  getChildFriendliness(tour: Tour): number {
+    return this.tourService.getChildFriendliness(tour);
+  }
+  getChildFriendlinessLabel(score: number): string {
+    return this.tourService.getChildFriendlinessLabel(score);
+  }
 }

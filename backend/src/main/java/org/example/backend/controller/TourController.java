@@ -81,27 +81,44 @@ public class TourController {
         return ResponseEntity.noContent().build();
     }
 
-    // ── Map image upload ───────────────────────────────────────────────────────
+    // ── Image upload ───────────────────────────────────────────────────────
 
     /**
-     * Upload a map image for a tour (multipart/form-data, field name "file").
+     * Upload an image for a tour (multipart/form-data, field name "file").
      * The previous image is deleted from the filesystem before the new one is stored.
-     * Returns the updated tour with the new mapImagePath populated.
+     * Returns the updated tour with the new imagePath populated.
      */
-    @PostMapping("/{id}/map-image")
-    public ResponseEntity<TourDto> uploadMapImage(@PathVariable Long id,
+    @PostMapping("/{id}/image")
+    public ResponseEntity<TourDto> uploadImage(@PathVariable Long id,
                                                   @RequestParam MultipartFile file,
                                                   Authentication auth) {
         Long userId = userId(auth);
-        logger.info("POST /tours/{}/map-image - user {}", id, userId);
+        logger.info("POST /tours/{}/image - user {}", id, userId);
 
-        String existing = tourService.getMapImagePath(id, userId);
+        String existing = tourService.getImagePath(id, userId);
         if (existing != null) {
             imageStorageService.delete(existing);
         }
 
         String filename = imageStorageService.store(file);
-        return ResponseEntity.ok(tourService.setMapImage(id, filename, userId));
+        return ResponseEntity.ok(tourService.setImage(id, filename, userId));
+    }
+
+    /**
+     * Clear a tour's uploaded image (e.g. when the user switches back to a preset).
+     * Deletes the stored file from the filesystem and nulls out the imagePath.
+     * Returns the updated tour.
+     */
+    @DeleteMapping("/{id}/image")
+    public ResponseEntity<TourDto> clearImage(@PathVariable Long id, Authentication auth) {
+        Long userId = userId(auth);
+        logger.info("DELETE /tours/{}/image - user {}", id, userId);
+
+        String existing = tourService.getImagePath(id, userId);
+        if (existing != null) {
+            imageStorageService.delete(existing);
+        }
+        return ResponseEntity.ok(tourService.setImage(id, null, userId));
     }
 
     // ── Tour Log CRUD ──────────────────────────────────────────────────────────

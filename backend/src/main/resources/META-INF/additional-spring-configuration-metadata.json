@@ -13,7 +13,7 @@
     {
       "name": "app.storage.image-dir",
       "type": "java.lang.String",
-      "description": "Filesystem directory where uploaded tour map images are stored. Supports absolute and relative paths.",
+      "description": "Filesystem directory where uploaded tour images are stored. Supports absolute and relative paths.",
       "defaultValue": "./tour-images"
     },
     {

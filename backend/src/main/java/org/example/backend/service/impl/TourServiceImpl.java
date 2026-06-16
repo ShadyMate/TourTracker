@@ -135,9 +135,9 @@ public class TourServiceImpl implements TourService {
         Tour tour = tourRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
         requireOwnership(tour, userId);
-        // Delete associated map image from filesystem before removing the DB record
-        if (tour.getMapImagePath() != null) {
-            imageStorageService.delete(tour.getMapImagePath());
+        // Delete associated image from filesystem before removing the DB record
+        if (tour.getImagePath() != null) {
+            imageStorageService.delete(tour.getImagePath());
         }
         tourRepository.deleteById(id);
         logger.info("Tour {} deleted by user {}", id, userId);
@@ -147,23 +147,23 @@ public class TourServiceImpl implements TourService {
 
     @Override
     @Transactional
-    public TourDto setMapImage(Long tourId, String filename, Long userId) {
+    public TourDto setImage(Long tourId, String filename, Long userId) {
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
         requireOwnership(tour, userId);
-        tour.setMapImagePath(filename);
+        tour.setImagePath(filename);
         Tour saved = tourRepository.save(tour);
-        logger.info("Map image set for tour {}: {}", tourId, filename);
+        logger.info("Image set for tour {}: {}", tourId, filename);
         return mapToDto(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public String getMapImagePath(Long tourId, Long userId) {
+    public String getImagePath(Long tourId, Long userId) {
         Tour tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new ResourceNotFoundException("Tour not found"));
         requireOwnership(tour, userId);
-        return tour.getMapImagePath();
+        return tour.getImagePath();
     }
 
     // ── Tour Log operations ────────────────────────────────────────────────────
@@ -245,7 +245,7 @@ public class TourServiceImpl implements TourService {
         tour.setToLat(dto.getToLat());
         tour.setToLng(dto.getToLng());
         tour.setRouteGeometry(dto.getRouteGeometry());
-        // mapImagePath is intentionally excluded — managed only via setMapImage()
+        // imagePath is intentionally excluded — managed only via setImage()
     }
 
     private void applyLogDtoToEntity(TourLogDto dto, TourLog log) {
@@ -270,7 +270,7 @@ public class TourServiceImpl implements TourService {
                 tour.getStartLocation(), tour.getEndLocation(), tour.getTransportType(),
                 tour.getDistance(), tour.getEstimatedTime(), tour.getSelectedImage(),
                 tour.getFromLat(), tour.getFromLng(), tour.getToLat(), tour.getToLng(),
-                tour.getRouteGeometry(), tour.getMapImagePath(),
+                tour.getRouteGeometry(), tour.getImagePath(),
                 logs, null, null, null);
         int childScore = metricsCalculator.childFriendliness(tour.getLogs());
         dto.setPopularity(metricsCalculator.popularity(tour.getLogs()));

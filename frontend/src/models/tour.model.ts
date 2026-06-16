@@ -2,6 +2,7 @@ export interface Tour {
   id: string;
   name: string;
   selectedImage: string;
+  imagePath?: string;
   description: string;
   from: string;
   to: string;
