@@ -35,6 +35,21 @@
             <span class="icon">+</span>
           </button>
         </div>
+        <div class="sort-inner">
+          <label for="sort-select" class="sort-label">Sort by</label>
+          <select
+            id="sort-select"
+            class="sort-select"
+            [ngModel]="sortBy()"
+            (ngModelChange)="onSortChange($event)">
+            <option value="name">Name (A–Z)</option>
+            <option value="rating">Rating (high → low)</option>
+            <option value="popularity">Popularity (high → low)</option>
+            <option value="childFriendliness">Child-friendliness (high → low)</option>
+            <option value="distance">Distance (short → long)</option>
+            <option value="distanceFromUser">Distance from me (near → far)</option>
+          </select>
+        </div>
         <div class="results-count">
           @if (searchQuery()) {
             {{ filteredTours().length }} result<span>@if (filteredTours().length !== 1) { s }</span>

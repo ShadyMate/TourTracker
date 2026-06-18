@@ -95,4 +95,49 @@ class TourServiceSearchTest {
 
         assertThat(results).hasSize(2);
     }
+
+    private TourLog ratedLog(double rating) {
+        TourLog l = easyLog();
+        l.setRating(rating);
+        return l;
+    }
+
+    @Test
+    void sortByRatingDescOrdersHighestRatedFirst() {
+        Tour low = tour("Low", List.of(ratedLog(2.0)));
+        Tour high = tour("High", List.of(ratedLog(5.0)));
+        when(tourRepository.findByUserId(eq(1L))).thenReturn(List.of(low, high));
+
+        List<TourDto> results = service.searchTours(1L, null, "ratingDesc", null, null);
+
+        assertThat(results).extracting(TourDto::getName).containsExactly("High", "Low");
+    }
+
+    @Test
+    void sortByDistanceFromUserOrdersNearestFirst() {
+        Tour near = tour("Near", new ArrayList<>());
+        near.setFromLat(48.21); near.setFromLng(16.37);   // ~Vienna
+        Tour far = tour("Far", new ArrayList<>());
+        far.setFromLat(40.71); far.setFromLng(-74.01);     // ~New York
+        when(tourRepository.findByUserId(eq(1L))).thenReturn(List.of(far, near));
+
+        // User sits in Vienna; "Near" must come first.
+        List<TourDto> results =
+                service.searchTours(1L, null, "distanceFromUserAsc", 48.20, 16.37);
+
+        assertThat(results).extracting(TourDto::getName).containsExactly("Near", "Far");
+    }
+
+    @Test
+    void toursMissingSortKeySortLast() {
+        Tour withCoords = tour("HasCoords", new ArrayList<>());
+        withCoords.setFromLat(48.2); withCoords.setFromLng(16.3);
+        Tour noCoords = tour("NoCoords", new ArrayList<>());      // null lat/lng → no distance
+        when(tourRepository.findByUserId(eq(1L))).thenReturn(List.of(noCoords, withCoords));
+
+        List<TourDto> results =
+                service.searchTours(1L, null, "distanceFromUserAsc", 48.2, 16.3);
+
+        assertThat(results).extracting(TourDto::getName).containsExactly("HasCoords", "NoCoords");
+    }
 }

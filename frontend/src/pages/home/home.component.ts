@@ -21,10 +21,16 @@ export class HomeComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   searchQuery = signal('');
+  sortBy = signal('name');
+  userCoords = signal<[number, number] | null>(null);
   tours = signal<Tour[]>([]);
 
   filteredTours = computed(() =>
-    this.tourService.filterTours(this.tours(), this.searchQuery())
+    this.tourService.sortTours(
+      this.tourService.filterTours(this.tours(), this.searchQuery()),
+      this.sortBy(),
+      this.userCoords() ?? undefined,
+    )
   );
 
   isLoggedIn = computed(() => this.authService.isUserAuthenticated()());
@@ -45,6 +51,20 @@ export class HomeComponent implements OnInit {
 
   onSearchInput(value: string): void {
     this.searchQuery.set(value.toLowerCase());
+  }
+
+  onSortChange(value: string): void {
+    this.sortBy.set(value);
+    // "Distance from me" needs the user's location; request it lazily on first use.
+    if (value === 'distanceFromUser' && !this.userCoords() && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          this.userCoords.set([pos.coords.latitude, pos.coords.longitude]);
+          this.cdr.markForCheck();
+        },
+        (err) => console.warn('Geolocation unavailable, keeping current order:', err.message),
+      );
+    }
   }
 
   addTour(): void {
