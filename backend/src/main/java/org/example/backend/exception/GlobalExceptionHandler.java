@@ -59,6 +59,15 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({DatabaseOperationException.class, DataAccessLayerException.class})
+    public ResponseEntity<ErrorResponse> handleDatabaseException(RuntimeException ex, WebRequest request) {
+        logger.error("Database operation failed", ex);
+        return new ResponseEntity<>(
+                new ErrorResponse(HttpStatus.SERVICE_UNAVAILABLE.value(),
+                        "A database error occurred. Please try again later.", System.currentTimeMillis()),
+                HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, WebRequest request) {
