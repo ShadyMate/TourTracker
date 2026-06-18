@@ -1,4 +1,12 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject, signal, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+  signal,
+  computed,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
@@ -12,7 +20,7 @@ import { LocationMapComponent } from './location-map.component';
   imports: [CommonModule, FormsModule, RouterModule, LocationMapComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
@@ -30,7 +38,7 @@ export class HomeComponent implements OnInit {
       this.tourService.filterTours(this.tours(), this.searchQuery()),
       this.sortBy(),
       this.userCoords() ?? undefined,
-    )
+    ),
   );
 
   isLoggedIn = computed(() => this.authService.isUserAuthenticated()());
@@ -89,7 +97,7 @@ export class HomeComponent implements OnInit {
     }
     try {
       await this.tourService.deleteTour(tourId);
-      this.tours.update(ts => ts.filter(t => t.id !== tourId));
+      this.tours.update((ts) => ts.filter((t) => t.id !== tourId));
       this.cdr.markForCheck();
     } catch (err) {
       console.error('Failed to delete tour:', err);
@@ -100,18 +108,34 @@ export class HomeComponent implements OnInit {
     console.log('Toggle favorite:', tourId);
   }
 
-  getPopularity(tour: Tour): number { return this.tourService.getPopularity(tour); }
-  getAverageRating(tour: Tour): number { return this.tourService.getAverageRating(tour); }
-  getRatingStars(rating: number) { return this.tourService.getRatingStars(rating); }
-  getAverageActualTime(tour: Tour): string { return this.tourService.getAverageActualTime(tour); }
-  getChildFriendliness(tour: Tour): number { return this.tourService.getChildFriendliness(tour); }
-  getChildFriendlinessEmoji(score: number): string { return this.tourService.getChildFriendlinessEmoji(score); }
+  getPopularity(tour: Tour): number {
+    return this.tourService.getPopularity(tour);
+  }
+  getAverageRating(tour: Tour): number {
+    return this.tourService.getAverageRating(tour);
+  }
+  getRatingStars(rating: number) {
+    return this.tourService.getRatingStars(rating);
+  }
+  getAverageActualTime(tour: Tour): string {
+    return this.tourService.getAverageActualTime(tour);
+  }
+  getChildFriendliness(tour: Tour): number {
+    return this.tourService.getChildFriendliness(tour);
+  }
+  getChildFriendlinessEmoji(score: number): string {
+    return this.tourService.getChildFriendlinessEmoji(score);
+  }
 
-  goToSettings(): void { this.router.navigate(['/settings']); }
+  goToSettings(): void {
+    this.router.navigate(['/settings']);
+  }
 
   goToProfile(): void {
     this.router.navigate([this.isLoggedIn() ? '/account' : '/login']);
   }
 
-  navigateToHome(): void { this.router.navigate(['/']); }
+  navigateToHome(): void {
+    this.router.navigate(['/']);
+  }
 }

@@ -160,9 +160,7 @@ export class TourService {
         );
       case 'distanceFromUser':
         if (!userCoords) return sorted;
-        return sorted.sort(
-          (a, b) => this.haversine(a, userCoords) - this.haversine(b, userCoords),
-        );
+        return sorted.sort((a, b) => this.haversine(a, userCoords) - this.haversine(b, userCoords));
       case 'name':
       default:
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -177,8 +175,7 @@ export class TourService {
     const dLat = rad(tLat - lat);
     const dLng = rad(tLng - lng);
     const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(rad(lat)) * Math.cos(rad(tLat)) * Math.sin(dLng / 2) ** 2;
+      Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat)) * Math.cos(rad(tLat)) * Math.sin(dLng / 2) ** 2;
     return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
