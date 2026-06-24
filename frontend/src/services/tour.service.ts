@@ -140,6 +140,45 @@ export class TourService {
     );
   }
 
+  /**
+   * Sort tours by a chosen attribute, reusing the computed-metric helpers so the
+   * ordering matches the backend. Each option has a sensible fixed direction.
+   * 'distanceFromUser' needs the user's [lat, lng]; tours without coords sort last.
+   */
+  sortTours(tours: Tour[], sortBy: string, userCoords?: [number, number]): Tour[] {
+    const sorted = [...tours];
+    switch (sortBy) {
+      case 'rating':
+        return sorted.sort((a, b) => this.getAverageRating(b) - this.getAverageRating(a));
+      case 'popularity':
+        return sorted.sort((a, b) => this.getPopularity(b) - this.getPopularity(a));
+      case 'childFriendliness':
+        return sorted.sort((a, b) => this.getChildFriendliness(b) - this.getChildFriendliness(a));
+      case 'distance':
+        return sorted.sort(
+          (a, b) => (parseFloat(a.distance) || Infinity) - (parseFloat(b.distance) || Infinity),
+        );
+      case 'distanceFromUser':
+        if (!userCoords) return sorted;
+        return sorted.sort((a, b) => this.haversine(a, userCoords) - this.haversine(b, userCoords));
+      case 'name':
+      default:
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }
+
+  /** Haversine distance (km) from coords to a tour's start; Infinity when the tour has no coords. */
+  private haversine(tour: Tour, [lat, lng]: [number, number]): number {
+    if (!tour.fromCoords) return Infinity;
+    const [tLat, tLng] = tour.fromCoords;
+    const rad = (d: number) => (d * Math.PI) / 180;
+    const dLat = rad(tLat - lat);
+    const dLng = rad(tLng - lng);
+    const a =
+      Math.sin(dLat / 2) ** 2 + Math.cos(rad(lat)) * Math.cos(rad(tLat)) * Math.sin(dLng / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   // ── Computed properties (unchanged business logic) ─────────────────────────
 
   getPopularity(tour: Tour): number {

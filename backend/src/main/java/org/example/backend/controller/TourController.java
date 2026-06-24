@@ -1,6 +1,7 @@
 package org.example.backend.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.example.backend.dto.TourDto;
 import org.springframework.validation.annotation.Validated;
@@ -60,10 +61,17 @@ public class TourController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<TourDto>> searchTours(@RequestParam @Size(max = 200) String searchTerm, Authentication auth) {
+    public ResponseEntity<List<TourDto>> searchTours(
+            @RequestParam(required = false) @Size(max = 200) String searchTerm,
+            @RequestParam(required = false) @Pattern(
+                regexp = "^(name|distance|rating|childFriendliness|popularity|distanceFromUser)(Asc|Desc)?$",
+                message = "Invalid sort field") String sort,
+            @RequestParam(required = false) Double userLat,
+            @RequestParam(required = false) Double userLng,
+            Authentication auth) {
         Long userId = userId(auth);
-        logger.info("GET /tours/search - user {} term '{}'", userId, searchTerm);
-        return ResponseEntity.ok(tourService.searchTours(userId, searchTerm));
+        logger.info("GET /tours/search - user {} term '{}' sort '{}'", userId, searchTerm, sort);
+        return ResponseEntity.ok(tourService.searchTours(userId, searchTerm, sort, userLat, userLng));
     }
 
     @PutMapping("/{id}")

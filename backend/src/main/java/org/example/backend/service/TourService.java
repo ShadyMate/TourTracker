@@ -13,7 +13,12 @@ public interface TourService {
     TourDto createTour(TourDto tourDto, Long userId);
     TourDto getTourById(Long id, Long userId);
     List<TourDto> getUserTours(Long userId);
-    List<TourDto> searchTours(Long userId, String searchTerm);
+    /**
+     * Full-text search over a user's tours (incl. computed attributes and log notes),
+     * optionally sorted. {@code sort} is a field+direction token e.g. "ratingDesc";
+     * userLat/userLng are only required for the "distanceFromUser" sort.
+     */
+    List<TourDto> searchTours(Long userId, String searchTerm, String sort, Double userLat, Double userLng);
     TourDto updateTour(Long id, TourDto tourDto, Long userId);
     void deleteTour(Long id, Long userId);
 

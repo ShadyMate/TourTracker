@@ -20,7 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import java.util.OptionalDouble;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -86,17 +89,74 @@ public class TourServiceImpl implements TourService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TourDto> searchTours(Long userId, String searchTerm) {
-        List<TourDto> all = tourRepository.findByUserId(userId).stream()
+    public List<TourDto> searchTours(Long userId, String searchTerm, String sort, Double userLat, Double userLng) {
+        String q = (searchTerm == null || searchTerm.isBlank()) ? null : searchTerm.toLowerCase();
+        List<TourDto> results = tourRepository.findByUserId(userId).stream()
                 .map(this::mapToDto)
+                .filter(t -> q == null || matchesSearch(t, q))
                 .collect(Collectors.toList());
-        if (searchTerm == null || searchTerm.isBlank()) {
-            return all;
+        results.sort(comparatorFor(sort, userLat, userLng));
+        return results;
+    }
+
+    /** 2-arg convenience overload: full-text search with default name-ascending sort, no geo. */
+    public List<TourDto> searchTours(Long userId, String searchTerm) {
+        return searchTours(userId, searchTerm, null, null, null);
+    }
+
+    /**
+     * Build a comparator from a "field+direction" token (e.g. "ratingDesc").
+     * Unknown/blank field → name. Null sort-keys always sort last, in both directions.
+     */
+    private Comparator<TourDto> comparatorFor(String sort, Double userLat, Double userLng) {
+        boolean desc = sort != null && sort.endsWith("Desc");
+        String field = sort == null ? "" : sort.replaceFirst("(Asc|Desc)$", "");
+
+        Function<TourDto, Double> key = switch (field) {
+            case "distance"          -> TourDto::getDistance;
+            case "rating"            -> this::averageRating;
+            case "childFriendliness" -> t -> toDouble(t.getChildFriendliness());
+            case "popularity"        -> TourDto::getPopularity;
+            case "distanceFromUser"  -> t -> distanceFromUser(t, userLat, userLng);
+            default                  -> null; // name (default)
+        };
+
+        if (key == null) {
+            Comparator<String> order = desc
+                    ? String.CASE_INSENSITIVE_ORDER.reversed()
+                    : String.CASE_INSENSITIVE_ORDER;
+            return Comparator.comparing(TourDto::getName, Comparator.nullsLast(order));
         }
-        String q = searchTerm.toLowerCase();
-        return all.stream()
-                .filter(t -> matchesSearch(t, q))
-                .collect(Collectors.toList());
+        Comparator<Double> order = desc ? Comparator.<Double>reverseOrder() : Comparator.<Double>naturalOrder();
+        return Comparator.comparing(key, Comparator.nullsLast(order));
+    }
+
+    private static Double toDouble(Integer i) {
+        return i == null ? null : i.doubleValue();
+    }
+
+    /** Average of all non-null log ratings, or null when the tour has no rated logs. */
+    private Double averageRating(TourDto t) {
+        if (t.getLogs() == null) return null;
+        OptionalDouble avg = t.getLogs().stream()
+                .map(TourLogDto::getRating)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
+                .average();
+        return avg.isPresent() ? avg.getAsDouble() : null;
+    }
+
+    /** Haversine distance (km) from the user to a tour's start point; null if any coordinate is missing. */
+    private Double distanceFromUser(TourDto t, Double userLat, Double userLng) {
+        if (userLat == null || userLng == null || t.getFromLat() == null || t.getFromLng() == null) {
+            return null;
+        }
+        double dLat = Math.toRadians(t.getFromLat() - userLat);
+        double dLng = Math.toRadians(t.getFromLng() - userLng);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(t.getFromLat()))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return 6371.0 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     /** True if any searchable text on the tour — including computed values — contains q. */
