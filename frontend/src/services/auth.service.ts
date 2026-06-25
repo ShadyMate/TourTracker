@@ -59,9 +59,14 @@ export class AuthService {
         this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }),
       );
       return this.applySession(response);
+<<<<<<< HEAD
     } catch (err: unknown) {
       const message =
         (err as { error?: { message?: string } })?.error?.message || 'Invalid credentials';
+=======
+    } catch (err: any) {
+      const message = err?.error?.message || 'Invalid credentials';
+>>>>>>> ecb8fd4 (Improved frontend error handling for login and register)
       throw new Error(message);
     }
   }
@@ -72,9 +77,16 @@ export class AuthService {
         this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }),
       );
       return this.applySession(response);
+<<<<<<< HEAD
     } catch (err: unknown) {
       const message =
         (err as { error?: { message?: string } })?.error?.message || 'Registration failed';
+=======
+    } catch (err: any) {
+      let message = err?.error?.message || 'Registration failed';
+      // Strip field prefixes like "password: " or "username: "
+      message = message.replace(/^\w+:\s*/gm, '');
+>>>>>>> ecb8fd4 (Improved frontend error handling for login and register)
       throw new Error(message);
     }
   }
