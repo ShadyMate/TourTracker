@@ -64,8 +64,8 @@ export class LoginComponent implements OnInit {
       this.error.set('Username and password are required');
       return false;
     }
-    if (this.password().length < 6) {
-      this.error.set('Password must be at least 6 characters');
+    if (!this.isLoginMode() && this.password().length < 8) {
+      this.error.set('Password must be at least 8 characters');
       return false;
     }
     if (!this.isLoginMode()) {

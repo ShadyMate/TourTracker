@@ -55,7 +55,15 @@
           placeholder="••••••••"
           required>
         @if (!isLoginMode()) {
-          <small class="password-hint">At least 6 characters</small>
+          <small class="password-hint">
+            Password must contain:
+            <ul>
+              <li>At least 8 characters</li>
+              <li>One uppercase letter</li>
+              <li>One lowercase letter</li>
+              <li>One digit</li>
+            </ul>
+          </small>
         }
       </div>
 
