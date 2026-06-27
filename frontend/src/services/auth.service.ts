@@ -72,9 +72,7 @@ export class AuthService {
       );
       return this.applySession(response);
     } catch (err: any) {
-      let message = err?.error?.message || 'Registration failed';
-      // Strip field prefixes like "password: " or "username: "
-      message = message.replace(/^\w+:\s*/gm, '');
+      const message = err?.error?.message || 'Registration failed';
       throw new Error(message);
     }
   }
