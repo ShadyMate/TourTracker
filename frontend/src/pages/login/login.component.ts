@@ -64,7 +64,6 @@ export class LoginComponent implements OnInit {
       this.error.set('Username and password are required');
       return false;
     }
-<<<<<<< HEAD
     if (this.isLoginMode() && this.password().length < 2) {
       this.error.set('Please enter your password');
       return false;
@@ -75,10 +74,6 @@ export class LoginComponent implements OnInit {
     }
     if (!this.isLoginMode() && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(this.password())) {
       this.error.set('Password must contain an uppercase letter, lowercase letter, and digit');
-=======
-    if (!this.isLoginMode() && this.password().length < 8) {
-      this.error.set('Password must be at least 8 characters');
->>>>>>> ecb8fd4 (Improved frontend error handling for login and register)
       return false;
     }
     if (!this.isLoginMode()) {
