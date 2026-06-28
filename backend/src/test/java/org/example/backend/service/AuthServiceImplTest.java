@@ -4,6 +4,7 @@ import org.example.backend.dto.AuthResponse;
 import org.example.backend.dto.UserDto;
 import org.example.backend.exception.BusinessRuleException;
 import org.example.backend.model.User;
+import org.example.backend.model.UserPrincipal;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.security.JwtUtils;
 import org.example.backend.service.impl.AuthServiceImpl;
@@ -18,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 class AuthServiceImplTest {
@@ -40,6 +43,7 @@ class AuthServiceImplTest {
         String username = "testuser";
         String email = "testuser@mail.com";
         String password = "safepassword";
+        String fakeToken = "fake-jwt-token";
 
         // Create fake object
         UserDto userDto = new UserDto(null, username, email, password);
@@ -53,9 +57,11 @@ class AuthServiceImplTest {
         savedUser.setEmail(email);
         savedUser.setPassword("hashedPassword");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(jwtUtils.generateToken(any())).thenReturn("fake-jwt-token");
+        when(jwtUtils.generateToken(eq(new UserPrincipal(1L, "testuser")))).thenReturn(fakeToken);
 
         AuthResponse response = authService.register(userDto);
+        Mockito.verify(passwordEncoder).encode(password);  
+        Mockito.verify(userRepository).save(argThat(u -> "hashedPassword".equals(u.getPassword())));
 
         assertThat(response.getUsername()).isEqualTo(username);
         assertThat(response.getEmail()).isEqualTo(email);
@@ -123,13 +129,16 @@ class AuthServiceImplTest {
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(password, hashedPassword)).thenReturn(true);
-        when(jwtUtils.generateToken(any())).thenReturn(fakeToken);
+        when(jwtUtils.generateToken(eq(new UserPrincipal(1L, username)))).thenReturn(fakeToken);
 
         Optional<AuthResponse> response = authService.login(username, password);
 
-        assertThat(response).isPresent();
-        assertThat(response.get().getToken()).isEqualTo(fakeToken);
-        assertThat(response.get().getUsername()).isEqualTo(username);
+        assertThat(response)
+        .isPresent().get()
+        .satisfies(r -> {
+            assertThat(r.getToken()).isEqualTo(fakeToken);
+            assertThat(r.getUsername()).isEqualTo(username);
+        });
     }
 
     @Test

@@ -24,6 +24,7 @@ class TourServiceImplOwnershipTest {
     private TourRepository tourRepository;
     private TourLogRepository tourLogRepository;
     private TourServiceImpl service;
+    private ImageStorageService imageStorageService;
 
     private User owner;
     private User otherUser;
@@ -34,8 +35,8 @@ class TourServiceImplOwnershipTest {
         tourRepository = Mockito.mock(TourRepository.class);
         tourLogRepository = Mockito.mock(TourLogRepository.class);
         UserRepository userRepo = Mockito.mock(UserRepository.class);
-        ImageStorageService img = Mockito.mock(ImageStorageService.class);
-        service = new TourServiceImpl(tourRepository, tourLogRepository, userRepo, img,
+        imageStorageService = Mockito.mock(ImageStorageService.class);
+        service = new TourServiceImpl(tourRepository, tourLogRepository, userRepo, imageStorageService,
                 new TourMetricsCalculator());
 
         // Owner who owns the tour
@@ -104,5 +105,13 @@ class TourServiceImplOwnershipTest {
 
         assertThatThrownBy(() -> service.addTourLog(10L, new TourLogDto(), 2L))
             .isInstanceOf(BusinessRuleException.class);
+    }
+
+    @Test
+    void deleteTourWithImageDeletesFile() {
+        tour.setImagePath("photo.jpg");
+        when(tourRepository.findById(10L)).thenReturn(Optional.of(tour));
+        service.deleteTour(10L, 1L);
+        Mockito.verify(imageStorageService).delete("photo.jpg");
     }
 }
