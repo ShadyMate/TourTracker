@@ -54,17 +54,27 @@ export class AuthService {
   }
 
   async login(username: string, password: string): Promise<User> {
-    const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }),
-    );
-    return this.applySession(response);
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }),
+      );
+      return this.applySession(response);
+    } catch (err: unknown) {
+      const message = (err as { error?: { message?: string } })?.error?.message || 'Invalid credentials';
+      throw new Error(message);
+    }
   }
 
   async register(username: string, password: string, email: string): Promise<User> {
-    const response = await firstValueFrom(
-      this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }),
-    );
-    return this.applySession(response);
+    try {
+      const response = await firstValueFrom(
+        this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }),
+      );
+      return this.applySession(response);
+    } catch (err: unknown) {
+      const message = (err as { error?: { message?: string } })?.error?.message || 'Registration failed';
+      throw new Error(message);
+    }
   }
 
   logout(): void {
