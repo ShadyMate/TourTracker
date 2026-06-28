@@ -35,11 +35,12 @@ jobs:
         with:
           java-version: '25'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Run tests
         working-directory: backend
         env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_SECRET: dGVzdHNlY3JldHRlc3RzZWNyZXR0ZXN0c2VjcmV0dGVzdA==
           DB_URL: jdbc:postgresql://localhost:5432/tour_tracker
           DB_USERNAME: tourtracker
           DB_PASSWORD: tourtracker
