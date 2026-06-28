@@ -60,7 +60,8 @@ export class AuthService {
       );
       return this.applySession(response);
     } catch (err: unknown) {
-      const message = (err as { error?: { message?: string } })?.error?.message || 'Invalid credentials';
+      const message =
+        (err as { error?: { message?: string } })?.error?.message || 'Invalid credentials';
       throw new Error(message);
     }
   }
@@ -72,7 +73,8 @@ export class AuthService {
       );
       return this.applySession(response);
     } catch (err: unknown) {
-      const message = (err as { error?: { message?: string } })?.error?.message || 'Registration failed';
+      const message =
+        (err as { error?: { message?: string } })?.error?.message || 'Registration failed';
       throw new Error(message);
     }
   }
