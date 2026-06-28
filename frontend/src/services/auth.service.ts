@@ -59,8 +59,8 @@ export class AuthService {
         this.http.post<AuthResponse>(`${this.API}/auth/login`, { username, password }),
       );
       return this.applySession(response);
-    } catch (err: any) {
-      const message = err?.error?.message || 'Invalid credentials';
+    } catch (err: unknown) {
+      const message = (err as { error?: { message?: string } })?.error?.message || 'Invalid credentials';
       throw new Error(message);
     }
   }
