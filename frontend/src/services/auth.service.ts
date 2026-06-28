@@ -71,8 +71,8 @@ export class AuthService {
         this.http.post<AuthResponse>(`${this.API}/auth/register`, { username, password, email }),
       );
       return this.applySession(response);
-    } catch (err: any) {
-      const message = err?.error?.message || 'Registration failed';
+    } catch (err: unknown) {
+      const message = (err as { error?: { message?: string } })?.error?.message || 'Registration failed';
       throw new Error(message);
     }
   }
