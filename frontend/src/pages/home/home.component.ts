@@ -16,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 import { TourService } from '../../services/tour.service';
 import { Tour } from '../../models/tour.model';
 import { LocationMapComponent } from './location-map.component';
+import { ToastService } from '../../services/toast.service';
 
 
 @Component({
@@ -30,6 +31,7 @@ export class HomeComponent implements OnInit {
   private tourService = inject(TourService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
 
   searchQuery = signal('');
   sortBy = signal('name');
@@ -153,8 +155,10 @@ export class HomeComponent implements OnInit {
       a.download = 'tours.json';
       a.click();
       URL.revokeObjectURL(url);
+      this.toastService.show('Tours exported successfully');
     } catch (err) {
       console.error('Failed to export tours:', err);
+      this.toastService.show('Failed to export tours', true);
     }
   }
 
@@ -166,10 +170,18 @@ export class HomeComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     if (!input.files || !input.files[0]) return;
     try {
-      await this.tourService.importTours(input.files[0]);
+      const result = await this.tourService.importTours(input.files[0]);
       await this.loadTours();
+      if (result.skipped) {
+        this.toastService.show('Tours imported, some duplicates were skipped');
+      } else {
+        this.toastService.show('Tours imported successfully');
+      }
     } catch (err) {
       console.error('Failed to import tours:', err);
+      this.toastService.show('Failed to import tours', true);
+    } finally {
+      input.value = '';
     }
   }
 }

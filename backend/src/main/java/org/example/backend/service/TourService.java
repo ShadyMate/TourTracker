@@ -35,5 +35,5 @@ public interface TourService {
     String getImagePath(Long tourId, Long userId);
 
     String exportTours(Long userId);
-    void importTours(MultipartFile file, Long userId);
+    boolean importTours(MultipartFile file, Long userId);
 }

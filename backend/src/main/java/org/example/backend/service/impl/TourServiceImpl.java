@@ -367,9 +367,10 @@ public class TourServiceImpl implements TourService {
 
     @Override
     @Transactional
-    public void importTours(MultipartFile file, Long userId) {
+    public boolean importTours(MultipartFile file, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        boolean anySkipped = false;
         try {
             List<TourDto> tours = objectMapper.readValue(
                 file.getInputStream(),
@@ -381,6 +382,7 @@ public class TourServiceImpl implements TourService {
                         .anyMatch(t -> t.getName().equalsIgnoreCase(tourDto.getName()));
                 if (exists) {
                     logger.info("Skipping duplicate tour: {}", tourDto.getName());
+                    anySkipped = true;
                     continue;
                 }
                 Tour tour = new Tour();
@@ -397,6 +399,7 @@ public class TourServiceImpl implements TourService {
                 }
             }
             logger.info("Imported tours for user {}", userId);
+            return anySkipped;
         } catch (Exception e) {
             throw new RuntimeException("Failed to import tours", e);
         }

@@ -6,6 +6,7 @@
       <button
         class="action-btn"
         (click)="exportTours()"
+        [disabled]="tours().length === 0"
         title="Export tours">
         📤
       </button>

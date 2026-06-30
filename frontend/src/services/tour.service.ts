@@ -399,11 +399,11 @@ export class TourService {
     );
   }
 
-  async importTours(file: File): Promise<void> {
+  async importTours(file: File): Promise<{ skipped: boolean }> {
     const formData = new FormData();
     formData.append('file', file);
-    await firstValueFrom(
-      this.http.post(`${this.API}/tours/import`, formData)
+    return await firstValueFrom(
+      this.http.post<{ skipped: boolean }>(`${this.API}/tours/import`, formData)
     );
   }
 }

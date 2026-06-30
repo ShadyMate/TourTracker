@@ -3,6 +3,8 @@ package org.example.backend.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import org.example.backend.dto.ImportResultDto;
 import org.example.backend.dto.TourDto;
 import org.springframework.validation.annotation.Validated;
 import org.example.backend.dto.TourLogDto;
@@ -184,10 +186,10 @@ public class TourController {
     }
 
     @PostMapping("/import")
-    public ResponseEntity<Void> importTours(@RequestParam MultipartFile file, Authentication auth) {
+    public ResponseEntity<ImportResultDto> importTours(@RequestParam MultipartFile file, Authentication auth) {
         Long userId = userId(auth);
         logger.info("POST /tours/import - user {}", userId);
-        tourService.importTours(file, userId);
-        return ResponseEntity.ok().build();
+        boolean skipped = tourService.importTours(file, userId);
+        return ResponseEntity.ok(new ImportResultDto(skipped));
     }
 }
