@@ -169,4 +169,25 @@ public class TourController {
     private Long userId(Authentication auth) {
         return ((UserPrincipal) auth.getPrincipal()).id();
     }
+
+    // ── Export & Import ─────────────────────────────────────────────────────────────────
+    
+    @GetMapping("/export")
+    public ResponseEntity<String> exportTours(Authentication auth) throws com.fasterxml.jackson.core.JsonProcessingException {
+        Long userId = userId(auth);
+        logger.info("GET /tours/export - user {}", userId);
+        String json = tourService.exportTours(userId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"tours.json\"")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(json);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<Void> importTours(@RequestParam MultipartFile file, Authentication auth) {
+        Long userId = userId(auth);
+        logger.info("POST /tours/import - user {}", userId);
+        tourService.importTours(file, userId);
+        return ResponseEntity.ok().build();
+    }
 }

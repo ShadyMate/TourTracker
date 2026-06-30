@@ -2,6 +2,7 @@ package org.example.backend.service;
 
 import org.example.backend.dto.TourDto;
 import org.example.backend.dto.TourLogDto;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,4 +33,7 @@ public interface TourService {
 
     /** Return the current imagePath for a tour, or null if none is set. */
     String getImagePath(Long tourId, Long userId);
+
+    String exportTours(Long userId);
+    void importTours(MultipartFile file, Long userId);
 }

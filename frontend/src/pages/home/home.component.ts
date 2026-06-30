@@ -6,6 +6,8 @@ import {
   inject,
   signal,
   computed,
+  ViewChild, 
+  ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 import { TourService } from '../../services/tour.service';
 import { Tour } from '../../models/tour.model';
 import { LocationMapComponent } from './location-map.component';
+
 
 @Component({
   selector: 'app-home',
@@ -32,6 +35,7 @@ export class HomeComponent implements OnInit {
   sortBy = signal('name');
   userCoords = signal<[number, number] | null>(null);
   tours = signal<Tour[]>([]);
+  @ViewChild('importInput') importInput!: ElementRef<HTMLInputElement>;
 
   filteredTours = computed(() =>
     this.tourService.sortTours(
@@ -137,5 +141,35 @@ export class HomeComponent implements OnInit {
 
   navigateToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  async exportTours(): Promise<void> {
+    try {
+      const json = await this.tourService.exportTours();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tours.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Failed to export tours:', err);
+    }
+  }
+
+  importTours(): void {
+    this.importInput.nativeElement.click();
+  }
+
+  async onImportFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || !input.files[0]) return;
+    try {
+      await this.tourService.importTours(input.files[0]);
+      await this.loadTours();
+    } catch (err) {
+      console.error('Failed to import tours:', err);
+    }
   }
 }

@@ -8,6 +8,7 @@ import org.example.backend.repository.TourLogRepository;
 import org.example.backend.repository.TourRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.service.impl.TourServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -58,7 +59,7 @@ class TourServiceSearchTest {
         UserRepository userRepo = Mockito.mock(UserRepository.class);
         ImageStorageService img = Mockito.mock(ImageStorageService.class);
         service = new TourServiceImpl(tourRepository, logRepo, userRepo, img,
-                new TourMetricsCalculator());
+                new TourMetricsCalculator(), new ObjectMapper());
     }
 
     @Test

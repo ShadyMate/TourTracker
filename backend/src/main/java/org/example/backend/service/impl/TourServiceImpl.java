@@ -17,6 +17,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -40,17 +44,20 @@ public class TourServiceImpl implements TourService {
     private final UserRepository userRepository;
     private final ImageStorageService imageStorageService;
     private final TourMetricsCalculator metricsCalculator;
+    private final ObjectMapper objectMapper;
 
     public TourServiceImpl(TourRepository tourRepository,
                            TourLogRepository tourLogRepository,
                            UserRepository userRepository,
                            ImageStorageService imageStorageService,
-                           TourMetricsCalculator metricsCalculator) {
+                           TourMetricsCalculator metricsCalculator, 
+                           ObjectMapper objectMapper) {
         this.tourRepository = tourRepository;
         this.tourLogRepository = tourLogRepository;
         this.userRepository = userRepository;
         this.imageStorageService = imageStorageService;
         this.metricsCalculator = metricsCalculator;
+        this.objectMapper = objectMapper;
         logger.info("Initializing TourService");
     }
 
@@ -345,5 +352,53 @@ public class TourServiceImpl implements TourService {
                 log.getId(), log.getTour().getId(), dateStr,
                 log.getStartTime(), log.getEndTime(), log.getTotalTimeStr(),
                 log.getTotalDistance(), log.getDifficulty(), log.getRating(), log.getNotes());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public String exportTours(Long userId) {
+        List<TourDto> tours = getUserTours(userId);
+        try {
+            return objectMapper.writeValueAsString(tours);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to export tours", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void importTours(MultipartFile file, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        try {
+            List<TourDto> tours = objectMapper.readValue(
+                file.getInputStream(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, TourDto.class)
+            );
+            List<Tour> existingTours = tourRepository.findByUserId(userId);
+            for (TourDto tourDto : tours) {
+                boolean exists = existingTours.stream()
+                        .anyMatch(t -> t.getName().equalsIgnoreCase(tourDto.getName()));
+                if (exists) {
+                    logger.info("Skipping duplicate tour: {}", tourDto.getName());
+                    continue;
+                }
+                Tour tour = new Tour();
+                applyDtoToEntity(tourDto, tour);
+                tour.setUser(user);
+                Tour saved = tourRepository.save(tour);
+                if (tourDto.getLogs() != null) {
+                    for (TourLogDto logDto : tourDto.getLogs()) {
+                        TourLog log = new TourLog();
+                        applyLogDtoToEntity(logDto, log);
+                        log.setTour(saved);
+                        tourLogRepository.save(log);
+                    }
+                }
+            }
+            logger.info("Imported tours for user {}", userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to import tours", e);
+        }
     }
 }
