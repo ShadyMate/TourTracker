@@ -10,6 +10,7 @@ import org.example.backend.repository.TourLogRepository;
 import org.example.backend.repository.TourRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.service.impl.TourServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -37,7 +38,7 @@ class TourServiceImplOwnershipTest {
         UserRepository userRepo = Mockito.mock(UserRepository.class);
         imageStorageService = Mockito.mock(ImageStorageService.class);
         service = new TourServiceImpl(tourRepository, tourLogRepository, userRepo, imageStorageService,
-                new TourMetricsCalculator());
+                new TourMetricsCalculator(), new ObjectMapper());
 
         // Owner who owns the tour
         owner = new User();
