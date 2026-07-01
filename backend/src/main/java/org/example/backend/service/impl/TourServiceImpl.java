@@ -22,11 +22,18 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.OptionalDouble;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -45,19 +52,22 @@ public class TourServiceImpl implements TourService {
     private final ImageStorageService imageStorageService;
     private final TourMetricsCalculator metricsCalculator;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
     public TourServiceImpl(TourRepository tourRepository,
                            TourLogRepository tourLogRepository,
                            UserRepository userRepository,
                            ImageStorageService imageStorageService,
-                           TourMetricsCalculator metricsCalculator, 
-                           ObjectMapper objectMapper) {
+                           TourMetricsCalculator metricsCalculator,
+                           ObjectMapper objectMapper,
+                           Validator validator) {
         this.tourRepository = tourRepository;
         this.tourLogRepository = tourLogRepository;
         this.userRepository = userRepository;
         this.imageStorageService = imageStorageService;
         this.metricsCalculator = metricsCalculator;
         this.objectMapper = objectMapper;
+        this.validator = validator;
         logger.info("Initializing TourService");
     }
 
@@ -370,41 +380,61 @@ public class TourServiceImpl implements TourService {
     public boolean importTours(MultipartFile file, Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        boolean anySkipped = false;
+
+        List<TourDto> tours;
         try {
-            // Get tours from file
-            List<TourDto> tours = objectMapper.readValue(
+            tours = objectMapper.readValue(
                 file.getInputStream(),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, TourDto.class)
             );
+        } catch (IOException e) {
+            throw new BusinessRuleException("Invalid import file: not valid tour JSON");
+        }
 
-            // Compare to tours already existing
-            List<Tour> existingTours = tourRepository.findByUserId(userId);
-            for (TourDto tourDto : tours) {
-                boolean exists = existingTours.stream()
-                        .anyMatch(t -> t.getName().equalsIgnoreCase(tourDto.getName()));
-                if (exists) {
-                    logger.info("Skipping duplicate tour: {}", tourDto.getName());
-                    anySkipped = true;
-                    continue;
-                }
-                Tour tour = new Tour();
-                applyDtoToEntity(tourDto, tour);
-                tour.setUser(user);
-                Tour saved = tourRepository.save(tour);
-                if (tourDto.getLogs() != null) {
-                    for (TourLogDto logDto : tourDto.getLogs()) {
-                        TourLog log = new TourLog();
+        // Duplicate detection is name-based and case-insensitive; seed with existing
+        // tours and add as we go so duplicates within the same file are also skipped.
+        Set<String> seenNames = tourRepository.findByUserId(userId).stream()
+                .map(t -> t.getName().toLowerCase())
+                .collect(Collectors.toCollection(HashSet::new));
+
+        boolean anySkipped = false;
+        for (TourDto tourDto : tours) {
+            validate(tourDto);
+            if (!seenNames.add(tourDto.getName().toLowerCase())) {
+                logger.info("Skipping duplicate tour: {}", tourDto.getName());
+                anySkipped = true;
+                continue;
+            }
+            Tour tour = new Tour();
+            applyDtoToEntity(tourDto, tour);
+            tour.setUser(user);
+            Tour saved = tourRepository.save(tour);
+            if (tourDto.getLogs() != null) {
+                for (TourLogDto logDto : tourDto.getLogs()) {
+                    validate(logDto);
+                    TourLog log = new TourLog();
+                    try {
                         applyLogDtoToEntity(logDto, log);
-                        log.setTour(saved);
-                        tourLogRepository.save(log);
+                    } catch (DateTimeParseException e) {
+                        throw new BusinessRuleException("Invalid log date format: " + logDto.getLogDate());
                     }
+                    log.setTour(saved);
+                    tourLogRepository.save(log);
                 }
             }
-            logger.info("Imported tours for user {}", userId);
-            return anySkipped;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to import tours", e);
+        }
+        logger.info("Imported tours for user {}", userId);
+        return anySkipped;
+    }
+
+    /** Run bean validation on an imported DTO; reject the import (400) on any violation. */
+    private <T> void validate(T dto) {
+        Set<ConstraintViolation<T>> violations = validator.validate(dto);
+        if (!violations.isEmpty()) {
+            String message = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining("; "));
+            throw new BusinessRuleException("Invalid import data: " + message);
         }
     }
 }

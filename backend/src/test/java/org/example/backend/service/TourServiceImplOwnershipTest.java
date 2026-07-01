@@ -38,7 +38,8 @@ class TourServiceImplOwnershipTest {
         UserRepository userRepo = Mockito.mock(UserRepository.class);
         imageStorageService = Mockito.mock(ImageStorageService.class);
         service = new TourServiceImpl(tourRepository, tourLogRepository, userRepo, imageStorageService,
-                new TourMetricsCalculator(), new ObjectMapper());
+                new TourMetricsCalculator(), new ObjectMapper(),
+                jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator());
 
         // Owner who owns the tour
         owner = new User();

@@ -59,7 +59,8 @@ class TourServiceSearchTest {
         UserRepository userRepo = Mockito.mock(UserRepository.class);
         ImageStorageService img = Mockito.mock(ImageStorageService.class);
         service = new TourServiceImpl(tourRepository, logRepo, userRepo, img,
-                new TourMetricsCalculator(), new ObjectMapper());
+                new TourMetricsCalculator(), new ObjectMapper(),
+                jakarta.validation.Validation.buildDefaultValidatorFactory().getValidator());
     }
 
     @Test
