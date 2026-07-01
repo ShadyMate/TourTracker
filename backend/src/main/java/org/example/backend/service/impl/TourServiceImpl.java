@@ -372,10 +372,13 @@ public class TourServiceImpl implements TourService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         boolean anySkipped = false;
         try {
+            // Get tours from file
             List<TourDto> tours = objectMapper.readValue(
                 file.getInputStream(),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, TourDto.class)
             );
+
+            // Compare to tours already existing
             List<Tour> existingTours = tourRepository.findByUserId(userId);
             for (TourDto tourDto : tours) {
                 boolean exists = existingTours.stream()
