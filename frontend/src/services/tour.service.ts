@@ -390,4 +390,20 @@ export class TourService {
     if (m === 0) return `${h}h`;
     return `${h}h ${m}m`;
   }
+
+  // ── Import & Export ────────────────────────────────────────────────────
+
+  async exportTours(): Promise<string> {
+    return await firstValueFrom(
+      this.http.get(`${this.API}/tours/export`, { responseType: 'text' })
+    );
+  }
+
+  async importTours(file: File): Promise<{ skipped: boolean }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return await firstValueFrom(
+      this.http.post<{ skipped: boolean }>(`${this.API}/tours/import`, formData)
+    );
+  }
 }

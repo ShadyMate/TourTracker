@@ -4,6 +4,25 @@
     <h1 class="app-title" (click)="navigateToHome()" role="button" tabindex="0" (keydown.enter)="navigateToHome()" (keydown.space)="navigateToHome()">TourTracker</h1>
     <div class="nav-actions">
       <button
+        class="action-btn"
+        (click)="exportTours()"
+        [disabled]="tours().length === 0"
+        title="Export tours">
+        📤
+      </button>
+      <button
+        class="action-btn"
+        (click)="importTours()"
+        title="Import tours">
+        📥
+      </button>
+      <input
+        type="file"
+        accept=".json"
+        #importInput
+        style="display:none"
+        (change)="onImportFileSelected($event)">
+      <button
         class="action-btn settings-btn"
         (click)="goToSettings()"
         title="Settings"

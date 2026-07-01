@@ -6,6 +6,8 @@ import {
   inject,
   signal,
   computed,
+  ViewChild, 
+  ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +16,8 @@ import { AuthService } from '../../services/auth.service';
 import { TourService } from '../../services/tour.service';
 import { Tour } from '../../models/tour.model';
 import { LocationMapComponent } from './location-map.component';
+import { ToastService } from '../../services/toast.service';
+
 
 @Component({
   selector: 'app-home',
@@ -27,11 +31,13 @@ export class HomeComponent implements OnInit {
   private tourService = inject(TourService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private toastService = inject(ToastService);
 
   searchQuery = signal('');
   sortBy = signal('name');
   userCoords = signal<[number, number] | null>(null);
   tours = signal<Tour[]>([]);
+  @ViewChild('importInput') importInput!: ElementRef<HTMLInputElement>;
 
   filteredTours = computed(() =>
     this.tourService.sortTours(
@@ -137,5 +143,45 @@ export class HomeComponent implements OnInit {
 
   navigateToHome(): void {
     this.router.navigate(['/']);
+  }
+
+  async exportTours(): Promise<void> {
+    try {
+      const json = await this.tourService.exportTours();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tours.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      this.toastService.show('Tours exported successfully');
+    } catch (err) {
+      console.error('Failed to export tours:', err);
+      this.toastService.show('Failed to export tours', true);
+    }
+  }
+
+  importTours(): void {
+    this.importInput.nativeElement.click();
+  }
+
+  async onImportFileSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || !input.files[0]) return;
+    try {
+      const result = await this.tourService.importTours(input.files[0]);
+      await this.loadTours();
+      if (result.skipped) {
+        this.toastService.show('Tours imported, some duplicates were skipped');
+      } else {
+        this.toastService.show('Tours imported successfully');
+      }
+    } catch (err) {
+      console.error('Failed to import tours:', err);
+      this.toastService.show('Failed to import tours', true);
+    } finally {
+      input.value = '';
+    }
   }
 }

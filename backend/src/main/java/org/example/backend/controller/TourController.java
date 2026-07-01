@@ -3,6 +3,8 @@ package org.example.backend.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import org.example.backend.dto.ImportResultDto;
 import org.example.backend.dto.TourDto;
 import org.springframework.validation.annotation.Validated;
 import org.example.backend.dto.TourLogDto;
@@ -168,5 +170,26 @@ public class TourController {
 
     private Long userId(Authentication auth) {
         return ((UserPrincipal) auth.getPrincipal()).id();
+    }
+
+    // ── Export & Import ─────────────────────────────────────────────────────────────────
+    
+    @GetMapping("/export")
+    public ResponseEntity<String> exportTours(Authentication auth) throws com.fasterxml.jackson.core.JsonProcessingException {
+        Long userId = userId(auth);
+        logger.info("GET /tours/export - user {}", userId);
+        String json = tourService.exportTours(userId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=\"tours.json\"")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .body(json);
+    }
+
+    @PostMapping("/import")
+    public ResponseEntity<ImportResultDto> importTours(@RequestParam MultipartFile file, Authentication auth) {
+        Long userId = userId(auth);
+        logger.info("POST /tours/import - user {}", userId);
+        boolean skipped = tourService.importTours(file, userId);
+        return ResponseEntity.ok(new ImportResultDto(skipped));
     }
 }
