@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram name="Use Case Diagram" id="tourtracker-uc">
+    <mxGraphModel dx="1000" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Actors -->
+        <mxCell id="userActor" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="80" y="460" width="40" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="orsActor" value="OpenRouteService API&#10;&lt;&lt;external system&gt;&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="235" width="40" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- System boundary -->
+        <mxCell id="boundary" value="TourTracker" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fontStyle=1;fontSize=14;arcSize=2;" vertex="1" parent="1">
+          <mxGeometry x="240" y="40" width="620" height="890" as="geometry" />
+        </mxCell>
+
+        <!-- Left column: user-facing use cases -->
+        <mxCell id="uc_register" value="Register" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_login" value="Login" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="144" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_createTour" value="Create Tour" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="208" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_viewTours" value="View Tours" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="272" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_editTour" value="Edit Tour" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="336" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_deleteTour" value="Delete Tour" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="400" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_manageImage" value="Manage Tour Image" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="464" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_addLog" value="Add Tour Log" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="528" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_editLog" value="Edit Tour Log" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="592" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_deleteLog" value="Delete Tour Log" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="656" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_search" value="Search Tours &amp; Logs&#10;(full-text)" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="720" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_import" value="Import Tours" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="784" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_export" value="Export Tours" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="848" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Right column: derived / system use cases -->
+        <mxCell id="uc_route" value="Get Route, Distance &amp; Time" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="230" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_map" value="View Route Map&#10;(Leaflet)" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="320" width="180" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="uc_attrs" value="Compute Tour Attributes&#10;(popularity, child-friendliness)" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="620" y="610" width="180" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Note -->
+        <mxCell id="note" value="Precondition: all tour / tour-log use cases require Login (JWT).&#10;Tours &amp; logs are private to their owning user." style="shape=note;whiteSpace=wrap;html=1;fontSize=10;align=left;spacingLeft=6;size=14;" vertex="1" parent="1">
+          <mxGeometry x="610" y="430" width="230" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- User associations (left column only, no crossings) -->
+        <mxCell id="e1" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_register"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_login"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_createTour"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_viewTours"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_editTour"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_deleteTour"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_manageImage"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e8" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_addLog"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e9" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_editLog"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e10" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_deleteLog"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e11" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_search"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e12" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_import"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e13" style="endArrow=none;html=1;" edge="1" parent="1" source="userActor" target="uc_export"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- Secondary actor association -->
+        <mxCell id="e14" style="endArrow=none;html=1;" edge="1" parent="1" source="uc_route" target="orsActor"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <!-- include / extend relationships (right channel, no crossings) -->
+        <mxCell id="i1" value="&lt;&lt;include&gt;&gt;" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="uc_createTour" target="uc_route"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i2" value="&lt;&lt;include&gt;&gt;" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="uc_editTour" target="uc_route"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i3" value="&lt;&lt;include&gt;&gt;" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="uc_viewTours" target="uc_map"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i4" value="&lt;&lt;include&gt;&gt;" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="uc_search" target="uc_attrs"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="i5" value="&lt;&lt;extend&gt;&gt;" style="endArrow=open;dashed=1;html=1;fontSize=10;" edge="1" parent="1" source="uc_addLog" target="uc_attrs"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
