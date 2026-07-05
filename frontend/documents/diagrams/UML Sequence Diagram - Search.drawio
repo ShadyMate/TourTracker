@@ -1,0 +1,136 @@
+<mxfile host="65bd71144e">
+    <diagram name="Sequence - Full-text Search" id="tourtracker-seq-search">
+        <mxGraphModel dx="573" dy="584" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="userActor" value="User / Browser" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="68" width="44" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="userLine" style="endArrow=none;dashed=1;html=1;strokeColor=#000000;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="90" y="92" as="sourcePoint"/>
+                        <mxPoint x="90" y="790" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ll_tc" value="tc : TourController" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="175" y="40" width="150" height="750" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_ts" value="ts : TourService" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="355" y="40" width="150" height="750" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_mc" value="mc : TourMetricsCalculator" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="535" y="40" width="150" height="750" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_tr" value="tr : TourRepository" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="735" y="40" width="150" height="750" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_db" value="PostgreSQL" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="935" y="40" width="150" height="750" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_tc" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="245" y="120" width="10" height="585" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_ts" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="425" y="165" width="10" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_tr" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="805" y="210" width="10" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_db" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="1005" y="250" width="10" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_mc1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="605" y="405" width="10" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_mc2" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;rounded=0;" parent="1" vertex="1">
+                    <mxGeometry x="605" y="480" width="10" height="35" as="geometry"/>
+                </mxCell>
+                <mxCell id="loopFrame" value="loop  [ for each Tour → mapToDto() ]" style="shape=umlFrame;whiteSpace=wrap;html=1;fontSize=11;align=left;verticalAlign=top;fillColor=none;width=200;height=20;" parent="1" vertex="1">
+                    <mxGeometry x="395" y="365" width="300" height="165" as="geometry"/>
+                </mxCell>
+                <mxCell id="noteFilter" value="filter (matchesSearch):  matches over name, description, start/end,&#xa;log notes AND the computed popularity &amp; child-friendliness,&#xa;then sort the result list." style="shape=note;whiteSpace=wrap;html=1;fontSize=10;align=left;spacingLeft=6;spacingTop=4;size=12;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="690" y="560" width="380" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="noteLink" style="endArrow=none;dashed=1;html=1;strokeColor=#d6b656;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="435" y="580" as="sourcePoint"/>
+                        <mxPoint x="690" y="580" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m1" value="GET /tours/search(searchTerm, sort, userLat, userLng)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="90" y="120" as="sourcePoint"/>
+                        <mxPoint x="245" y="120" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m2" value="searchTours(userId, term, sort, lat, lng)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="255" y="165" as="sourcePoint"/>
+                        <mxPoint x="425" y="165" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m3" value="findByUserId(userId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="435" y="210" as="sourcePoint"/>
+                        <mxPoint x="805" y="210" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m4" value="SELECT * FROM tours WHERE user_id = ?" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="815" y="250" as="sourcePoint"/>
+                        <mxPoint x="1005" y="250" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m5" value="rows" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1005" y="290" as="sourcePoint"/>
+                        <mxPoint x="815" y="290" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m6" value="List&lt;Tour&gt; (logs lazy-loaded)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="805" y="330" as="sourcePoint"/>
+                        <mxPoint x="435" y="330" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m7" value="popularity(logs)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="435" y="405" as="sourcePoint"/>
+                        <mxPoint x="605" y="405" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m8" value="popularity" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="605" y="440" as="sourcePoint"/>
+                        <mxPoint x="435" y="440" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m9" value="childFriendliness(logs)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="435" y="480" as="sourcePoint"/>
+                        <mxPoint x="605" y="480" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m10" value="score + label" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="605" y="515" as="sourcePoint"/>
+                        <mxPoint x="435" y="515" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m11" value="List&lt;TourDto&gt; (filtered &amp; sorted)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="425" y="665" as="sourcePoint"/>
+                        <mxPoint x="255" y="665" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m12" value="200 OK (JSON)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="245" y="705" as="sourcePoint"/>
+                        <mxPoint x="90" y="705" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
